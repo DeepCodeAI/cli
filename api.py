@@ -5,6 +5,7 @@ Author: Jan Eberhardt
 """
 
 import time
+import traceback
 from collections import namedtuple
 
 import requests
@@ -22,6 +23,7 @@ GetFiltersResponse = namedtuple('GetFiltersResponse', 'extensions config_files')
 CreateBundleFromFilesResponse = namedtuple('CreateBundleFromFilesResponse',
                                            'bundle_id upload_url missing_files')
 GetAnalysisResponse = namedtuple('GetAnalysisResponse', 'status suggestions url')
+GetAnalysisProgress = namedtuple('GetAnalysisProgress', 'status progress')
 GetSuggestionResponse = namedtuple('GetSuggestionsResponse', 'suggestions')
 
 
@@ -64,7 +66,7 @@ def create_api_exception_from(err):
     elif isinstance(err, requests.exceptions.RequestException):
         return ApiException('Request exception')
     else:
-        return ApiException('Unexpected error')
+        return ApiException('Unexpected error: {}'.format(traceback.format_exc()))
 
 
 def check_response_has(response, keys):
@@ -212,7 +214,7 @@ class Api:
         except Exception as err:
             raise create_api_exception_from(err)
 
-    def get_analysis(self, bundles, previous_status=None):
+    def get_analysis(self, bundles, previous_status=None, progress_callback=lambda x: None):
         try:
             if previous_status:
                 params = {'sessionToken': self.session_token, 'status': previous_status}
@@ -222,9 +224,18 @@ class Api:
             res = requests.get(url, params)
             if res.status_code == requests.codes.ok:
                 data = res.json()
-                check_response_has(data, ['analysisResults', 'analysisURL'])
-                suggestions = data['analysisResults']
+                check_response_has(data, ['status', 'analysisURL'])
+                suggestions = {}
+                if ('analysisResults' in data):
+                    suggestions = data['analysisResults']
                 url = data['analysisURL']
+                progress = 0.0
+                try:
+                    progress = float(data['progress'])
+                except ValueError:
+                    # nothing, keep it at 0.0
+                    pass
+                progress_callback(GetAnalysisProgress(data['status'], progress))
                 return GetAnalysisResponse(data['status'], suggestions, url)
             elif res.status_code == requests.codes.unauthorized:
                 raise ApiUnauthorizedException()
@@ -233,15 +244,15 @@ class Api:
         except Exception as err:
             raise create_api_exception_from(err)
 
-    def wait_for_analysis_state(self, bundles, analysis_state):
-        res = self.get_analysis(bundles)
+    def wait_for_analysis_state(self, bundles, analysis_state, progress_callback=lambda x: None):
+        res = self.get_analysis(bundles, progress_callback=progress_callback)
         for _ in range(MAX_NUM_POLLS):
             if res.status == analysis_state:
                 return res
             elif res.status == 'FAIL':
                 raise ApiException('Analysis failed')
             time.sleep(POLLING_INTERVAL)
-            res = self.get_analysis(bundles, res.status)
+            res = self.get_analysis(bundles, res.status, progress_callback)
         raise ApiException('Timeout while waiting for analysis state "{}"'.format(analysis_state))
 
     @staticmethod

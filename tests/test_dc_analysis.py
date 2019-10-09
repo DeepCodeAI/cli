@@ -122,6 +122,7 @@ class TestDCAnalysisWithMockServer(unittest.TestCase):
             '{}/analysis/{}'.format(API_BASE, MOCK_BUNDLE_ID),
             status=200,
             body=json.dumps({'status': 'DONE',
+                             'progress': 1.0,
                              'analysisResults': {
                                  'files': {'/main.js': {'0': [{'rows': [1, 2], 'cols': [3, 4]}]}},
                                  'suggestions': {

@@ -22,7 +22,11 @@ DeepCode's command line interface.
   python main.py analyze eclipse/che
   python main.py analyze eclipse/che/08708f0f9a19d121b51af1741b8b5094fe38048b
   ```
-- diff: compare to versions of code. This will show all suggestions that were introduced with a code change.
+  The second and third variants allow users to get suggestions without cloning a repository to your local machine.
+  Any repository form your platform (Bitbucket, GitHub or Gitlab) that the currently logged in user has access to, can be analyzed.
+  `<owner>` and `<repo>` can usually be extracted from the url of the repository.
+  In the above example this would be: https://github.com/eclipse/che.
+- diff: compare two versions of code. This will show all suggestions that were introduced with a code change.
   The `<current>` code will be compared to the `<base>` code and only suggestions will be shown that were not present in
   `<base>` but are present in `<current>`.
   ```bash
@@ -65,9 +69,15 @@ Optinal arguments:
   }
   ```
 - wait for login: This can be used to wait until the user login succeeded.
-  The command will exit once the user is logged in.
   ```bash
   python main.py wait_for_login --json
+  ```
+  Response:
+  ```
+  {
+    "loggedIn": true,
+    "userType": "private" | "public"
+  }
   ```
 - analyze
   ```bash
@@ -86,6 +96,12 @@ Optinal arguments:
   python main.py logout --json
   ```
   The command will exit once the user is logged out.
+  Response:
+  ```
+  {
+    "loggedIn": false
+  }
+  ```
 
 ## Configuration
 

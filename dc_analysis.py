@@ -89,6 +89,14 @@ class DCAnalysis:
         """
         self.config.delete_session_token()
 
+    def _progress(self, get_analysis_progress):
+        progress = get_analysis_progress.progress / 2.0
+        if get_analysis_progress.status == "DC_DONE":
+            progress += 0.5
+        if get_analysis_progress.status == "DONE":
+            progress = 1.0
+        return progress
+
     def analyze(self, bundle):
         """
         Analyze and potentially upload the provided bundle
@@ -103,7 +111,11 @@ class DCAnalysis:
             bundle = JobBundles(bundle_id)
             if not self.silent:
                 print('analyzing...')
-            return self.api.wait_for_analysis_state(bundle, 'DONE')
+            with progressbar.ProgressBar(max_value=100) as bar:
+                def update_bar(percentage):
+                    bar.update(int(percentage * 100))
+                return self.api.wait_for_analysis_state(bundle, 'DONE',
+                                                        lambda x: update_bar(self._progress(x)))
         except ApiException as err:
             raise DCAnalysisError(err)
         finally:
@@ -277,7 +289,7 @@ class DCAnalysisCLIPrinter:
     def analyze(self, bundle):
         try:
             res = self.dc_analysis.analyze(bundle)
-            self._print_suggestions(res.suggestions, res.url)
+            #self._print_suggestions(res.suggestions, res.url)
         except DCAnalysisError as err:
             self._print_error_and_exit(err)
 
@@ -339,33 +351,33 @@ class DCAnalysisJsonPrinter:
     def login(self):
         try:
             res = self.dc_analysis.login()
-            res_dict = {}
-            if res == 'public':
-                res_dict['publicNoticeMD'] = PUBLIC_NOTICE
-            if res == 'private' or res == 'public':
-                res_dict['userType'] = res
-                res_dict['loggedIn'] = True
-            else:
-                res_dict['loginURL'] = res
-                res_dict['loggedIn'] = False
-            print(json.dumps(res_dict))
+            print(self._login_res_to_json(res))
         except DCAnalysisError as err:
             self._print_error_and_exit(err)
+
+    @staticmethod
+    def _login_res_to_json(login_res):
+        res_dict = {}
+        if login_res == 'public':
+            res_dict['publicNoticeMD'] = PUBLIC_NOTICE
+        if login_res == 'private' or login_res == 'public':
+            res_dict['userType'] = login_res
+            res_dict['loggedIn'] = True
+        else:
+            res_dict['loginURL'] = login_res
+            res_dict['loggedIn'] = False
+        return json.dumps(res_dict)
 
     def logout(self):
         try:
             self.dc_analysis.logout()
         except DCAnalysisError as err:
             self._print_error_and_exit(err)
+        print(json.dumps({"loggedIn": False}))
 
     def wait_for_login(self):
         try:
-            res = self.dc_analysis.wait_for_login()
-            res_dict = {}
-            if res == 'public':
-                res_dict['publicNoticeMd'] = PUBLIC_NOTICE
-            res_dict['userType'] = res
-            res_dict['loggedIn'] = True
+            self.dc_analysis.wait_for_login()
         except DCAnalysisError as err:
             self._print_error_and_exit(err)
         res = False
@@ -373,8 +385,7 @@ class DCAnalysisJsonPrinter:
             res = self.dc_analysis.login()
         except DCAnalysisError as err:
             self._print_error_and_exit(err)
-        if not res:
-            exit(1)
+        print(self._login_res_to_json(res))
 
     def analyze(self, bundle):
         res = {}
