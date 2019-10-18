@@ -8,8 +8,7 @@ with open("README.md", "r") as fh:
 with open('requirements.txt', "r") as reqs:
     required_packages = reqs.read().splitlines()
 
-
-# descriptions should be changed from test ones to final before publishing to pip
+# TODO: descriptions should be changed from test values to final before publishing to pip
 setuptools.setup(
     name="deepcode",
     version="0.0.1",
