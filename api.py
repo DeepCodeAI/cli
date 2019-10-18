@@ -18,11 +18,14 @@ ENDPOINTS_PREFIX = 'publicapi'
 
 LoginResponse = namedtuple('LoginResponse', 'login_url')
 CheckLoginResponse = namedtuple('CheckLoginResponse', 'type')
-CreateBundleFromRepoResponse = namedtuple('CreateBundleFromRepoResponse', 'bundle_id')
-GetFiltersResponse = namedtuple('GetFiltersResponse', 'extensions config_files')
+CreateBundleFromRepoResponse = namedtuple(
+    'CreateBundleFromRepoResponse', 'bundle_id')
+GetFiltersResponse = namedtuple(
+    'GetFiltersResponse', 'extensions config_files')
 CreateBundleFromFilesResponse = namedtuple('CreateBundleFromFilesResponse',
                                            'bundle_id upload_url missing_files')
-GetAnalysisResponse = namedtuple('GetAnalysisResponse', 'status suggestions url')
+GetAnalysisResponse = namedtuple(
+    'GetAnalysisResponse', 'status suggestions url')
 GetAnalysisProgress = namedtuple('GetAnalysisProgress', 'status progress')
 GetSuggestionResponse = namedtuple('GetSuggestionsResponse', 'suggestions')
 
@@ -72,30 +75,34 @@ def create_api_exception_from(err):
 def check_response_has(response, keys):
     for key in keys:
         if key not in response:
-            raise ApiException('Expected server response to contain {}.'.format(key))
+            raise ApiException(
+                'Expected server response to contain {}.'.format(key))
 
 
 class Api:
     def __init__(self, config):
         self.dc_server_host = config.data['dc_server_host']
-        self.dc_server_port = config.data['dc_server_port']
         self.config = config
         self.session_token = config.data.get('session_token', None)
-        self.base_endpoint = '{}:{}/{}'.format(self.dc_server_host,
-                                               self.dc_server_port,
-                                               ENDPOINTS_PREFIX)
+        self.base_endpoint = '{}/{}'.format(self.dc_server_host,
+                                            ENDPOINTS_PREFIX)
 
     def login(self):
         try:
-            res = requests.post('{}/login'.format(self.base_endpoint))
+            endpoint = '{}/login'.format(self.base_endpoint)
+            print('login endpoint', endpoint)
+            res = requests.post(endpoint)
+            print('login result', res)
             if res.status_code == requests.codes.ok:
                 data = res.json()
                 check_response_has(data, ['sessionToken', 'loginURL'])
                 self._set_session_token(data['sessionToken'])
                 return LoginResponse(data['loginURL'])
             else:
-                raise ApiException('Server response code: {}'.format(res.status_code))
+                raise ApiException(
+                    'Server response code: {}'.format(res.status_code))
         except Exception as err:
+            print({err})
             raise create_api_exception_from(err)
 
     def _set_session_token(self, session_token):
@@ -107,7 +114,8 @@ class Api:
             return CheckLoginResponse(None)
         try:
             params = {'sessionToken': self.session_token}
-            res = requests.get('{}/session'.format(self.base_endpoint), params=params)
+            res = requests.get(
+                '{}/session'.format(self.base_endpoint), params=params)
             if res.status_code == requests.codes.ok:
                 data = res.json()
                 check_response_has(data, ['type'])
@@ -116,7 +124,8 @@ class Api:
                     or res.status_code == requests.codes.not_modified:
                 return CheckLoginResponse(None)
             else:
-                raise ApiException('Server response code: {}'.format(res.status_code))
+                raise ApiException(
+                    'Server response code: {}'.format(res.status_code))
         except Exception as err:
             raise create_api_exception_from(err)
 
@@ -135,7 +144,8 @@ class Api:
     def get_filters(self):
         try:
             params = {'sessionToken': self.session_token}
-            res_data = requests.get('{}/filters'.format(self.base_endpoint), params=params).json()
+            res_data = requests.get(
+                '{}/filters'.format(self.base_endpoint), params=params).json()
             extensions = res_data['extensions']
             config_files = list(map(lambda cf: self.canonicalize_path(cf),
                                     res_data['configFiles']))
@@ -163,7 +173,8 @@ class Api:
         payload = {'files': uncanonical_bundle_dict}
         try:
             res_data = self._create_bundle_with_payload(payload)
-            check_response_has(res_data, ['missingFiles', 'bundleId', 'uploadURL'])
+            check_response_has(
+                res_data, ['missingFiles', 'bundleId', 'uploadURL'])
             missing_files = list(map(lambda m: self.canonicalize_path(m),
                                      res_data['missingFiles']))
             return CreateBundleFromFilesResponse(res_data['bundleId'],
@@ -174,7 +185,8 @@ class Api:
 
     def _create_bundle_with_payload(self, payload):
         params = {'sessionToken': self.session_token}
-        res = requests.post('{}/bundle'.format(self.base_endpoint), json=payload, params=params)
+        res = requests.post(
+            '{}/bundle'.format(self.base_endpoint), json=payload, params=params)
         if res.status_code == requests.codes.ok:
             data = res.json()
             return data
@@ -183,7 +195,8 @@ class Api:
         elif res.status_code == requests.codes.request_entity_too_large:
             raise ApiRequestBodyTooLarge()
         else:
-            raise ApiException('Server response code: {}'.format(res.status_code))
+            raise ApiException(
+                'Server response code: {}'.format(res.status_code))
 
     def upload_batches(self, url, batches, progress_iterator):
         def handle_batch(session, batch):
@@ -200,9 +213,11 @@ class Api:
 
         try:
             with FuturesSession(max_workers=MAX_PARALLEL_REQUESTS) as futures_session:
-                futures = list(map(lambda b: handle_batch(futures_session, b), batches))
+                futures = list(
+                    map(lambda b: handle_batch(futures_session, b), batches))
                 for future in progress_iterator(futures):
                     res = future.result()
+                    print('RES IN FUTURES', res)
                     if res.status_code == requests.codes.ok:
                         continue
                     elif res.status_code == requests.codes.unauthorized or res.status_code == requests.codes.forbidden:
@@ -210,17 +225,20 @@ class Api:
                     else:
                         code = res.status_code
                         desc = code_to_message(code)
-                        raise ApiException('Server response code: {} ({})'.format(code, desc))
+                        raise ApiException(
+                            'Server response code: {} ({})'.format(code, desc))
         except Exception as err:
             raise create_api_exception_from(err)
 
     def get_analysis(self, bundles, previous_status=None, progress_callback=lambda x: None):
         try:
             if previous_status:
-                params = {'sessionToken': self.session_token, 'status': previous_status}
+                params = {'sessionToken': self.session_token,
+                          'status': previous_status}
             else:
                 params = {'sessionToken': self.session_token}
-            url = '{}/analysis/{}'.format(self.base_endpoint, bundles.to_endpoint())
+            url = '{}/analysis/{}'.format(self.base_endpoint,
+                                          bundles.to_endpoint())
             res = requests.get(url, params)
             if res.status_code == requests.codes.ok:
                 data = res.json()
@@ -235,12 +253,14 @@ class Api:
                 except ValueError:
                     # nothing, keep it at 0.0
                     pass
-                progress_callback(GetAnalysisProgress(data['status'], progress))
+                progress_callback(GetAnalysisProgress(
+                    data['status'], progress))
                 return GetAnalysisResponse(data['status'], suggestions, url)
             elif res.status_code == requests.codes.unauthorized:
                 raise ApiUnauthorizedException()
             else:
-                raise ApiException('Server response code: {}'.format(res.status_code))
+                raise ApiException(
+                    'Server response code: {}'.format(res.status_code))
         except Exception as err:
             raise create_api_exception_from(err)
 
@@ -253,7 +273,8 @@ class Api:
                 raise ApiException('Analysis failed')
             time.sleep(POLLING_INTERVAL)
             res = self.get_analysis(bundles, res.status, progress_callback)
-        raise ApiException('Timeout while waiting for analysis state "{}"'.format(analysis_state))
+        raise ApiException(
+            'Timeout while waiting for analysis state "{}"'.format(analysis_state))
 
     @staticmethod
     def canonicalize_path(path):

@@ -7,9 +7,8 @@ Author: Jan Eberhardt
 import json
 import os
 
-REQUIRED_CONFIG_PARAMS = ['dc_server_host', 'dc_server_port']
+REQUIRED_CONFIG_PARAMS = ['dc_server_host']
 DEFAULT_HOST = 'https://www.deepcode.ai'
-DEFAULT_PORT = 443
 
 
 class Config:
@@ -22,9 +21,11 @@ class Config:
             with open(self.path, 'r') as f:
                 self.data = json.load(f)
         except ValueError:
-            raise ConfigError('Could not parse the configuration file ({}) as json.'.format(self.path))
+            raise ConfigError(
+                'Could not parse the configuration file ({}) as json.'.format(self.path))
         except FileNotFoundError:
-            raise ConfigError('Could not find configuration file "{}".'.format(self.path))
+            raise ConfigError(
+                'Could not find configuration file "{}".'.format(self.path))
 
         for required in REQUIRED_CONFIG_PARAMS:
             if required not in self.data:
@@ -58,30 +59,23 @@ class ConfigWizard:
 
     def create_config(self):
         print('creating a new configuration file {}'.format(self.config.path))
-        self._get_user_input_and_serialize(DEFAULT_HOST, DEFAULT_PORT, current_name='default')
+        self._get_user_input_and_serialize(
+            DEFAULT_HOST, current_name='default')
 
     def update_config(self):
         print('updating configuration file {}'.format(self.config.path))
         current_host = self.config.data['dc_server_host']
-        current_port = self.config.data['dc_server_port']
-        self._get_user_input_and_serialize(current_host, current_port, current_name='current')
+        self._get_user_input_and_serialize(
+            current_host, current_name='current')
 
-    def _get_user_input_and_serialize(self, default_host, default_port, current_name):
+    def _get_user_input_and_serialize(self, default_host, current_name):
         print('leave empty to use {} values'.format(current_name))
-        host = input('DeepCode server host ({}: {}): '.format(current_name, default_host))
+        host = input('DeepCode server host ({}: {}): '.format(
+            current_name, default_host))
         if host == '':
             host = default_host
-        if default_host == host:
-            shown_port = default_port
         else:
             current_name = 'suggested'
-            shown_port = 80 if host.startswith('http://') else 443
-        port = input('DeepCode server port ({}: {}): '.format(current_name, shown_port))
-        if port == '':
-            port = shown_port
-        else:
-            port = str(port)
         self.config.data['dc_server_host'] = host
-        self.config.data['dc_server_port'] = port
         self.config.serialize()
         print('configuration stored in {}'.format(self.config.path))

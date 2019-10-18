@@ -142,8 +142,10 @@ class DCAnalysis:
             self._restore_std_out()
 
     def _create_bundle(self, bundle):
+        print('CREATING BUNDLE..')
         if os.path.exists(bundle):
             filters = self.api.get_filters()
+            print('FILTERS', filters)
 
             def filtering(file):
                 if file in filters.config_files:
@@ -155,8 +157,11 @@ class DCAnalysis:
             def progress_iterator(it):
                 return self._progress_bar('hashing files', it)
 
-            files = util.hash_files(bundle, MAX_FILE_SIZE, filtering=filtering, progress_iterator=progress_iterator)
+            files = util.hash_files(
+                bundle, MAX_FILE_SIZE, filtering=filtering, progress_iterator=progress_iterator)
+            print('FILES', files)
             bundle_obj = Bundle(files, bundle_root_path=bundle)
+            print('BUNDLE OBJECT', bundle_obj)
             return self._create_bundle_from_files(bundle_obj)
         else:
             owner, repo, commit = self._repo_from_repo_string(bundle)
@@ -173,12 +178,14 @@ class DCAnalysis:
 
             def handle_missing(missing):
                 file_path = os.path.join(bundle_obj.bundle_root_path, missing)
-                file_content = util.file_contents_as_string(file_path, MAX_FILE_SIZE)
+                file_content = util.file_contents_as_string(
+                    file_path, MAX_FILE_SIZE)
                 if not file_content:
                     return None
                 file_hash = bundle_obj.hash_of_path(missing)
                 return file_content, file_hash
-            file_content_and_hashes = list(filter(lambda e: e, map(handle_missing, res.missing_files)))
+            file_content_and_hashes = list(
+                filter(lambda e: e, map(handle_missing, res.missing_files)))
             batches = self._create_batches(file_content_and_hashes, bundle_obj)
             if not self.silent:
                 print('preparing for upload, need to upload {} '
@@ -207,7 +214,8 @@ class DCAnalysis:
                 batch_size = file_size
                 if batch_size > MAX_BATCH_CONTENT_SIZE:
                     path = bundle_obj.path_of_hash(file_hash)
-                    raise DCAnalysisError('Cannot upload file {}, contents too large'.format(path))
+                    raise DCAnalysisError(
+                        'Cannot upload file {}, contents too large'.format(path))
                 batches.append([])
             batches[len(batches) - 1].append((file_content, file_hash))
         return batches
@@ -264,6 +272,7 @@ class DCAnalysisCLIPrinter:
     def login(self):
         try:
             res = self.dc_analysis.login()
+            print('AFTER LOGIN POST REQ')
             if res != 'private' and res != 'public':
                 print('opening web browser for user login')
                 webbrowser.get().open_new(res)
@@ -336,11 +345,13 @@ class DCAnalysisCLIPrinter:
                 print('  ({}) {}'.format(switcher.get(sugg['severity']), msg))
                 print('  positions:')
                 for pos in positions:
-                    print('    rows: {}-{}, cols: {}-{}'.format(pos['rows'][0],pos['rows'][1],pos['cols'][0],pos['cols'][1]))
+                    print('    rows: {}-{}, cols: {}-{}'.format(
+                        pos['rows'][0], pos['rows'][1], pos['cols'][0], pos['cols'][1]))
             print('')
         for sugg_id, suggestion in suggestions['suggestions'].items():
             count[suggestion['severity']] = count[suggestion['severity']] + 1
-        print('DeepCode found {} critical, {} warning and {} info suggestions.'.format(count[3], count[2], count[1]))
+        print('DeepCode found {} critical, {} warning and {} info suggestions.'.format(
+            count[3], count[2], count[1]))
         print('View the suggestions in DeepCode: {}'.format(url))
 
 
