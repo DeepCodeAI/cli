@@ -1,5 +1,5 @@
-from .cli.test_main import start
+from .src.cli import cli_entry_point
 
 
 def main():
-    start()
+    cli_entry_point()
