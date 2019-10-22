@@ -8,6 +8,7 @@ with open("README.md", "r") as fh:
 with open('requirements.txt', "r") as reqs:
     required_packages = reqs.read().splitlines()
 
+
 # TODO: descriptions should be changed from test values to final before publishing to pip
 setuptools.setup(
     name="deepcode",
@@ -27,8 +28,8 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'deepcode=deepcode.command_line:main'
+            'deepcode=deepcode.command_line:entry_point'
         ]
     },
-    python_requires='>=3.5',
+    python_requires='>=3.2',
 )

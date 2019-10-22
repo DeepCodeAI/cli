@@ -43,6 +43,8 @@ def hash_files(path, max_file_size, filtering=lambda path: True, progress_iterat
         return file_hash, rel_path_
 
     result = []
+
+    # deepcode ignore add~shutdown~concurrent.futures.ThreadPoolExecutor: <please specify a reason of ignoring this>
     with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
         # submit futures
         futures = list(map(lambda p: executor.submit(handle_path, *p), paths))
@@ -69,4 +71,3 @@ def file_contents_as_string(path, max_file_size):
 
 def utf8len(utf8_str):
     return len(utf8_str.encode('utf-8'))
-

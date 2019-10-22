@@ -11,8 +11,8 @@ import webbrowser
 
 import progressbar
 
-import util
-from api import Api, ApiException, ApiUnauthorizedException, ApiRequestBodyTooLarge, JobBundles
+import deepcode.src.util
+from deepcode.src.api import Api, ApiException, ApiUnauthorizedException, ApiRequestBodyTooLarge, JobBundles
 
 # maximum size of batch upload content in bytes, to avoid running into "payload too large" errors
 # the API will add a a bit more because of overhead introduced by the json
@@ -185,6 +185,7 @@ class DCAnalysis:
                 file_hash = bundle_obj.hash_of_path(missing)
                 return file_content, file_hash
             file_content_and_hashes = list(
+                # deepcode ignore useCompInsteadOfListFilter : <please specify a reason of ignoring this>
                 filter(lambda e: e, map(handle_missing, res.missing_files)))
             batches = self._create_batches(file_content_and_hashes, bundle_obj)
             if not self.silent:

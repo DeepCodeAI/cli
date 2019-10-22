@@ -32,7 +32,8 @@ class TestDCAnalysisWithMockServer(unittest.TestCase):
     def setUp(self):
         if sys.version_info >= (3, 6):
             # https://github.com/gabrielfalcao/HTTPretty/issues/368#issuecomment-463102978
-            warnings.filterwarnings("ignore", category=ResourceWarning, message="unclosed.*")
+            warnings.filterwarnings(
+                "ignore", category=ResourceWarning, message="unclosed.*")
         self.config = Config('/tmp/test_config')
         init_config(self.config)
 
@@ -129,7 +130,8 @@ class TestDCAnalysisWithMockServer(unittest.TestCase):
                                      '0': {'message': 'some message', 'severity': 1}}},
                              'analysisURL': 'http://deepcode.ai/something'}))
 
-        path = os.path.join(os.path.dirname(__file__), 'test_data', 'sample_repository')
+        path = os.path.join(os.path.dirname(__file__),
+                            'test_data', 'sample_repository')
         res = dc.analyze(path)
 
         # suggestion is returned

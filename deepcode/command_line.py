@@ -1,5 +1,6 @@
-from .src.cli import cli_entry_point
+# from deepcode.src.main import main
+from deepcode.src.cli import cli_entry_point as main
 
 
-def main():
-    cli_entry_point()
+def entry_point():
+    main()

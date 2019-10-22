@@ -8,8 +8,8 @@ import argparse
 import os
 import json
 
-from dc_analysis import DCAnalysisCLIPrinter, DCAnalysisJsonPrinter
-from config import Config, ConfigError, ConfigWizard
+from deepcode.src.dc_analysis import DCAnalysisCLIPrinter, DCAnalysisJsonPrinter
+from deepcode.src.config import Config, ConfigError, ConfigWizard
 
 
 def default_config_path():
