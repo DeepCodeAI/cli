@@ -44,7 +44,6 @@ def hash_files(path, max_file_size, filtering=lambda path: True, progress_iterat
 
     result = []
 
-    # deepcode ignore add~shutdown~concurrent.futures.ThreadPoolExecutor: <please specify a reason of ignoring this>
     with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
         # submit futures
         futures = list(map(lambda p: executor.submit(handle_path, *p), paths))
