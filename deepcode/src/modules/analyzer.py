@@ -48,6 +48,7 @@ class DeepCodeAnalyzer:
         server_bundle = self.http.post(DEEPCODE_API_ROUTES['create_bundle'], {
             'data': {'files': hashes_bundle}})
         self.current_bundle_id = server_bundle['bundleId']
+        print('Analyzing...')
         self.handle_server_bundle_missing_files(server_bundle, hashes_bundle)
         analysis_results = self.get_analysis_from_server()
         return analysis_results
@@ -83,12 +84,15 @@ class DeepCodeAnalyzer:
     def get_analysis_from_server(self):
         MAX_POLLS_LIMIT = 1000
         POLLING_INTERVAL = 1  # 1sec
+        analysis_results = {}
         with progressbar.ProgressBar(max_value=MAX_PROGRESS_VALUE, prefix="DeepCode analysis progress: ") as bar:
             for _ in range(MAX_POLLS_LIMIT):
                 analysis_response = self.http.get(
                     DEEPCODE_API_ROUTES['analysis'](self.current_bundle_id), response_to_json=False)
                 analysis_results = analysis_response.json()
+                bar.update(
+                    int(analysis_results['progress']*MAX_PROGRESS_VALUE))
                 if analysis_results['status'] == 'DONE':
+                    bar.update(MAX_PROGRESS_VALUE)
                     return analysis_results['analysisResults']
-                bar.update(analysis_results['progress']*MAX_PROGRESS_VALUE)
                 time.sleep(POLLING_INTERVAL)

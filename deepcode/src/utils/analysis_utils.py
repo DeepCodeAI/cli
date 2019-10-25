@@ -42,13 +42,18 @@ def hash_files(path, max_file_size, filters_dict, progress_iterator=lambda itera
         def thread_dir_result_cb(_):
             nonlocal is_root_in_ignore
             is_root_in_ignore = True
-        execute_tasks_threads(
-            threads_cb=lambda *p: regex_patterns_finder(root, ''.join(p)),
-            thread_result_cb=thread_dir_result_cb,
-            target=gitignores,
-            kill_threads_on_success=True
-        )
+            return False
+        if len(gitignores):
+            execute_tasks_threads(
+                threads_cb=lambda *p: regex_patterns_finder(root, ''.join(p)),
+                thread_result_cb=thread_dir_result_cb,
+                target=gitignores,
+                kill_threads_on_success=True
+            )
+
         if is_root_in_ignore:
+            # os.walk will skip all inner dirs of ignored dir
+            dirs[:] = []
             continue
         # filtering files
         for f in files:
@@ -58,17 +63,16 @@ def hash_files(path, max_file_size, filters_dict, progress_iterator=lambda itera
                 paths.append((file_path, rel_path))
 
     result = {}
-
     # threading creations of hashes
+
     def thread_file_result_cb(path_hash_tuple):
         file_path, file_hash = path_hash_tuple
         result[file_path] = file_hash
     execute_tasks_threads(
-        threads_cb=lambda *p: create_file_hash_with_path(max_file_size, *p),
+        threads_cb=lambda *p: create_file_hash_with_path(max_file_size, p),
         thread_result_cb=thread_file_result_cb,
         target=paths
     )
-    print('ARM' in result.keys())
     return result
 
 
@@ -91,7 +95,8 @@ def execute_tasks_threads(
                     break
 
 
-def create_file_hash_with_path(max_file_size, abs_path_, rel_path_):
+def create_file_hash_with_path(max_file_size, path_list):
+    abs_path_, rel_path_ = path_list
     file_content = file_contents_as_string(abs_path_, max_file_size)
     if not file_content:
         return None
@@ -156,6 +161,6 @@ def pass_filter(file, filters_dict):
 
 def regex_patterns_finder(path, pattern):
     try:
-        return bool(len(re.findall(pattern, path)))
+        return bool(re.search(pattern, path))
     except:
         return False

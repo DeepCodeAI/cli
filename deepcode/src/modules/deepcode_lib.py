@@ -115,4 +115,4 @@ class DeepCodeLib:
         else:
             analysis_results = self.analyzer.analyze_files_bundle(bundle_path)
             # TODO: results format
-        # print(analysis_results)
+        print(analysis_results)

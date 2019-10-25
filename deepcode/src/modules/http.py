@@ -31,20 +31,19 @@ class DeepCodeHttp:
             if route == DEEPCODE_API_ROUTES['login'] else self.create_headers(options=options)
         response = requests.post(
             self.construct_endpoint(route), json=options['data'], headers=headers)
-        return self._proccess_response(response, response_to_json)
+        return self._proccess_response(response, response_to_json, route)
 
     def get(self, route, options={}, response_to_json=True):
         headers = self.create_headers(options, isJson=False)
         response = requests.get(
             self.construct_endpoint(route), headers=headers)
-        return self._proccess_response(response, response_to_json)
+        return self._proccess_response(response, response_to_json, route)
 
-    def _proccess_response(self, response, response_to_json):
-        print(response)
+    def _proccess_response(self, response, response_to_json, route):
         if response_to_json:
             try:
                 return response.json()
             except ValueError:
                 raise Exception(
-                    'Something happened with parsing json from server')
+                    'Something happened with parsing json from server: ', route, response)
         return response
