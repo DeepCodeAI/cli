@@ -111,8 +111,15 @@ class DeepCodeLib:
 
         if should_analyze_remote:
             analysis_results = self.analyzer.analyze_repo(bundle_path)
-            # TODO: results formats depending on format
         else:
             analysis_results = self.analyzer.analyze_files_bundle(bundle_path)
-            # TODO: results format
-        print(analysis_results)
+        if not analysis_results:
+            raise Exception('Error with analysis results')
+
+        json_format, txt_format = SUPPORTED_RESULTS_FORMATS
+        if not result_view_format or result_view_format == json_format:
+            print('Deepcode Analysis Results in json:')
+            print(self.analyzer.analysis_results_in_json(analysis_results))
+        if result_view_format == txt_format:
+            print('Deepcode Analysis Results in txt:')
+            print(self.analyzer.display_analysis_results_in_txt(analysis_results))

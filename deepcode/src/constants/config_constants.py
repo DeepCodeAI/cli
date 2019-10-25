@@ -34,3 +34,9 @@ MAX_FILE_SIZE = 256000  # 256 kB
 
 GITIGNORE_FILENAME = '.gitignore'
 GIT_FOLDERNAME = '.git'
+
+SEVERITIES = {
+    1: 'Info',
+    2: 'Warning',
+    3: 'Critical'
+}

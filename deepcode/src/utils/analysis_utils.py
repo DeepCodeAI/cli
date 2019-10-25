@@ -5,8 +5,9 @@ import multiprocessing
 import fnmatch
 import re
 from concurrent.futures import ThreadPoolExecutor
-from deepcode.src.constants.config_constants import MAX_FILE_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME
+from deepcode.src.constants.config_constants import MAX_FILE_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME, SEVERITIES
 from deepcode.src.constants.common_ignore_dirs import COMMON_IGNORE_DIRS
+from deepcode.src.helpers.terminal_view_decorations import text__with_colors, text_with__color_marker, text_decorations
 
 
 def hash_file_content(content):
@@ -164,3 +165,48 @@ def regex_patterns_finder(path, pattern):
         return bool(re.search(pattern, path))
     except:
         return False
+
+
+def construct_issue_txt_view(
+    issue_file_path,
+    issues_positions_list,
+    issue_severity_number,
+    issue_message
+):
+    severities_colors = {
+        1: 'blue',
+        2: 'yellow',
+        3: 'red',
+    }
+    severity_color = severities_colors[issue_severity_number]
+    with_severity_color = text__with_colors[severity_color]
+    with_severity_marker = text_with__color_marker[severity_color]
+    positions_of_issue_str = construct_issue_positions_txt_view(
+        issues_positions_list)
+
+    template_str = '{filepath}   {severity} {issue_msg}\n Issue positions:\n{positions}'
+    return template_str.format(
+        filepath=text_decorations['bold'](issue_file_path),
+        severity=with_severity_marker(SEVERITIES[issue_severity_number]),
+        issue_msg=with_severity_color(issue_message),
+        positions=positions_of_issue_str
+    )
+
+
+def construct_issue_positions_txt_view(issues_positions_list):
+    positions_of_issue_str = ''
+    EXTRA_SPACES_FOR_POSITION = ' '*5
+    singleline_issue_template_str = '{}line {}, symbols from {} to {}'
+    multiline_issue_template_str = '{}lines from {} to {}, symbols from {} to {}'
+    for idx, position in enumerate(issues_positions_list):
+        rows, cols = position.values()
+        start_row, end_row = rows
+        if start_row == end_row:
+            positions_of_issue_str += singleline_issue_template_str.format(
+                EXTRA_SPACES_FOR_POSITION, start_row, *cols)
+        else:
+            positions_of_issue_str += multiline_issue_template_str.format(
+                EXTRA_SPACES_FOR_POSITION, start_row, end_row, *cols)
+        if idx is not len(issues_positions_list)-1:
+            positions_of_issue_str += '\n'
+    return positions_of_issue_str

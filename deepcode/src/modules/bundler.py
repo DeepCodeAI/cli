@@ -8,7 +8,7 @@ from deepcode.src.utils.analysis_utils\
 
 class DeepCodeBundler:
     def __init__(self):
-        self.abs_bundle_path = ''
+        pass
 
     def create_hashes_bundle(self, bundle_path, filters_dict):
         self.abs_bundle_path = bundle_path
@@ -20,11 +20,9 @@ class DeepCodeBundler:
                 iterator, max_value=max_value, prefix="DeepCode creating bundle progress: ")
         )
 
-    def create_missing_files_batch(self, missing_files, hashes_bundle):
+    def create_missing_files_batch(self, missing_files, hashes_bundle, abs, bundle_apth):
         missing_files_batch = []
-        print(hashes_bundle)
         for file_path in missing_files:
-            print(file_path)
             p = file_path[1:] if file_path[0] == '/' else file_path
             file_hash = hashes_bundle[p]
             file_content = file_contents_as_string(
