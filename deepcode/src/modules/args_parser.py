@@ -18,7 +18,7 @@ class DeepCodeArgsParser:
             help='CLI description', dest=CLI_ARGS_NAMESPACE_NAME)
 
         [login, logout, analyze, config] = CLI_SUPPORTED_COMMANDS
-        [list_option, format_option, path_option] = CLI_SUPPORTED_OPTIONS
+        [bundle_type_option, format_option, path_option] = CLI_SUPPORTED_OPTIONS
 
         login_help, logout_help, config_help, analyze_help = CLI_PARSER_HELP_MESSAGES.values()
 
@@ -37,6 +37,8 @@ class DeepCodeArgsParser:
             analyze, help=analyze_help, aliases=['a'])
         self.analyze_parser.add_argument(
             *path_option, type=str, help='path to analyze')
+        self.analyze_parser.add_argument(
+            *bundle_type_option, action='store_true', help='if specified - will analyze remote bundle')
         self.analyze_parser.add_argument(
             *format_option, choices=SUPPORTED_RESULTS_FORMATS, help='list help')
 

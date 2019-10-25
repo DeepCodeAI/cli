@@ -3,10 +3,13 @@ DEEPCODE_SOURCE_NAME = {'source': 'cli'}
 DEEPCODE_BACKEND_HOST = 'https://www.deepcode.ai'
 DEEPCODE_API_PREFIX = 'publicapi'
 DEEPCODE_API_ROUTES = {
-    'login': '{}/{}/login'.format(DEEPCODE_BACKEND_HOST, DEEPCODE_API_PREFIX),
-    'checkLogin': '{}/{}/session'.format(DEEPCODE_BACKEND_HOST, DEEPCODE_API_PREFIX),
-    'filters': '{}/{}/filters'.format(DEEPCODE_BACKEND_HOST, DEEPCODE_API_PREFIX),
-    'create_bundle': '{}/{}/bundle'.format(DEEPCODE_BACKEND_HOST, DEEPCODE_API_PREFIX),
+    'login': 'login',
+    'checkLogin': 'session',
+    'files_filters': 'filters',
+    'create_bundle': 'bundle',
+    'check_bundle': lambda bundle_id: 'bundle/{}'.format(bundle_id),
+    'analysis': lambda bundle_id: 'analysis/{}'.format(bundle_id),
+    'upload_files': lambda bundle_id: 'file/{}'.format(bundle_id)
 }
 
 DEEPCODE_CONFIG_NAMES = {
@@ -24,3 +27,10 @@ DEEPCODE_DEFAULT_CONFIG_FIELDS = {
     DEEPCODE_CONFIG_NAMES['is_upload_confirmed']: False,
     DEEPCODE_CONFIG_NAMES['account_type']: '',
 }
+
+CURRENT_FOLDER_PATH = '.'
+MAX_BATCH_CONTENT_SIZE = 512000  # 512 kB
+MAX_FILE_SIZE = 256000  # 256 kB
+
+GITIGNORE_FILENAME = '.gitignore'
+GIT_FOLDERNAME = '.git'

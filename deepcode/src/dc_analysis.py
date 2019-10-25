@@ -185,7 +185,6 @@ class DCAnalysis:
                 file_hash = bundle_obj.hash_of_path(missing)
                 return file_content, file_hash
             file_content_and_hashes = list(
-                # deepcode ignore useCompInsteadOfListFilter : <please specify a reason of ignoring this>
                 filter(lambda e: e, map(handle_missing, res.missing_files)))
             batches = self._create_batches(file_content_and_hashes, bundle_obj)
             if not self.silent:

@@ -1,53 +1,50 @@
 import requests
 import json
-
-# Temporary here for tests
-
-
-class Errors:
-    @classmethod
-    def http_error_decorator(cls, func):
-        def decorated_func(*args, **kwargs):
-            try:
-                result = func()
-                return result
-            except:
-                print('IN EXCEPT')
-                cls.handle_error()
-        return decorated_func
-
-    @classmethod
-    def handle_error(cls):
-        print('in handler', cls)
+from deepcode.src.constants.config_constants \
+    import DEEPCODE_CONFIG_FILENAME, \
+    DEEPCODE_DEFAULT_CONFIG_FIELDS, DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST, DEEPCODE_API_PREFIX, DEEPCODE_API_ROUTES
 
 
 class DeepCodeHttp:
-    def __init__(self):
-        pass
+    def __init__(self, config):
+        self.config = config.current_config
+        self.base_endpoint = self.config[DEEPCODE_CONFIG_NAMES['backend_host']]
+        self.routes_prefix = DEEPCODE_API_PREFIX
 
-    def create_token_header(self, token=''):
-        return {"Session-Token": token}
+    def construct_endpoint(self, route):
+        return '{}/{}/{}'.format(self.base_endpoint, self.routes_prefix, route)
 
-    def create_headers(self, options={}):
+    def create_headers(self, options={}, isJson=True, token=True):
         headers = dict()
-        if not len(options):
-            return headers
-        if 'token' in options:
-            headers["Session-Token"] = options['token']
-        if 'content_type_json' in options:
+        if token:
+            headers["Session-Token"] = \
+                self.config[DEEPCODE_CONFIG_NAMES['token']] or options['token']
+
+        if isJson:
             headers["Content-Type"] = 'application/json'
+            if 'charset' in options:
+                headers["Content-Type"] += ';charset=utf-8'
         return headers
 
-    # @Errors.http_error_decorator
-    def post(self, endpoint, options={}):
-        data = options['data']
+    def post(self, route, options={}, response_to_json=True):
+        headers = self.create_headers(options=options, token=False)\
+            if route == DEEPCODE_API_ROUTES['login'] else self.create_headers(options=options)
         response = requests.post(
-            endpoint, data=data, headers=self.create_headers(options))
-        return response.json()
+            self.construct_endpoint(route), json=options['data'], headers=headers)
+        return self._proccess_response(response, response_to_json)
 
-    def get(self, endpoint, options):
-        response = requests.get(endpoint, headers=self.create_headers(options))
+    def get(self, route, options={}, response_to_json=True):
+        headers = self.create_headers(options, isJson=False)
+        response = requests.get(
+            self.construct_endpoint(route), headers=headers)
+        return self._proccess_response(response, response_to_json)
+
+    def _proccess_response(self, response, response_to_json):
+        print(response)
+        if response_to_json:
+            try:
+                return response.json()
+            except ValueError:
+                raise Exception(
+                    'Something happened with parsing json from server')
         return response
-
-    def put(self, endpoint, options):
-        pass

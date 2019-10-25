@@ -1,18 +1,19 @@
 import os
 import json
-from deepcode.src.constants.config \
+from deepcode.src.constants.config_constants \
     import DEEPCODE_CONFIG_FILENAME, DEEPCODE_DEFAULT_CONFIG_FIELDS, DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST
 from deepcode.src.constants.cli_constants \
     import CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, SUPPORTED_RESULTS_FORMATS
 
 
 class DeepCodeConfig:
-    def __init__(self):
+    def __init__(self, isCliMode=False):
+        self.isCliMode = isCliMode
         self.config_path = self.default_config_path()
         if not self.config_exists():
             self.update_config_file()
         self.current_config = self.get_config_from_file()
-        print('config when script starts: ', self.current_config)
+        # print('config when script starts: ', self.current_config)
 
     def default_config_path(self):
         return os.path.join(os.path.expanduser('~'), DEEPCODE_CONFIG_FILENAME)
@@ -28,10 +29,10 @@ class DeepCodeConfig:
         with open(self.config_path) as config_file:
             return json.load(config_file)
 
-    def config_to_json(self):
+    def display_config_to_json(self):
         return json.dumps(self.current_config)
 
-    def config_to_txt(self):
+    def display_config_to_txt(self):
         result = ''
         for index, key in enumerate(self.current_config):
             result += '{}={}{}'.format(key, self.current_config[key],
@@ -56,21 +57,22 @@ class DeepCodeConfig:
         self.delete_user_config(update_file=False)
         self.update_config({'backend_host': new_host})
 
-    def config_actions(self, command_options):
-        [json_format, txt_format] = SUPPORTED_RESULTS_FORMATS
-        chosen_format = command_options['format']
-        if not chosen_format:
-            print('You can configure backend host and change it for your own')
-            new_backend_host = input(
-                'Enter new backend host or leave blank for default({}): '.format(DEEPCODE_BACKEND_HOST))
-            if new_backend_host:
-                # validate last slash
-                if new_backend_host[len(new_backend_host)-1] == '/':
-                    new_backend_host = new_backend_host[:len(
-                        new_backend_host)-1]
-                self.update_backend_host(new_backend_host)
-                print('Backend host updated')
-        if chosen_format == json_format:
-            print(self.config_to_json())
-        if chosen_format == txt_format:
-            print(self.config_to_txt())
+    def set_user_login_config(self, token, account_type, upload_confrm):
+        logged_in_config = {
+            'token': token,
+            'is_logged_in': True,
+            'account_type': account_type
+        }
+        if upload_confrm:
+            logged_in_config['is_upload_confirmed'] = True
+        self.update_config(logged_in_config)
+
+    def is_user_logged_in(self):
+        return self.current_config[DEEPCODE_CONFIG_NAMES['is_logged_in']]
+
+    def is_code_upload_confirmed(self):
+        return self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']]
+
+    def activate_code_upload(self):
+        self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']] = True
+        self.update_config_file(self.current_config)
