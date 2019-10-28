@@ -8,11 +8,13 @@ text_with__color_marker = {
 # colors text font
 text__with_colors = {
     # blue text for info
-    'blue': lambda issue: "\33[94m{}\33[0m".format(issue),
+    'blue': lambda text: "\33[94m{}\33[0m".format(text),
     # yellow text for warnings
-    'yellow': lambda issue: "\33[93m{}\33[0m".format(issue),
+    'yellow': lambda text: "\33[93m{}\33[0m".format(text),
     # red text for critical or errors
-    'red': lambda issue: "\33[91m{}\33[0m".format(issue),
+    'red': lambda text: "\33[91m{}\33[0m".format(text),
+    # green color for success
+    'green': lambda text: "\33[92m{}\33[0m".format(text),
 }
 
 text_decorations = {

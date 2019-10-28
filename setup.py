@@ -28,7 +28,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'deepcode=deepcode.command_line:entry_point'
+            'deepcode=deepcode.command_line:cli_entry_point'
         ]
     },
     python_requires='>=3.2',

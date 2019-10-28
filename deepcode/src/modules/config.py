@@ -1,5 +1,6 @@
 import os
 import json
+from deepcode.src.modules.errors_handler import DeepCodeErrors
 from deepcode.src.constants.config_constants \
     import DEEPCODE_CONFIG_FILENAME, DEEPCODE_DEFAULT_CONFIG_FIELDS, DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST
 from deepcode.src.constants.cli_constants \
@@ -13,11 +14,11 @@ class DeepCodeConfig:
         if not self.config_exists():
             self.update_config_file()
         self.current_config = self.get_config_from_file()
-        # print('config when script starts: ', self.current_config)
 
     def default_config_path(self):
         return os.path.join(os.path.expanduser('~'), DEEPCODE_CONFIG_FILENAME)
 
+    @DeepCodeErrors.open_config_file_error_decorator
     def update_config_file(self, config=None):
         with open(self.config_path, 'w') as config_file:
             json.dump(config or DEEPCODE_DEFAULT_CONFIG_FIELDS, config_file)
@@ -25,6 +26,7 @@ class DeepCodeConfig:
     def config_exists(self):
         return os.path.exists(self.config_path)
 
+    @DeepCodeErrors.open_config_file_error_decorator
     def get_config_from_file(self):
         with open(self.config_path) as config_file:
             return json.load(config_file)
@@ -57,6 +59,9 @@ class DeepCodeConfig:
         self.delete_user_config(update_file=False)
         self.update_config({'backend_host': new_host})
 
+    def is_current_backend_host_is_default(self):
+        return self.current_config[DEEPCODE_CONFIG_NAMES['backend_host']] == DEEPCODE_BACKEND_HOST
+
     def set_user_login_config(self, token, account_type, upload_confrm):
         logged_in_config = {
             'token': token,
@@ -72,6 +77,9 @@ class DeepCodeConfig:
 
     def is_code_upload_confirmed(self):
         return self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']]
+
+    def check_login_and_confirm(self):
+        return [self.is_user_logged_in(), self.is_code_upload_confirmed()]
 
     def activate_code_upload(self):
         self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']] = True

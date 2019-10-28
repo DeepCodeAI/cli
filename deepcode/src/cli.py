@@ -1,8 +1,5 @@
-import sys
-import os
-import argparse
-from deepcode.src.modules.deepcode_lib import DeepCodeLib
+from deepcode.src.modules.deepcode_main import DeepCodeMainModule
 
 
 def cli_entry_point():
-    DeepCodeLib(isCliMode=True).activate_cli()
+    DeepCodeMainModule(isCliMode=True).activate_cli()

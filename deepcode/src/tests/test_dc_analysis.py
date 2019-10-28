@@ -165,5 +165,5 @@ class TestDCAnalysisWithMockServer(unittest.TestCase):
         self.assertEqual(expected, analysis_request.querystring)
 
 
-if __name__ == '__main__':
-    unittest.main()
+# if __name__ == '__main__':
+#     unittest.main()

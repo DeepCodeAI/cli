@@ -26,12 +26,12 @@ def hash_files(path, max_file_size, filters_dict, progress_iterator=lambda itera
     :return: dict of files pathes as keys and files hashes as values, e.g { [filepath]: filehash, ... }
     """
     paths = []
-    gitignores = COMMON_IGNORE_DIRS
+    ignores = COMMON_IGNORE_DIRS
     progress_iterator_max_value = len(list(os.walk(path)))
     for root, dirs, files in progress_iterator(os.walk(path), max_value=progress_iterator_max_value):
         # parsing gitignore if it exists
         if GITIGNORE_FILENAME in files:
-            gitignores.extend(parse_gitignore_file(root))
+            ignores.extend(parse_gitignore_file(root))
 
         # ignoring all git folders
         if GIT_FOLDERNAME in root:
@@ -44,11 +44,11 @@ def hash_files(path, max_file_size, filters_dict, progress_iterator=lambda itera
             nonlocal is_root_in_ignore
             is_root_in_ignore = True
             return False
-        if len(gitignores):
+        if len(ignores):
             execute_tasks_threads(
                 threads_cb=lambda *p: regex_patterns_finder(root, ''.join(p)),
                 thread_result_cb=thread_dir_result_cb,
-                target=gitignores,
+                target=ignores,
                 kill_threads_on_success=True
             )
 
@@ -125,7 +125,7 @@ def utf8len(utf8_str):
 
 def parse_gitignore_file(root):
     with open(os.path.join(root, GITIGNORE_FILENAME)) as gitignore_file:
-        return gitignore_file.read().splitlines()
+        return [line for line in gitignore_file.read().splitlines() if line and line[0] is not '#']
 
 
 def extract_data_from_remote_bundle_path(bundle_path):

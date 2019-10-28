@@ -1,5 +1,9 @@
 import requests
 import json
+import os
+from deepcode.src.modules.errors_handler import DeepCodeErrors
+from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES
+from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES, MISSING_CONSENT
 from deepcode.src.constants.config_constants \
     import DEEPCODE_CONFIG_FILENAME, \
     DEEPCODE_DEFAULT_CONFIG_FIELDS, DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST, DEEPCODE_API_PREFIX, DEEPCODE_API_ROUTES
@@ -27,23 +31,49 @@ class DeepCodeHttp:
         return headers
 
     def post(self, route, options={}, response_to_json=True):
-        headers = self.create_headers(options=options, token=False)\
-            if route == DEEPCODE_API_ROUTES['login'] else self.create_headers(options=options)
+        with_token = True
+        if route == DEEPCODE_API_ROUTES['login']:
+            with_token = False
+        headers = self.create_headers(options=options, token=with_token)
         response = requests.post(
             self.construct_endpoint(route), json=options['data'], headers=headers)
+        self.check_response_status_code(response, route)
         return self._proccess_response(response, response_to_json, route)
 
     def get(self, route, options={}, response_to_json=True):
-        headers = self.create_headers(options, isJson=False)
+        headers = self.create_headers(options)
         response = requests.get(
             self.construct_endpoint(route), headers=headers)
+        self.check_response_status_code(response, route)
         return self._proccess_response(response, response_to_json, route)
 
+    @DeepCodeErrors.parse_api_response_to_json_error_decorator
     def _proccess_response(self, response, response_to_json, route):
-        if response_to_json:
-            try:
-                return response.json()
-            except ValueError:
-                raise Exception(
-                    'Something happened with parsing json from server: ', route, response)
-        return response
+        return response.json() if response_to_json else response
+
+    @DeepCodeErrors.backend_error_decorator
+    def check_response_status_code(self, response, route=''):
+        codes_ignores = {
+            'check_login':
+                response.status_code == BACKEND_STATUS_CODES['login_in_progress']
+                and route == DEEPCODE_API_ROUTES['checkLogin'],
+            'big_upload_for_missing_files':
+                response.status_code == BACKEND_STATUS_CODES['large_payload']
+                and route == DEEPCODE_API_ROUTES['upload_files']
+        }
+        if response.content.decode('UTF-8') == MISSING_CONSENT:
+            DeepCodeErrors.raise_backend_error(
+                'missing_consent', err_details={'route': route, 'code': response.status_code, 'error': response})
+            return
+        if response.status_code is not BACKEND_STATUS_CODES['success']:
+            if codes_ignores['check_login'] \
+                    or codes_ignores['big_upload_for_missing_files']:
+                return
+            if response.status_code in BACKEND_STATUS_CODES.values():
+                error_type =\
+                    [name for name, code in BACKEND_STATUS_CODES.items()
+                     if code == response.status_code][0]
+            else:
+                error_type = str(response)
+            DeepCodeErrors.raise_backend_error(
+                error_type, err_details={'route': route, 'code': response.status_code, 'error': response})
