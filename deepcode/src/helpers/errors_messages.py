@@ -10,7 +10,7 @@ BACKEND_ERRORS = {
     'invalid_check_login_response': 'Not valid check login status response from server',
     'invalid_bundle_response': 'Not valid bundle response from server',
     'invalid_analysis_response': 'Not valid analysis response from server',
-    'analysis_failed': 'Analysis failed.',
+    'analysis_failed': 'Analysis status FAILED.',
     'unhandled_error': lambda err_name, err_msg: '{}: {}'.format(err_name, err_msg),
 }
 

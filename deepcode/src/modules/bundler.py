@@ -8,6 +8,7 @@ from deepcode.src.utils.analysis_utils\
     import hash_files, file_contents_as_string, extract_data_from_remote_bundle_path, validate_data_for_remote
 from deepcode.src.modules.errors_handler import DeepCodeErrors
 from deepcode.src.helpers.cli_helpers import BUNDLE_HELPERS
+from deepcode.src.helpers.errors_messages import BACKEND_ERRORS
 from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES
 from deepcode.src.constants.backend_constants \
     import BUNDLE_RESPONSE_FIELDS, MAX_POLLS_LIMIT, POLLING_INTERVAL, ANALYSIS_RESPONSE_STATUSES, BACKEND_STATUS_CODES
@@ -30,7 +31,9 @@ class DeepCodeBundler:
             'data': {key: remote_bundle_data[key] for key in remote_bundle_data if remote_bundle_data[key] is not None},
         })
         if not validate_remote_bundle_response(remote_bundle):
-            DeepCodeErrors.raise_backend_error('invalid_bundle_response')
+            DeepCodeErrors.raise_backend_error('invalid_bundle_response',
+                                               err_details=DeepCodeErrors.construct_backend_error_for_report(
+                                                   DEEPCODE_API_ROUTES['create_bundle'], remote_bundle, 'invalid_bundle_response'))
         return remote_bundle
 
     @DeepCodeErrors.bundle_path_error_decorator
@@ -83,7 +86,9 @@ class DeepCodeBundler:
         server_bundle = self.http.post(DEEPCODE_API_ROUTES['create_bundle'], {
             'data': {'files': self.hashes_bundle}})
         if not validate_remote_bundle_response(server_bundle):
-            DeepCodeErrors.raise_backend_error('invalid_bundle_response')
+            DeepCodeErrors.raise_backend_error('invalid_bundle_response',
+                                               err_details=DeepCodeErrors.construct_backend_error_for_report(
+                                                   DEEPCODE_API_ROUTES['create_bundle'], server_bundle, 'invalid_bundle_response'))
         return server_bundle
 
     @DeepCodeErrors.backend_error_decorator

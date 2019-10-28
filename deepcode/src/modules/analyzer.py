@@ -55,14 +55,20 @@ class DeepCodeAnalyzer:
                 analysis_results = analysis_response.json()
                 if not validate_analysis_response(analysis_results):
                     DeepCodeErrors.raise_backend_error(
-                        'invalid_analysis_response')
+                        'invalid_analysis_response',
+                        err_details=DeepCodeErrors.construct_backend_error_for_report(
+                            DEEPCODE_API_ROUTES['analysis'](
+                                bundle_id), bundle_id, 'invalid_analysis_response'
+                        ))
                 progress.update(
                     int(analysis_results['progress']*MAX_PROGRESS_VALUE))
                 if analysis_results['status'] == ANALYSIS_RESPONSE_STATUSES['failed']:
-                    DeepCodeErrors.raise_backend_error('analysis_failed', err_details={
-                        'route': DEEPCODE_API_ROUTES['analysis'](bundle_id),
-                        'error': 'Analysis ended up with status FAILED '
-                    })
+                    DeepCodeErrors.raise_backend_error('analysis_failed',
+                                                       err_details=DeepCodeErrors.construct_backend_error_for_report(
+                                                           DEEPCODE_API_ROUTES['analysis'](
+                                                               bundle_id), bundle_id, 'analysis_failed'
+                                                       ))
+
                 if analysis_results['status'] == ANALYSIS_RESPONSE_STATUSES['done']:
                     progress.update(MAX_PROGRESS_VALUE)
                     return analysis_results['analysisResults'] if 'analysisResults' in analysis_results else None

@@ -1,8 +1,11 @@
 # deepcode errors decoration class
 import os
+import requests
+from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST, DEEPCODE_SOURCE_NAME
 from deepcode.src.helpers.errors_messages \
     import BACKEND_ERRORS, OPEN_FILE_ERROR, PARSE_API_RESPONSE_JSON_ERROR, PATH_ERRORS, FILES_BUNDLE_ERRORS
 from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES
+from deepcode.src.helpers.errors_messages import BACKEND_ERRORS
 
 
 class DeepCodeErrors:
@@ -27,6 +30,9 @@ class DeepCodeErrors:
                 return func_to_decorate(*args, **kwargs)
             except BaseException as err:
                 except_action(err)
+                # sending errors reports to deepcode server temporary disabled
+                # if type(err).__name__ == cls.ApiException:
+                #   cls.send_error_details_to_deepcode(cls.current_err_details)
                 os._exit(1)
 
         return decorated_func
@@ -37,8 +43,8 @@ class DeepCodeErrors:
         raise cls.ExceptionsFactory(cls.ApiException)(e_type)
 
     @classmethod
-    def raise_path_error(cls, e_type): raise cls.ExceptionsFactory(
-        cls.PathExeption)(e_type)
+    def raise_path_error(cls, e_type):
+        raise cls.ExceptionsFactory(cls.PathExeption)(e_type)
 
     @classmethod
     def raise_files_bundle_error(cls, e_type): raise cls.ExceptionsFactory(
@@ -58,7 +64,6 @@ class DeepCodeErrors:
         else:
             print(BACKEND_ERRORS['unhandled_error'](error_name, str(error)))
 
-    # this is fine
     @classmethod
     def backend_error_decorator(cls, func):
         return cls.DecoratorsFactory(
@@ -84,9 +89,30 @@ class DeepCodeErrors:
         def _err_handler(err):
             file_bundle_err = cls.FilesBundlesException
             error_name = type(err).__name__
-            if error_name is file_bundle_err:
+            if error_name is file_bundle_err and str(err) in FILES_BUNDLE_ERRORS:
                 print(error_name, FILES_BUNDLE_ERRORS[str(err)])
             else:
                 print(FILES_BUNDLE_ERRORS['unhandled_error'](
                     error_name, str(err)))
         return cls.DecoratorsFactory(func, _err_handler)
+
+    @staticmethod
+    def construct_backend_error_for_report(route, data, error_name):
+        return {
+            'data': data,
+            'endpoint': route,
+            'error': BACKEND_ERRORS[error_name]
+        }
+
+    @staticmethod
+    def send_error_details_to_deepcode(err_details):
+        err_route = '{}/{}/{}'.format(DEEPCODE_BACKEND_HOST,
+                                      DEEPCODE_API_PREFIX, DEEPCODE_API_ROUTES['error'])
+        err_details['source'] = DEEPCODE_SOURCE_NAME['source']
+        requests.post(
+            err_route,
+            json=err_details,
+            headers={
+                "Content-Type": "application/json"
+            }
+        )

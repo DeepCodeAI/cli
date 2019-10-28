@@ -21,7 +21,6 @@ class DeepCodeMainModule:
         if isCliMode:
             self.args_parser = DeepCodeArgsParser()
 
-        # DI into config
         self.config = DeepCodeConfig(isCliMode)
         self.http = DeepCodeHttp(self.config)
 
@@ -153,7 +152,6 @@ class DeepCodeMainModule:
 
 
 # TODO list
-# 1.Missing consent error
 # 2. ask about module functionality: analyze, login?, confirm?, config?
 # 3. send errors to server
 # 4. update all docs
