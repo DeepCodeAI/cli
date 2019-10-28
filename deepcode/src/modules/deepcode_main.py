@@ -7,6 +7,7 @@ from deepcode.src.modules.config import DeepCodeConfig
 from deepcode.src.modules.args_parser import DeepCodeArgsParser
 from deepcode.src.modules.analyzer import DeepCodeAnalyzer
 from deepcode.src.modules.http import DeepCodeHttp
+from deepcode.src.modules.errors_handler import DeepCodeErrors
 # own extra utils and constants
 from deepcode.src.constants.cli_constants \
     import CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, SUPPORTED_RESULTS_FORMATS, CLI_ALIASES
@@ -17,11 +18,14 @@ from deepcode.src.helpers.errors_messages import BACKEND_ERRORS
 
 
 class DeepCodeMainModule:
-    def __init__(self, isCliMode=False):
-        if isCliMode:
+    def __init__(self, is_cli_mode=False):
+        self.is_cli_mode = is_cli_mode
+        if self.is_cli_mode:
             self.args_parser = DeepCodeArgsParser()
 
-        self.config = DeepCodeConfig(isCliMode)
+        DeepCodeErrors.set_mode_for_handling_errors(self.is_cli_mode)
+
+        self.config = DeepCodeConfig()
         self.http = DeepCodeHttp(self.config)
 
         self.user = DeepCodeUser(self.http)
@@ -69,7 +73,7 @@ class DeepCodeMainModule:
     def cli_login_actions(self):
         is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
 
-        # # if user is already logged in
+        # if user is already logged in
         if is_user_logged_in:
             if not is_upload_confirmed:
                 print(LOGIN_HELPERS['login_without_confirm'])
@@ -101,6 +105,12 @@ class DeepCodeMainModule:
 
     def cli_analyze_actions(self, analyze_options):
         # check user login and confirm statuses
+        # TESTS,
+        # bundle_paths = analyze_options['path']
+        # max_paths_count = 2
+        # if not len(bundle_paths) or len(bundle_paths) > max_paths_count:
+        #     self.args_parser.show_help_on_error()
+        #     return
         is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
         if not is_user_logged_in:
             print(LOGIN_HELPERS['not_logged_in'])
@@ -108,11 +118,14 @@ class DeepCodeMainModule:
         if not is_upload_confirmed:
             print(LOGIN_HELPERS['login_without_confirm'])
             self.confirm_upload_common_actions()
-            return None
+            return LOGIN_HELPERS['login_without_confirm']
 
-        # print(analyze_options)
+        # if len(bundle_paths) == max_paths_count:
+        #     bundle_path_one, bundle_path_two = bundle_paths
+        # if len(bundle_paths) == 1:
+        #     bundle_path = bundle_paths
         bundle_path = analyze_options['path']
-        result_view_format = analyze_options['format']
+
         should_analyze_remote = analyze_options['remote']
 
         analysis_results = self.analyze_common_actions(
@@ -124,7 +137,7 @@ class DeepCodeMainModule:
         if analysis_results == BUNDLE_HELPERS['empty']:
             print(BUNDLE_HELPERS['empty'])
             return
-
+        result_view_format = analyze_options['format']
         json_format, txt_format = SUPPORTED_RESULTS_FORMATS
         if not result_view_format or result_view_format == txt_format:
             print(ANALYSIS_HELPERS['txt_view_results'])
@@ -136,22 +149,18 @@ class DeepCodeMainModule:
 
     def analyze_common_actions(self, bundle_path, is_remote=False):
         if is_remote:
-            analysis_results = self.analyzer.analyze_repo(bundle_path)
+            analysis_results = self.analyzer.analyze_repo(
+                bundle_path, is_cli_mode=self.is_cli_mode)
         else:
-            analysis_results = self.analyzer.analyze_files_bundle(bundle_path)
+            analysis_results = self.analyzer.analyze_files_bundle(
+                bundle_path, is_cli_mode=self.is_cli_mode)
         return analysis_results
 
+    @DeepCodeErrors.backend_error_decorator
     def module_analyze_actions(self, path, is_repo):
-        # TODO:
         is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
         if not is_user_logged_in:
-            return json.dumps({'error': BACKEND_ERRORS['token']})
+            DeepCodeErrors.raise_backend_error('token')
         analysis_results = self.analyze_common_actions(
             path or CURRENT_FOLDER_PATH, is_remote=is_repo or False)
         return json.dumps(analysis_results)
-
-
-# TODO list
-# 2. ask about module functionality: analyze, login?, confirm?, config?
-# 3. send errors to server
-# 4. update all docs

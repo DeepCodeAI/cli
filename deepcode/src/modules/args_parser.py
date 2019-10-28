@@ -4,6 +4,7 @@ import argparse
 from deepcode.src.constants.cli_constants \
     import CLI_NAME, CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, CLI_SUPPORTED_OPTIONS, SUPPORTED_RESULTS_FORMATS
 from deepcode.src.helpers.cli_helpers import CLI_PARSER_HELP_MESSAGES, CLI_MAIN_HELP_DESCRIPTION
+from deepcode.src.helpers.errors_messages import PATH_ERRORS
 
 
 class DeepCodeCliHelper(argparse.HelpFormatter):
@@ -37,7 +38,9 @@ class DeepCodeArgsParser:
 
         self.analyze_parser = self.subparsers.add_parser(
             analyze, help=analyze_help, aliases=['a'])
-        self.analyze_parser.add_argument(*path_option, type=str)
+        self.analyze_parser.add_argument(
+            *path_option, type=str,  # nargs='+'
+        )
         self.analyze_parser.add_argument(
             *bundle_type_option, action='store_true')
         self.analyze_parser.add_argument(
@@ -48,3 +51,7 @@ class DeepCodeArgsParser:
             self.parser.print_help()
             return {}
         return vars(self.parser.parse_args())
+
+    # def show_help_on_path_error(self):
+    #     print(PATH_ERRORS['path_args_error'])
+    #     self.parser.print_help()

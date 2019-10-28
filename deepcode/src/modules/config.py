@@ -8,8 +8,7 @@ from deepcode.src.constants.cli_constants \
 
 
 class DeepCodeConfig:
-    def __init__(self, isCliMode=False):
-        self.isCliMode = isCliMode
+    def __init__(self):
         self.config_path = self.default_config_path()
         if not self.config_exists():
             self.update_config_file()

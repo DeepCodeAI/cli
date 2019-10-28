@@ -1,11 +1,11 @@
 """
     DeepCode module for analyzing code.\n
     Avaliable methods:\n
-        analyze([path: string(optional)], [repo: boolean](optional)):
-            
+        analyze([path], [is_repo: boolean]): -> return json object
+            :param [path] - absolute path to bundle dir or path to remote repo of current registered user e.g.[user_name]/[repo_name]/[commit(optional)]
+              if [path] is not specified, current path will be taken to analyze
+            :param [is_repo] - optional. specifies that git remote repo should be ananlyzed.
             :return - json with results or json with 'error' e.g. {"error": "[text of error]"}. 
-            Will perform code analysis for specified path.
-            Can accept absolute path or path to git bundle in format [user_name]/[repo_name]/[commit(optional)]
             
 """
 from deepcode.src.module import deepcode_module

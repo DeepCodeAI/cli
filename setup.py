@@ -9,7 +9,7 @@ with open('requirements.txt', "r") as reqs:
     required_packages = reqs.read().splitlines()
 
 
-# TODO: descriptions should be changed from test values to final before publishing to pip
+# descriptions should be changed from test values to final before publishing to pip
 setuptools.setup(
     name="deepcode",
     version="0.0.1",

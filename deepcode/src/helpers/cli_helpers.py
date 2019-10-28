@@ -9,9 +9,12 @@ CLI_PARSER_HELP_MESSAGES = {
 }
 
 CLI_MAIN_HELP_DESCRIPTION = '''
-DeepCode CLI for analyzing code(add help text)
+DeepCode CLI for analyzing code
 
-DeepCode CLI description
+DeepCode's AI algorithms continuously learn from bugs and issues fixed on open source
+repos. CLI will analyze your code and infrom you about critical vulnerabilities you need to solve
+in your code. Don't let security bugs go to production. Save time
+finding and fixing them.
 
 usage: deepcode [command] [command argument] [-option] [option_argument]
 
@@ -34,7 +37,7 @@ analyze (a) Command to analyze code.
                 [-f], [--format] - specifies results display format, supported formats: [json, txt]
             examples:
                 deepcode analyze [path_to_files_dir] -f json  #will analyze specified path and display results in json
-                deepcode analyze -r [git_username/git_repo_name] -f txt  #will analyze specified repo of logged in user and display results as readable text
+                deepcode a -r [git_username/git_repo_name] -f txt  #will analyze specified repo of logged in user and display results as readable text
 optional arguments:
 -h, --help            show this help message and exit
 \n
@@ -69,7 +72,7 @@ LOGIN_HELPERS = {
 ANALYSIS_HELPERS = {
     'analyzing': text__with_colors['blue']('Analyzing...'),
     'json_view_results': text__with_colors['green']('Deepcode Analysis Results in json format:'),
-    'txt_view_results': text__with_colors['green']('Deepcode Analysis Results in text fromat:'),
+    'txt_view_results': text__with_colors['green']('Deepcode Analysis Results in text format:'),
     'empty_results': text__with_colors['green']('Everything is fine. No issues found.')
 }
 

@@ -30,24 +30,31 @@ class DeepCodeAnalyzer:
         self.abs_bundle_path = None
 
     # remote analysis for git repos
-    def analyze_repo(self, bundle_path):
+    def analyze_repo(self, bundle_path, is_cli_mode=True):
         remote_bundle = self.bundler.create_repo_remote_bundle(bundle_path)
         self.abs_bundle_path = bundle_path
-        return self.analyze(remote_bundle['bundleId'])
+        return self.analyze(remote_bundle['bundleId'], is_progressbar=is_cli_mode)
+
+    # def analyze_diff_repos(self, *bundles, is_cli_mode=True):
+    #   remote_bundles = []
+    #   for idx in bundles:
+    #     r_bundle = self.bundler.create_files_remote_bundle(bundles[idx])
+    #   return self.diff_analyze(*remote_bundles)
 
     # analyze files bundles
     @DeepCodeErrors.backend_error_decorator
-    def analyze_files_bundle(self, bundle_path):
-        remote_bundle, abs_bundle_path = self.bundler.create_files_remote_bundle(
-            bundle_path)
-        if not remote_bundle:
-            return BUNDLE_HELPERS['empty']
+    def analyze_files_bundle(self, bundle_path, is_cli_mode=True):
+        remote_bundle_data = self.bundler.create_files_remote_bundle(
+            bundle_path, is_progressbar=is_cli_mode)
+        if 'error' in remote_bundle_data:
+            return remote_bundle_data
+        remote_bundle, abs_bundle_path = remote_bundle_data
         self.abs_bundle_path = abs_bundle_path
-        return self.analyze(remote_bundle['bundleId'])
+        return self.analyze(remote_bundle['bundleId'], is_progressbar=is_cli_mode)
 
     @DeepCodeErrors.backend_error_decorator
-    def analyze(self, bundle_id):
-        with progressbar.ProgressBar(max_value=MAX_PROGRESS_VALUE, min_value=0, prefix=ANALYSIS_HELPERS['analyzing']) as progress:
+    def analyze(self, bundle_id, is_progressbar=True):
+        def _iterate_func(progress_bar=None):
             for _ in range(MAX_POLLS_LIMIT):
                 analysis_response = self.http.get(
                     DEEPCODE_API_ROUTES['analysis'](bundle_id), response_to_json=False)
@@ -60,8 +67,9 @@ class DeepCodeAnalyzer:
                             DEEPCODE_API_ROUTES['analysis'](
                                 bundle_id), bundle_id, 'invalid_analysis_response'
                         ))
-                progress.update(
-                    int(analysis_results['progress']*MAX_PROGRESS_VALUE))
+                if progress_bar:
+                    progress_bar.update(
+                        int(analysis_results['progress']*MAX_PROGRESS_VALUE))
                 if analysis_results['status'] == ANALYSIS_RESPONSE_STATUSES['failed']:
                     DeepCodeErrors.raise_backend_error('analysis_failed',
                                                        err_details=DeepCodeErrors.construct_backend_error_for_report(
@@ -70,9 +78,16 @@ class DeepCodeAnalyzer:
                                                        ))
 
                 if analysis_results['status'] == ANALYSIS_RESPONSE_STATUSES['done']:
-                    progress.update(MAX_PROGRESS_VALUE)
+                    if progress_bar:
+                        progress_bar.update(MAX_PROGRESS_VALUE)
                     return analysis_results['analysisResults'] if 'analysisResults' in analysis_results else None
                 time.sleep(POLLING_INTERVAL)
+
+        if is_progressbar:
+            with progressbar.ProgressBar(max_value=MAX_PROGRESS_VALUE, min_value=0, prefix=ANALYSIS_HELPERS['analyzing']) as progress:
+                return _iterate_func(progress_bar=progress)
+        else:
+            return _iterate_func()
 
     def analysis_results_in_json(self, analysis_results):
         return json.dumps(analysis_results)
@@ -81,6 +96,9 @@ class DeepCodeAnalyzer:
         result_txt = ''
         files, suggestions = itemgetter(
             'files', 'suggestions')(analysis_results)
+
+        if not len(files) and not len(suggestions):
+            return ANALYSIS_HELPERS['empty_results']
         files_list_last_element_idx = len(files)-1
         for file_index, file_path in enumerate(files):
             issue_file_path = file_path if is_repo else os.path.join(
@@ -100,3 +118,6 @@ class DeepCodeAnalyzer:
                     if file_index == files_list_last_element_idx \
                     else '{}\n'.format(issue_txt_view)
         return result_txt
+
+    def diff_analyze(self, parent_bundle, child_bundle, is_progressbar=True):
+        pass
