@@ -43,7 +43,7 @@ class DeepCodeMainModule:
             login: lambda: self.cli_login_actions(),
             logout: lambda: self.cli_logout_actions(),
             config: lambda: self.cli_config_actions(cli_args_dict),
-            analyze: lambda: self.cli_analyze_actions(cli_args_dict)
+            analyze: lambda: self.cli_pre_analyze_actions(cli_args_dict)
         }
         command_trigger[CLI_ALIASES[command]
                         if command in CLI_ALIASES.keys() else command]()
@@ -103,31 +103,29 @@ class DeepCodeMainModule:
         self.config.delete_user_config()
         print(LOGIN_HELPERS['logout'])
 
-    def cli_analyze_actions(self, analyze_options):
-        # check user login and confirm statuses
-        # TESTS,
-        # bundle_paths = analyze_options['path']
-        # max_paths_count = 2
-        # if not len(bundle_paths) or len(bundle_paths) > max_paths_count:
-        #     self.args_parser.show_help_on_error()
-        #     return
+    def cli_pre_analyze_actions(self, analyze_options):
         is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
         if not is_user_logged_in:
             print(LOGIN_HELPERS['not_logged_in'])
-            return LOGIN_HELPERS['not_logged_in']
+            return
         if not is_upload_confirmed:
             print(LOGIN_HELPERS['login_without_confirm'])
             self.confirm_upload_common_actions()
-            return LOGIN_HELPERS['login_without_confirm']
+            return
 
-        # if len(bundle_paths) == max_paths_count:
-        #     bundle_path_one, bundle_path_two = bundle_paths
-        # if len(bundle_paths) == 1:
-        #     bundle_path = bundle_paths
-        bundle_path = analyze_options['path']
+        single_path, two_paths = (1, 2)
+        paths = analyze_options['path']
+        paths_count = len(paths)
+        if len(paths) > two_paths:
+            return self.args_parser.show_help_for_many_bundles()
+        if len(paths) == single_path:
+            return self.cli_analyze_single_path_actions(analyze_options)
+        if len(paths) == two_paths:
+            return self.diff_analysis_actions(analyze_options)
 
+    def cli_analyze_single_path_actions(self, analyze_options):
+        bundle_path = analyze_options['path'][0]
         should_analyze_remote = analyze_options['remote']
-
         analysis_results = self.analyze_common_actions(
             bundle_path, is_remote=should_analyze_remote)
 
@@ -137,7 +135,27 @@ class DeepCodeMainModule:
         if analysis_results == BUNDLE_HELPERS['empty']:
             print(BUNDLE_HELPERS['empty'])
             return
+        return self.cli_analysis_display_actions(analysis_results, analyze_options)
+
+    def diff_analysis_actions(self, analyze_options):
+        should_analyze_remote = analyze_options['remote']
+        analysis_results = self.analyze_common_actions(
+            analyze_options['path'], is_remote=should_analyze_remote, is_diff_analysis=True)
+        return self.cli_analysis_display_actions(analysis_results, analyze_options)
+
+    def analyze_common_actions(self, bundle_path, is_remote=False, is_diff_analysis=False):
+        analyze_func = lambda *args, **kwargs: None
+        if is_remote:
+            analyze_func = self.analyzer.analyze_diff_repos if is_diff_analysis else self.analyzer.analyze_repo
+        else:
+            analyze_func = self.analyzer.diff_analyze_files_bundles if is_diff_analysis else self.analyzer.analyze_files_bundle
+        analysis_results = analyze_func(
+            bundle_path, is_cli_mode=self.is_cli_mode)
+        return analysis_results
+
+    def cli_analysis_display_actions(self, analysis_results, analyze_options):
         result_view_format = analyze_options['format']
+        should_analyze_remote = analyze_options['remote']
         json_format, txt_format = SUPPORTED_RESULTS_FORMATS
         if not result_view_format or result_view_format == txt_format:
             print(ANALYSIS_HELPERS['txt_view_results'])
@@ -147,20 +165,19 @@ class DeepCodeMainModule:
             print(ANALYSIS_HELPERS['json_view_results'])
             print(self.analyzer.analysis_results_in_json(analysis_results))
 
-    def analyze_common_actions(self, bundle_path, is_remote=False):
-        if is_remote:
-            analysis_results = self.analyzer.analyze_repo(
-                bundle_path, is_cli_mode=self.is_cli_mode)
-        else:
-            analysis_results = self.analyzer.analyze_files_bundle(
-                bundle_path, is_cli_mode=self.is_cli_mode)
-        return analysis_results
-
     @DeepCodeErrors.backend_error_decorator
-    def module_analyze_actions(self, path, is_repo):
+    def module_analyze_actions(self, paths, is_repo):
         is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
         if not is_user_logged_in:
             DeepCodeErrors.raise_backend_error('token')
-        analysis_results = self.analyze_common_actions(
-            path or CURRENT_FOLDER_PATH, is_remote=is_repo or False)
+
+        parent_path, child_path = paths.values()
+        is_diff_analysis = bool(child_path)
+
+        if is_diff_analysis:
+            analysis_results = self.analyze_common_actions(
+                [parent_path, child_path], is_remote=is_repo or False, is_diff_analysis=True)
+        else:
+            analysis_results = self.analyze_common_actions(
+                parent_path or CURRENT_FOLDER_PATH, is_remote=is_repo or False)
         return json.dumps(analysis_results)

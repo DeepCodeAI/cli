@@ -14,5 +14,5 @@ name = "deepcode"
 description = "This package is avaliable as imported module and as cli tool. To use it as imported module, please import it and call start() method with args. To use it in terminal, just call deepcode in terminal and pass args"
 
 # avaliable methods for module
-def analyze(path=None, is_repo=False): return deepcode_module.analyze(
-    path, is_repo)
+def analyze(parent_path=None, child_path=None, is_repo=False): return deepcode_module.analyze(
+    parent_path, child_path, is_repo)

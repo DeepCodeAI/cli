@@ -138,6 +138,10 @@ def extract_data_from_remote_bundle_path(bundle_path):
     }
     no_data_count, part_data_count, all_data_count = (1, 2, 3)
     splitted = bundle_path.split('/')
+    if len(splitted) and not splitted[0]:
+        splitted = splitted[1:]
+    if len(splitted) > all_data_count:
+        return result
     if len(splitted) is no_data_count:
         return result
     if len(splitted) >= part_data_count:

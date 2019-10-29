@@ -4,10 +4,6 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-# parse requirements.txt for dependecies
-with open('requirements.txt', "r") as reqs:
-    required_packages = reqs.read().splitlines()
-
 
 # descriptions should be changed from test values to final before publishing to pip
 setuptools.setup(
@@ -20,7 +16,20 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="[TODO: add repo]",
     packages=setuptools.find_packages(),
-    install_requires=required_packages,
+    # dependencies
+    install_requires=[
+        'certifi==2019.9.11',
+        'chardet==3.0.4',
+        'futures==3.1.1',
+        'httpretty==0.9.6',
+        'idna==2.8',
+        'progressbar2==3.47.0',
+        'python-utils==2.3.0',
+        'requests>=2.21.0',
+        'requests-futures==1.0.0',
+        'six==1.12.0',
+        'urllib3==1.24.3'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

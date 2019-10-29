@@ -10,7 +10,8 @@ DEEPCODE_API_ROUTES = {
     'check_bundle': lambda bundle_id: 'bundle/{}'.format(bundle_id),
     'analysis': lambda bundle_id: 'analysis/{}'.format(bundle_id),
     'upload_files': lambda bundle_id: 'file/{}'.format(bundle_id),
-    'error': 'error'
+    'error': 'error',
+    'diff': lambda parent_id, child_id: 'analysis/{}/{}'.format(parent_id, child_id)
 }
 
 DEEPCODE_CONFIG_NAMES = {

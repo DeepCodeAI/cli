@@ -39,7 +39,7 @@ class DeepCodeArgsParser:
         self.analyze_parser = self.subparsers.add_parser(
             analyze, help=analyze_help, aliases=['a'])
         self.analyze_parser.add_argument(
-            *path_option, type=str,  # nargs='+'
+            *path_option, type=str, nargs='+'
         )
         self.analyze_parser.add_argument(
             *bundle_type_option, action='store_true')
@@ -52,6 +52,6 @@ class DeepCodeArgsParser:
             return {}
         return vars(self.parser.parse_args())
 
-    # def show_help_on_path_error(self):
-    #     print(PATH_ERRORS['path_args_error'])
-    #     self.parser.print_help()
+    def show_help_for_many_bundles(self):
+        print(PATH_ERRORS['path_args_error'])
+        self.parser.print_help()

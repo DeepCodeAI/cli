@@ -52,7 +52,7 @@ python3 setup.py sdist bdist_wheel
 
 ## package local install
 
-sudo pip3 install dist/testpkg-0.0.1.tar.gz //use --upgrade after install word to update installed package
+sudo pip3 install dist/deepcode-0.0.1.tar.gz //use --upgrade after install word to update installed package
 
 ## publishing package
 

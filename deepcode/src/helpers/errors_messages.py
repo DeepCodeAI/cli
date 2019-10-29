@@ -18,7 +18,7 @@ PATH_ERRORS = {
     'invalid_repo_path': 'Not valid repository to analyze',
     'invalid_files_path': 'Path to analyze is not valid',
     'no_path': 'Path does not exist',
-    'path_args_error': 'Too much paths or no path provided. Secify either one path for analysis or two pathes for diff analysis'
+    'path_args_error': 'Too much paths or no path provided. Secify either one path for analysis or two paths for diff analysis'
 }
 
 FILES_BUNDLE_ERRORS = {

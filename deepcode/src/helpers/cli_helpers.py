@@ -77,7 +77,8 @@ ANALYSIS_HELPERS = {
 }
 
 BUNDLE_HELPERS = {
-    'creating': text__with_colors['blue']('Creating bundle...'),
-    'uploading': text__with_colors['blue']('Uploading bundle...'),
-    'empty': text__with_colors['blue']('Bundle is empty, nothing to analyze')
+    'creating': lambda path='': text__with_colors['blue']('Creating {} bundle...'.format(path)),
+    'uploading': lambda path='': text__with_colors['blue']('Uploading {} bundle...'.format(path)),
+    'empty': lambda path='': text__with_colors['blue']('Bundle {} is empty, nothing to analyze.'.format(path)),
+    'creating_diff': 'Creating bundles...'
 }
