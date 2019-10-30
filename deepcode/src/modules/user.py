@@ -2,9 +2,10 @@ import json
 import time
 
 from deepcode.src.modules.errors_handler import ErrorHandler
+from deepcode.src.utils.api_utils import validate_login_response, validate_check_login_response
+
 from deepcode.src.constants.backend_constants import MAX_POLLS_LIMIT, POLLING_INTERVAL, BACKEND_STATUS_CODES
 from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES, DEEPCODE_SOURCE_NAME
-from deepcode.src.utils.api_utils import validate_login_response, validate_check_login_response
 from deepcode.src.helpers.cli_helpers import CONFRIM_UPLOAD_HELPERS
 
 

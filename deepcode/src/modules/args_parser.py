@@ -1,5 +1,4 @@
 import sys
-import os
 import argparse
 from deepcode.src.constants.cli_constants \
     import CLI_NAME, CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, CLI_SUPPORTED_OPTIONS, SUPPORTED_RESULTS_FORMATS

@@ -1,19 +1,18 @@
-# python modules
+
 import json
 import webbrowser
-# own modules
+
 from deepcode.src.modules.user import DeepCodeUser
 from deepcode.src.modules.config import DeepCodeConfig
 from deepcode.src.modules.args_parser import DeepCodeArgsParser
 from deepcode.src.modules.analyzer import DeepCodeAnalyzer
 from deepcode.src.modules.http import DeepCodeHttp
 from deepcode.src.modules.errors_handler import ErrorHandler
-# own extra utils and constants
+
 from deepcode.src.constants.cli_constants \
     import CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, SUPPORTED_RESULTS_FORMATS, CLI_ALIASES
 from deepcode.src.constants.config_constants import DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST, CURRENT_FOLDER_PATH
-from deepcode.src.utils.config_utils import handle_backend_host_last_slash
-from deepcode.src.helpers.cli_helpers import CONFIG_SETTINGS_MESSAGES, LOGIN_HELPERS, ANALYSIS_HELPERS, BUNDLE_HELPERS
+from deepcode.src.helpers.cli_helpers import LOGIN_HELPERS, ANALYSIS_HELPERS, BUNDLE_HELPERS
 from deepcode.src.helpers.errors_messages import BACKEND_ERRORS
 
 
@@ -52,17 +51,7 @@ class DeepCodeMainModule:
         [json_format, txt_format] = SUPPORTED_RESULTS_FORMATS
         chosen_format = cli_args_dict['format']
         if not chosen_format:
-            new_backend_host = input(
-                CONFIG_SETTINGS_MESSAGES['configure_backend_host'])
-            if not new_backend_host and not self.config.is_current_backend_host_is_default():
-                new_backend_host = DEEPCODE_BACKEND_HOST
-            if new_backend_host:
-                processed_host = handle_backend_host_last_slash(
-                    new_backend_host)
-                self.config.update_backend_host(processed_host)
-                print(CONFIG_SETTINGS_MESSAGES['backend_host_success_update'](
-                    processed_host))
-            return
+            return self.config.configure_cli()
         if chosen_format == json_format:
             print(self.config.display_config_to_json())
         if chosen_format == txt_format:

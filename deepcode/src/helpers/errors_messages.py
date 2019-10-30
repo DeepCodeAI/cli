@@ -11,8 +11,7 @@ BACKEND_ERRORS = {
     'invalid_bundle_response': 'Not valid bundle response from server',
     'invalid_analysis_response': 'Not valid analysis response from server',
     'analysis_failed': 'Analysis status FAILED.',
-    'unhandled_error': lambda err_name, err_msg: '{}: {}'.format(err_name, err_msg),
-    'not_confirmed': 'Uploading code is not confirmed'
+    'unhandled_error': lambda err_name, err_msg: '{} {}'.format(str(err_name), str(err_msg)),
 }
 
 PATH_ERRORS = {
@@ -25,7 +24,7 @@ PATH_ERRORS = {
 FILES_BUNDLE_ERRORS = {
     'too_big': 'FIles bundle is too big to analyze',
     'fail_create_hash': lambda file: 'Failed to create hash of {}'.format(file),
-    'unhandled_error': lambda err_name, err_msg: '{}: {}'.format(err_name, err_msg)
+    'unhandled_error': lambda err_name, err_msg: '{} {}'.format(str(err_name), str(err_msg))
 }
 
 # custom errors messages, which can be caused while interacting with backend

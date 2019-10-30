@@ -1,19 +1,20 @@
-import progressbar
 import os
 import sys
 import time
-from deepcode.src.constants.config_constants import MAX_FILE_SIZE, MAX_BATCH_CONTENT_SIZE, CURRENT_FOLDER_PATH
-from deepcode.src.constants.cli_constants import MAX_PROGRESS_VALUE
+
+from deepcode.src.modules.errors_handler import ErrorHandler
+
 from deepcode.src.utils.analysis_utils\
     import hash_files, file_contents_as_string, extract_data_from_remote_bundle_path, validate_data_for_remote
-from deepcode.src.modules.errors_handler import ErrorHandler
-from deepcode.src.helpers.cli_helpers import BUNDLE_HELPERS
-from deepcode.src.helpers.errors_messages import BACKEND_ERRORS
-from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES
-from deepcode.src.constants.backend_constants \
-    import BUNDLE_RESPONSE_FIELDS, MAX_POLLS_LIMIT, POLLING_INTERVAL, ANALYSIS_RESPONSE_STATUSES, BACKEND_STATUS_CODES
-
 from deepcode.src.utils.api_utils import validate_remote_bundle_response
+from deepcode.src.utils.cli_utils import progress_iterator, construct_progress
+
+from deepcode.src.constants.config_constants import\
+    MAX_FILE_SIZE, MAX_BATCH_CONTENT_SIZE, CURRENT_FOLDER_PATH, DEEPCODE_API_ROUTES
+from deepcode.src.constants.cli_constants import MAX_PROGRESS_VALUE
+from deepcode.src.constants.backend_constants \
+    import BUNDLE_RESPONSE_FIELDS, POLLING_INTERVAL, BACKEND_STATUS_CODES
+from deepcode.src.helpers.cli_helpers import BUNDLE_HELPERS
 
 
 class DeepCodeBundler:
@@ -25,15 +26,15 @@ class DeepCodeBundler:
 
     # remote repo bundles
     def create_repo_bundle(self, bundle_path):
-        path_dict_to_remote_bundle = self.handle_remote_path(bundle_path)
-        remote_bundle = self.create_server_remote_bundle(
-            path_dict_to_remote_bundle)
-        return remote_bundle
+        path_dict = self.handle_remote_path(bundle_path)
+        return self.create_server_remote_bundle(path_dict)
 
     @ErrorHandler.backend_error_decorator
     def create_server_remote_bundle(self, path_dict_to_remote_bundle):
         remote_bundle = self.http.post(DEEPCODE_API_ROUTES['create_bundle'], {
-            'data': {key: path_dict_to_remote_bundle[key] for key in path_dict_to_remote_bundle if path_dict_to_remote_bundle[key] is not None},
+            'data':
+            {key: path_dict_to_remote_bundle[key]
+                for key in path_dict_to_remote_bundle if path_dict_to_remote_bundle[key] is not None},
         })
         if not validate_remote_bundle_response(remote_bundle):
             ErrorHandler.raise_backend_error('invalid_bundle_response',
@@ -56,10 +57,11 @@ class DeepCodeBundler:
         abs_path = self.create_abs_bundle_path(bundle_path)
         self.abs_bundle_paths[abs_path] = abs_path
         # create hashes bundle
-        self.create_hashes_bundle(abs_path, show_progressbar=show_progressbar)
-        # create hashes remote bundle
+        self.hashes_bundles[abs_path] = self.create_hashes_bundle(
+            abs_path, show_progressbar=show_progressbar)
         if not self.hashes_bundles[abs_path] or not len(self.hashes_bundles[abs_path]):
             ErrorHandler.raise_path_error('no_path')
+        # create remote bundle on server
         self.server_bundles[abs_path] = self.create_files_server_bundle(
             abs_path)
         # check for missing files and upload missing files
@@ -83,14 +85,13 @@ class DeepCodeBundler:
 
     @ErrorHandler.files_bundle_error_decorator
     def create_hashes_bundle(self, bundle_path, show_progressbar=True):
-        self.hashes_bundles[bundle_path] = hash_files(
+        return hash_files(
             self.abs_bundle_paths[bundle_path],
             MAX_FILE_SIZE,
             self.files_filters,
             show_progressbar=show_progressbar,
-            progress_iterator=lambda iterator, max_value: progressbar.progressbar(
-                iterator, max_value=max_value, prefix=BUNDLE_HELPERS['creating'](bundle_path))
-
+            progress_iterator=progress_iterator(
+                prefix=BUNDLE_HELPERS['creating'](bundle_path))
         )
 
     @ErrorHandler.backend_error_decorator
@@ -123,7 +124,7 @@ class DeepCodeBundler:
             self.server_bundles[bundle_path] = bundle_to_check
 
         if show_progressbar:
-            with progressbar.ProgressBar(max_value=MAX_PROGRESS_VALUE, min_value=0, prefix=BUNDLE_HELPERS['uploading'](bundle_path)) as progress:
+            with construct_progress(prefix=BUNDLE_HELPERS['uploading'](bundle_path)) as progress:
                 return _iterate_func(progress_bar=progress)
         else:
             return _iterate_func()
@@ -166,6 +167,7 @@ class DeepCodeBundler:
                     {'fileHash': file_hash, 'fileContent': file_content})
         return missing_files_batch
 
+    @ErrorHandler.files_bundle_error_decorator
     def split_missing_files_into_batches(self, missing_files_batch):
         if missing_files_batch > MAX_BATCH_CONTENT_SIZE:
             separate_batches = []

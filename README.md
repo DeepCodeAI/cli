@@ -31,6 +31,7 @@ DeepCode's command line interface.
   For current files path '.' can be provided.
   Has a shortcut 'a' and options:
   -r, --remote: specifies analysis of remote
+  -s, --silent: if provided, cli progressbars will be hidden
   -f, --format: results display format, supported formats: json, txt. if not specified, default format is txt
   Examples:
 
@@ -51,7 +52,16 @@ DeepCode's command line interface.
 Deepcode CLI can be also used as module and can be imported into another python code with python import system
 CLI module mode avaliable methods:
 
-- analyze() - trigers
+- analyze(parent_path: string, child_path: string, is_repo: boolean): json object
+  paths can be absolute path to bundle dir or path to remote repo of current registered user e.g.[user_name]/[repo_name]/[commit(optional)]\n
+  :param [parent_path] - if [parent_path] is not specified, current path will be taken to analyze\n
+  :param [child_path] - optional. Used for diff analysis. If specifed, diff analysis of two bundles will start\n
+  :param [is_repo] - optional. specifies that git remote repo should be ananlyzed.\n
+  :return - json with results e.g. {'files':{}, 'suggestions':{}} or json with error e.g. {"error": "[text of error]"}.\n
+  example:\n
+  deepcode.analyze('<owner/repo_name/commit>', is_repo=True) #analysis for remote bundle\n
+  deepcode.analyze('<path to files dir>') # analysis for files\n
+  deepcode.analyze() #analysis of current folder of file\n
 
 ## Configuration
 
@@ -67,34 +77,23 @@ By default a configuration will be created in `<user_home>/.deepcodeConfig`.
 sudo apt-get install python3-pip
 ```
 
-### Pip dependencies
+### Installation of package locally and development mode
+
+For detailed information see [development docs](Development.md)
+
+### Installation of published package from PyPI
 
 Install in virtualenv (requires additional dependency: `sudo pip3 install virtualenv`)
 
 ```bash
 virtualenv venv \
 source venv/bin/activate \
-python3 setup.py install (for local package install)
-pip3 install deepcode(for install of published package)
+pip3 install deepcode
 ```
 
 or install globally
 
 ```bash
 python3 setup.py install (for local package install)
-pip3 install deepcode(for install of published package)
-```
-
-## Tests
-
-- unit tests
-
-```bash
-./test.sh
-```
-
-- python2/python3 compatibility test (requires virtualenv and pip as well as python2 and python3 installation)
-
-```bash
-./test_python2_python3_compat.sh
+pip3 install deepcode
 ```

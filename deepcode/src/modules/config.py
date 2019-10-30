@@ -1,8 +1,12 @@
 import os
 import json
 from deepcode.src.modules.errors_handler import ErrorHandler
+
+from deepcode.src.utils.config_utils import handle_backend_host_last_slash
+
 from deepcode.src.constants.config_constants \
     import DEEPCODE_CONFIG_FILENAME, DEEPCODE_DEFAULT_CONFIG_FIELDS, DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST
+from deepcode.src.helpers.cli_helpers import CONFIG_SETTINGS_MESSAGES
 
 
 class DeepCodeConfig:
@@ -81,3 +85,15 @@ class DeepCodeConfig:
     def activate_code_upload(self):
         self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']] = True
         self.update_config_file(self.current_config)
+
+    def configure_cli(self):
+        new_backend_host = input(
+            CONFIG_SETTINGS_MESSAGES['configure_backend_host'])
+        if not new_backend_host and not self.is_current_backend_host_is_default():
+            new_backend_host = DEEPCODE_BACKEND_HOST
+        if new_backend_host:
+            processed_host = handle_backend_host_last_slash(
+                new_backend_host)
+            self.update_backend_host(processed_host)
+            print(CONFIG_SETTINGS_MESSAGES['backend_host_success_update'](
+                processed_host))

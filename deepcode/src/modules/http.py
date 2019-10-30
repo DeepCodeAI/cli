@@ -1,9 +1,10 @@
 import requests
 import json
-import os
+
 from deepcode.src.modules.errors_handler import ErrorHandler
+
 from deepcode.src.constants.config_constants \
-    import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST, DEEPCODE_CONFIG_NAMES
+    import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_CONFIG_NAMES
 from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES, MISSING_CONSENT
 
 

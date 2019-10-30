@@ -1,20 +1,17 @@
-# deepcode errors decoration class
 import os
-import sys
 import requests
 import json
 from deepcode.src.constants.config_constants \
     import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST, DEEPCODE_SOURCE_NAME, DEEPCODE_CONFIG_NAMES
 from deepcode.src.helpers.errors_messages \
     import BACKEND_ERRORS, OPEN_FILE_ERROR, PARSE_API_RESPONSE_JSON_ERROR, PATH_ERRORS, FILES_BUNDLE_ERRORS
-from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES
-from deepcode.src.helpers.errors_messages import BACKEND_ERRORS
 
 
 class ModuleModeException(Exception):
     pass
 
 
+# errors decoration class
 class ErrorHandler:
 
     ApiException = 'ApiException'
@@ -48,7 +45,6 @@ class ErrorHandler:
             try:
                 return func_to_decorate(*args, **kwargs)
             except BaseException as err:
-                # sending errors reports to deepcode server temporary disabled
                 if type(err).__name__ == cls.ApiException:
                     cls.send_error_details_to_deepcode(cls.current_err_details)
                 if cls.is_cli_mode:
@@ -149,6 +145,7 @@ class ErrorHandler:
             err_details['endpoint'] = '{}/{}/{}'.format(
                 cls.backend_host, DEEPCODE_API_PREFIX, err_details['endpoint'])
         print('SENDING ERROR', err_details)
+        # sending errors reports to deepcode server temporary disabled
         # requests.post(
         #     err_route,
         #     json=err_details,

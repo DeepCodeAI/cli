@@ -31,8 +31,8 @@ analyze (a) Command to analyze code.
                 [path] can be absolute path to files directory,
                 or path to git repo from GitHub/BitBucket account of logged in user, e.g.[git_username]/[git_repo_name]/[commit(optional)]
             options:
-                [-r], [--remote] - specifies analysis of git repository.
-                    Must be provided before [path]. Without it [path] will be considered as files directory path
+                [-r], [--remote] - if specified, analyzes git repository
+                [-s], [--silent] - if specified, cli progressbar will be hidden
                 [-f], [--format] - specifies results display format, supported formats: [json, txt]
             examples:
                 deepcode analyze [path_to_files_dir] -f json  #will analyze specified path and display results in json
@@ -54,6 +54,4 @@ python3 setup.py sdist bdist_wheel
 
 sudo pip3 install dist/deepcode-0.0.1.tar.gz //use --upgrade after install word to update installed package
 
-## publishing package
-
-to publish package, please see [packaging python docs](https://packaging.python.org/tutorials/packaging-projects/)
+For more info about develop and publish packages, please see [packaging python docs](https://packaging.python.org/tutorials/packaging-projects/)
