@@ -11,6 +11,12 @@ class DeepCodeCliHelper(argparse.HelpFormatter):
     def format_help(self):
         return CLI_MAIN_HELP_DESCRIPTION
 
+    def print_help(self):
+        pass
+
+    def print_usage(self):
+        pass
+
 
 class DeepCodeArgsParser:
 
@@ -22,7 +28,8 @@ class DeepCodeArgsParser:
             dest=CLI_ARGS_NAMESPACE_NAME)
 
         [login, logout, analyze, config] = CLI_SUPPORTED_COMMANDS
-        [bundle_type_option, format_option, path_option] = CLI_SUPPORTED_OPTIONS
+        [path_option, bundle_type_option, format_option,
+            silent_option] = CLI_SUPPORTED_OPTIONS
 
         login_help, logout_help, config_help, analyze_help = CLI_PARSER_HELP_MESSAGES.values()
 
@@ -45,6 +52,9 @@ class DeepCodeArgsParser:
             *bundle_type_option, action='store_true')
         self.analyze_parser.add_argument(
             *format_option, choices=SUPPORTED_RESULTS_FORMATS)
+        self.analyze_parser.add_argument(
+            *silent_option, action='store_true'
+        )
 
     def parse(self):
         if len(sys.argv) == 1:

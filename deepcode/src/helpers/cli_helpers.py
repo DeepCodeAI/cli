@@ -28,16 +28,20 @@ config (c)  Configure Deepcode CLI backend host. Without options will provide st
                 deepcode config -f txt #will display cli config in txt foromat
 analyze (a) Command to analyze code.
             shortcuts: a 
-            required: [path] - should be provided to specify the path to analyze. 
-                [path] can be absolute path to files directory,
-                or path to git repo from GitHub/BitBucket account of logged in user, e.g.[git_username]/[git_repo_name]/[commit(optional)]
+            required: 
+                [path]  - path to analyze bundle
+                [base_path] [target_path] - paths to perform diff analysis of two bundles 
+                paths can be absolute path to files directory or paths to git repo from GitHub/BitBucket account of logged in user,
+                 e.g. owner/repo_name/commit(optional)
             options:
                 [-r], [--remote] - specifies analysis of git repository. 
                     Must be provided before [path]. Without it [path] will be considered as files directory path
-                [-f], [--format] - specifies results display format, supported formats: [json, txt]
+                [-f], [--format] - specifies results display format, supported formats: [json, txt]. If not specified, default format is txt
             examples:
                 deepcode analyze [path_to_files_dir] -f json  #will analyze specified path and display results in json
                 deepcode a -r [git_username/git_repo_name] -f txt  #will analyze specified repo of logged in user and display results as readable text
+                deepcode a [base_path_to_files] [target_path_to_files] -f json #will perform diff analysis of two bundles and display results in json
+                deepcode a -r [owner/repo/commit] [owner/repo/commit] -f txt #will perform diff analysis of two remote bundles and display results in text
 optional arguments:
 -h, --help            show this help message and exit
 \n

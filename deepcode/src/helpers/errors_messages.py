@@ -12,6 +12,7 @@ BACKEND_ERRORS = {
     'invalid_analysis_response': 'Not valid analysis response from server',
     'analysis_failed': 'Analysis status FAILED.',
     'unhandled_error': lambda err_name, err_msg: '{}: {}'.format(err_name, err_msg),
+    'not_confirmed': 'Uploading code is not confirmed'
 }
 
 PATH_ERRORS = {

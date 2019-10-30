@@ -1,12 +1,10 @@
 import requests
 import json
 import os
-from deepcode.src.modules.errors_handler import DeepCodeErrors
-from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST
-from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES, MISSING_CONSENT
+from deepcode.src.modules.errors_handler import ErrorHandler
 from deepcode.src.constants.config_constants \
-    import DEEPCODE_CONFIG_FILENAME, \
-    DEEPCODE_DEFAULT_CONFIG_FIELDS, DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST, DEEPCODE_API_PREFIX, DEEPCODE_API_ROUTES
+    import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST, DEEPCODE_CONFIG_NAMES
+from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES, MISSING_CONSENT
 
 
 class DeepCodeHttp:
@@ -47,11 +45,11 @@ class DeepCodeHttp:
         self.check_response_status_code(response, route)
         return self._proccess_response(response, response_to_json, route)
 
-    @DeepCodeErrors.parse_api_response_to_json_error_decorator
+    @ErrorHandler.parse_api_response_to_json_error_decorator
     def _proccess_response(self, response, response_to_json, route):
         return response.json() if response_to_json else response
 
-    @DeepCodeErrors.backend_error_decorator
+    @ErrorHandler.backend_error_decorator
     def check_response_status_code(self, response, route=''):
         codes_ignores = {
             'check_login':
@@ -62,11 +60,10 @@ class DeepCodeHttp:
                 and route == DEEPCODE_API_ROUTES['upload_files']
         }
         if response.content.decode('UTF-8') == MISSING_CONSENT:
-            DeepCodeErrors.raise_backend_error('missing_consent',
-                                               err_details=DeepCodeErrors.construct_backend_error_for_report(
-                                                   route, response, 'missing_consent'
-                                               ))
-            return
+            ErrorHandler.raise_backend_error('missing_consent',
+                                             err_details=ErrorHandler.construct_backend_error_for_report(
+                                                 route, response, 'missing_consent'
+                                             ))
         if response.status_code is not BACKEND_STATUS_CODES['success']:
             if codes_ignores['check_login'] \
                     or codes_ignores['big_upload_for_missing_files']:
@@ -77,7 +74,7 @@ class DeepCodeHttp:
                      if code == response.status_code][0]
             else:
                 error_type = str(response)
-            DeepCodeErrors.raise_backend_error(error_type,
-                                               err_details=DeepCodeErrors.construct_backend_error_for_report(
-                                                   route, response, error_type
-                                               ))
+            ErrorHandler.raise_backend_error(error_type,
+                                             err_details=ErrorHandler.construct_backend_error_for_report(
+                                                 route, response, error_type
+                                             ))

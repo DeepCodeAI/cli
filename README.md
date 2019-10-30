@@ -24,22 +24,34 @@ DeepCode's command line interface.
   deepcode c -f txt
   ```
 - analyze: do analysis for a specific version of code. This will show all suggestions that are present in the code.
-  Required argument: [path]. Path to dir for analysis or path to git repo of logged in user. Any repository that the currently logged in user has access to, can be analyzed.
+  Required arguments:
+  {path} - Path to dir for analysis or path to git repo of logged in user. Any repository that the currently logged in user has access to, can be analyzed.
+  {base_path} {target_path} - paths for diff analysis. Can be either files paths or remote paths
+  Remote paths should contain owner, repo and optionally commit, e.g. owner>/repo/commit
   For current files path '.' can be provided.
   Has a shortcut 'a' and options:
   -r, --remote: specifies analysis of remote
-  -f, --format: results display format, supported formats: json, txt
+  -f, --format: results display format, supported formats: json, txt. if not specified, default format is txt
   Examples:
 
   ```bash
-  deepcode analyze (<folder>) --format json
-  deepcode a (<folder>) -f json
+  deepcode analyze (<folder path>) --format json
+  deepcode a (<folder path>) -f json
   deepcode a . -f txt (alayze current folder and show results as text)
   deepcode a -r (<owner>/<repo> | <owner>/<repo>/<commit>) -f txt
+  deepcode a -r (<owner>/<repo>) (<owner>/<repo>/<commit>) -f json #diff analysis of remote bundles
+  deepcode a (<folder path>) (<folder path>) # diff analysis of folders
 
   ```
 
   AnalysisResults in json format as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles)
+
+## CLI as module
+
+Deepcode CLI can be also used as module and can be imported into another python code with python import system
+CLI module mode avaliable methods:
+
+- analyze() - trigers
 
 ## Configuration
 

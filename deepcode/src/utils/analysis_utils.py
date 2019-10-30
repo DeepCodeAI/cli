@@ -16,7 +16,7 @@ def hash_file_content(content):
     return hasher.hexdigest()
 
 
-def hash_files(path, max_file_size, filters_dict, is_progressbar=True, progress_iterator=lambda iterator, max_value: iterator):
+def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progress_iterator=lambda iterator, max_value: iterator):
     """
     Hash all files in a given folder
     :param max_file_size: files larger than this are not considered
@@ -29,7 +29,7 @@ def hash_files(path, max_file_size, filters_dict, is_progressbar=True, progress_
     ignores = COMMON_IGNORE_DIRS
     progress_iterator_max_value = len(list(os.walk(path)))
     iteratable_range = progress_iterator(os.walk(
-        path), max_value=progress_iterator_max_value) if is_progressbar else os.walk(path)
+        path), max_value=progress_iterator_max_value) if show_progressbar else os.walk(path)
     for root, dirs, files in iteratable_range:
         # parsing gitignore if it exists
         if GITIGNORE_FILENAME in files:
