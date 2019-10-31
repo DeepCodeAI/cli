@@ -71,11 +71,13 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     def thread_file_result_cb(path_hash_tuple):
         file_path, file_hash = path_hash_tuple
         result[file_path] = file_hash
+
     execute_tasks_threads(
         threads_cb=lambda *p: create_file_hash_with_path(max_file_size, p),
         thread_result_cb=thread_file_result_cb,
         target=paths
     )
+
     return result
 
 
