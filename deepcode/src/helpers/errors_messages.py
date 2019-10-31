@@ -24,6 +24,7 @@ PATH_ERRORS = {
 FILES_BUNDLE_ERRORS = {
     'too_big': 'FIles bundle is too big to analyze',
     'fail_create_hash': lambda file: 'Failed to create hash of {}'.format(file),
+    'empty_bundle': 'Bundle is empty, nothing to analyze',
     'unhandled_error': lambda err_name, err_msg: '{} {}'.format(str(err_name), str(err_msg))
 }
 

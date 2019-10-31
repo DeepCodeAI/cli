@@ -1,16 +1,18 @@
-# DEEPCODE CLI DEV MODE DESCRIPTION for developers
+### DEEPCODE CLI development mode description for developers
 
 Python >= 3.2 is required for this package
 
-## required python packages before working/building package:
+### Required python packages before working/building package:
 
+```bash
 sudo python3 -m pip install --upgrade pip setuptools wheel
 sudo python3 -m pip install tqdm
 sudo python3 -m pip install --user --upgrade twine
+```
 
 if you have both python2 and python3, use python3
 
-## descritption of cli design
+## Descritption of cli options
 
 ```
 after install/start dev mode, cli is avaliable in terminal by calling 'deepcode'.
@@ -41,17 +43,58 @@ optional arguments:
 -h, --help            show this help message and exit
 ```
 
-## package development mode with built-in hot reload
+## Module mode
 
+CLI can work as command line interface and as imported module.
+To read more about module mode, see [readme docs](README.md)
+
+## Package development mode with built-in hot reload
+
+```bash
 python3 setup.py develop
+python3 setup.py develop -u #removing installed package
+```
+
 (how it works: the cmd runs once, after that the code can be modified and all changes will be avaliable at once)
 
-## package local build
+## Package local build
 
+```bash
 python3 setup.py sdist bdist_wheel
+```
 
-## package local install
+## Package local install
 
-sudo pip3 install dist/deepcode-0.0.1.tar.gz //use --upgrade after install word to update installed package
+```bash
+sudo pip3 install dist/deepcode-0.0.1.tar.gz
+sudo pip3 install --upgrade dist/deepcode-0.0.1.tar.gz // to update installed package
+```
+
+IMPORTANT! Before installing package locally, please make sure, that package was removed from dev mode,
+to uninstall dev mode use:
+
+```bash
+python setup.py develop -u
+```
+
+Otherwise, you might get import errors or other errors because of conflicts of package both in dev and prod modes
+
+### Virtual environment
+
+Package can be developed/built with python virtualenv:
+
+Install in virtualenv (requires additional dependency: `sudo pip3 install virtualenv`)
+Start virtualenv:
+
+```bash
+virtualenv venv
+source venv/bin/activate
+```
+
+After that, develop and build bash commands are exactly the same as for global develop/install
+
+### Publishing
+
+Before publishing setup.py should be modified and package info should be added for production build
 
 For more info about develop and publish packages, please see [packaging python docs](https://packaging.python.org/tutorials/packaging-projects/)

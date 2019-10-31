@@ -3,7 +3,7 @@ import argparse
 from deepcode.src.constants.cli_constants \
     import CLI_NAME, CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, CLI_SUPPORTED_OPTIONS, SUPPORTED_RESULTS_FORMATS
 from deepcode.src.helpers.cli_helpers import CLI_PARSER_HELP_MESSAGES, CLI_MAIN_HELP_DESCRIPTION
-from deepcode.src.helpers.errors_messages import PATH_ERRORS
+from deepcode.src.helpers import errors_messages
 
 
 class DeepCodeCliHelper(argparse.HelpFormatter):
@@ -62,5 +62,5 @@ class DeepCodeArgsParser:
         return vars(self.parser.parse_args())
 
     def show_help_for_many_bundles(self):
-        print(PATH_ERRORS['path_args_error'])
+        print(errors_messages.PATH_ERRORS['path_args_error'])
         self.parser.print_help()

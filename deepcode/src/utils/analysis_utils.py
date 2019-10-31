@@ -2,7 +2,6 @@ import hashlib
 import os
 import io
 import multiprocessing
-import fnmatch
 import re
 from concurrent.futures import ThreadPoolExecutor
 from deepcode.src.constants.config_constants import MAX_FILE_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME, SEVERITIES
@@ -26,6 +25,7 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     :return: dict of files pathes as keys and files hashes as values, e.g { [filepath]: filehash, ... }
     """
     paths = []
+
     ignores = COMMON_IGNORE_DIRS
     progress_iterator_max_value = len(list(os.walk(path)))
     iteratable_range = progress_iterator(os.walk(

@@ -1,6 +1,8 @@
 import os
 import requests
 import json
+
+from deepcode.src.utils.config_utils import is_package_in_dev_mode
 from deepcode.src.constants.config_constants \
     import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST, DEEPCODE_SOURCE_NAME, DEEPCODE_CONFIG_NAMES
 from deepcode.src.helpers.errors_messages \
@@ -12,7 +14,7 @@ class ModuleModeException(Exception):
 
 
 # errors decoration class
-class ErrorHandler:
+class DeepCodeErrorHandler:
 
     ApiException = 'ApiException'
     PathExeption = 'PathExeption'
@@ -113,6 +115,7 @@ class ErrorHandler:
         def _err_handler(err):
             file_bundle_err = cls.FilesBundlesException
             error_name = type(err).__name__
+            print(err, error_name, FILES_BUNDLE_ERRORS[str(err)])
             if error_name is file_bundle_err and str(err) in FILES_BUNDLE_ERRORS:
                 return cls.return_error_msg_depending_on_mode(FILES_BUNDLE_ERRORS[str(err)])
             else:
@@ -138,18 +141,19 @@ class ErrorHandler:
 
     @classmethod
     def send_error_details_to_deepcode(cls, err_details):
+        # sending errors to deepcode server only for production mode
+        if is_package_in_dev_mode():
+            return
         err_route = '{}/{}/{}'.format(DEEPCODE_BACKEND_HOST,
                                       DEEPCODE_API_PREFIX, DEEPCODE_API_ROUTES['error'])
         err_details['source'] = DEEPCODE_SOURCE_NAME['source']
         if 'endpoint' in err_details:
             err_details['endpoint'] = '{}/{}/{}'.format(
                 cls.backend_host, DEEPCODE_API_PREFIX, err_details['endpoint'])
-        print('SENDING ERROR', err_details)
-        # sending errors reports to deepcode server temporary disabled
-        # requests.post(
-        #     err_route,
-        #     json=err_details,
-        #     headers={
-        #         "Content-Type": "application/json"
-        #     }
-        # )
+        requests.post(
+            err_route,
+            json=err_details,
+            headers={
+                "Content-Type": "application/json"
+            }
+        )

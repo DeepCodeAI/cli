@@ -7,13 +7,12 @@ from deepcode.src.modules.config import DeepCodeConfig
 from deepcode.src.modules.args_parser import DeepCodeArgsParser
 from deepcode.src.modules.analyzer import DeepCodeAnalyzer
 from deepcode.src.modules.http import DeepCodeHttp
-from deepcode.src.modules.errors_handler import ErrorHandler
+from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 
 from deepcode.src.constants.cli_constants \
     import CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, SUPPORTED_RESULTS_FORMATS, CLI_ALIASES
-from deepcode.src.constants.config_constants import DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST, CURRENT_FOLDER_PATH
+from deepcode.src.constants.config_constants import CURRENT_FOLDER_PATH
 from deepcode.src.helpers.cli_helpers import LOGIN_HELPERS, ANALYSIS_HELPERS, BUNDLE_HELPERS
-from deepcode.src.helpers.errors_messages import BACKEND_ERRORS
 
 
 class DeepCodeMainModule:
@@ -26,7 +25,7 @@ class DeepCodeMainModule:
         self.http = DeepCodeHttp(self.config)
         self.user = DeepCodeUser(self.http)
         self.analyzer = DeepCodeAnalyzer(self.http)
-        ErrorHandler.set_mode_for_handling_errors(
+        DeepCodeErrorHandler.set_mode_for_handling_errors(
             self.is_cli_mode, self.config)
 
     def activate_cli(self):
@@ -155,11 +154,11 @@ class DeepCodeMainModule:
         print(*display_view, sep='\n')
 
     # analyze func for module mode
-    @ErrorHandler.module_mode_error_decorator
+    @DeepCodeErrorHandler.module_mode_error_decorator
     def module_analyze_actions(self, paths, is_repo=False):
         is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
         if not is_user_logged_in:
-            ErrorHandler.raise_backend_error('token')
+            DeepCodeErrorHandler.raise_backend_error('token')
 
         parent_path, child_path = paths.values()
         is_diff_analysis = bool(child_path)

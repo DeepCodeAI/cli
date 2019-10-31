@@ -24,28 +24,32 @@ DeepCode's command line interface.
   deepcode c -f txt
   ```
 - analyze: do analysis for a specific version of code. This will show all suggestions that are present in the code.
-  Required arguments:
-  {path} - Path to dir for analysis or path to git repo of logged in user. Any repository that the currently logged in user has access to, can be analyzed.
-  {base_path} {target_path} - paths for diff analysis. Can be either files paths or remote paths
-  Remote paths should contain owner, repo and optionally commit, e.g. owner>/repo/commit
-  For current files path '.' can be provided.
-  Has a shortcut 'a' and options:
-  -r, --remote: specifies analysis of remote
-  -s, --silent: if provided, cli progressbars will be hidden
-  -f, --format: results display format, supported formats: json, txt. if not specified, default format is txt
-  Examples:
 
-  ```bash
-  deepcode analyze (<folder path>) --format json
-  deepcode a (<folder path>) -f json
-  deepcode a . -f txt (alayze current folder and show results as text)
-  deepcode a -r (<owner>/<repo> | <owner>/<repo>/<commit>) -f txt
-  deepcode a -r (<owner>/<repo>) (<owner>/<repo>/<commit>) -f json #diff analysis of remote bundles
-  deepcode a (<folder path>) (<folder path>) # diff analysis of folders
+```
+Required arguments:
+ {path} - Path to dir for analysis or path to git repo of logged in user. Any repository that the currently logged in user has access to, can be analyzed.
+ {base_path} {target_path} - paths for diff analysis. Can be either files paths or remote paths
+ Remote paths should contain owner, repo and optionally commit, e.g. owner>/repo/commit
+ For current files path '.' can be provided.
+ Has a shortcut 'a' and options:
+ -r, --remote: specifies analysis of remote
+ -s, --silent: if provided, cli progressbars will be hidden
+ -f, --format: results display format, supported formats: json, txt. if not specified, default format is txt
+```
 
-  ```
+Examples:
 
-  AnalysisResults in json format as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles)
+```bash
+deepcode analyze (<folder path>) --format json
+deepcode a (<folder path>) -f json
+deepcode a . -f txt (alayze current folder and show results as text)
+deepcode a -r (<owner>/<repo> | <owner>/<repo>/<commit>) -f txt
+deepcode a -r (<owner>/<repo>) (<owner>/<repo>/<commit>) -f json #diff analysis of remote bundles
+deepcode a (<folder path>) (<folder path>) # diff analysis of folders
+
+```
+
+AnalysisResults in json format as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles)
 
 ## CLI as module
 
@@ -53,15 +57,19 @@ Deepcode CLI can be also used as module and can be imported into another python 
 CLI module mode avaliable methods:
 
 - analyze(parent_path: string, child_path: string, is_repo: boolean): json object
-  paths can be absolute path to bundle dir or path to remote repo of current registered user e.g.[user_name]/[repo_name]/[commit(optional)]\n
-  :param [parent_path] - if [parent_path] is not specified, current path will be taken to analyze\n
-  :param [child_path] - optional. Used for diff analysis. If specifed, diff analysis of two bundles will start\n
-  :param [is_repo] - optional. specifies that git remote repo should be ananlyzed.\n
-  :return - json with results e.g. {'files':{}, 'suggestions':{}} or json with error e.g. {"error": "[text of error]"}.\n
-  example:\n
-  deepcode.analyze('<owner/repo_name/commit>', is_repo=True) #analysis for remote bundle\n
-  deepcode.analyze('<path to files dir>') # analysis for files\n
-  deepcode.analyze() #analysis of current folder of file\n
+
+  ````
+  Paths can be absolute path to bundle dir or path to remote repo of current registered user e.g.[user_name]/[repo_name]/[commit(optional)]
+  :param [parent_path] - if [parent_path] is not specified, current path will be taken to analyze
+  :param [child_path] - optional. Used for diff analysis. If specifed, diff analysis of two bundles will start
+  :param [is_repo] - optional. specifies that git remote repo should be ananlyzed.
+  :return - json with results e.g. {'files':{}, 'suggestions':{}} or json with error e.g. {"error": "[text of error]"}.
+
+  example:
+  deepcode.analyze('<owner/repo_name/commit>', is_repo=True) #analysis for remote bundle
+  deepcode.analyze('<path to files dir>') # analysis for files
+  deepcode.analyze() #analysis of current folder of file```
+  ````
 
 ## Configuration
 
@@ -86,8 +94,8 @@ For detailed information see [development docs](Development.md)
 Install in virtualenv (requires additional dependency: `sudo pip3 install virtualenv`)
 
 ```bash
-virtualenv venv \
-source venv/bin/activate \
+virtualenv venv
+source venv/bin/activate
 pip3 install deepcode
 ```
 

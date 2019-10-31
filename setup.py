@@ -1,13 +1,14 @@
 import setuptools
+from deepcode.src.constants.config_constants import DEEPCODE_PACKAGE_NAME
 
 # parse README file for description
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+with open("README.md", "r") as readme:
+    long_description = readme.read()
 
-
-# descriptions should be changed from test values to final before publishing to pip
+# package description should be changed from test values to final before publishing to pip
+# if needed, LICENCE and README.md also can be modified
 setuptools.setup(
-    name="deepcode",
+    name=DEEPCODE_PACKAGE_NAME,
     version="0.0.1",
     author="DeepCode",
     author_email="deepcode@deepcode.com",
@@ -18,14 +19,14 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     # dependencies
     install_requires=[
-        'certifi==2019.9.11',
+        'certifi==2019.3.9',
         'chardet==3.0.4',
         'futures==3.1.1',
         'httpretty==0.9.6',
         'idna==2.8',
-        'progressbar2==3.47.0',
+        'progressbar2==3.39.3',
         'python-utils==2.3.0',
-        'requests>=2.21.0',
+        'requests==2.21.0',
         'requests-futures==1.0.0',
         'six==1.12.0',
         'urllib3==1.24.3'

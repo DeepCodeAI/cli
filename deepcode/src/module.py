@@ -1,3 +1,4 @@
+'''Deepcode CLI importable module mode'''
 from deepcode.src.modules.deepcode_main import DeepCodeMainModule
 
 

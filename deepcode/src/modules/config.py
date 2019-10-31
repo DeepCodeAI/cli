@@ -1,6 +1,6 @@
 import os
 import json
-from deepcode.src.modules.errors_handler import ErrorHandler
+from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 
 from deepcode.src.utils.config_utils import handle_backend_host_last_slash
 
@@ -19,7 +19,7 @@ class DeepCodeConfig:
     def default_config_path(self):
         return os.path.join(os.path.expanduser('~'), DEEPCODE_CONFIG_FILENAME)
 
-    @ErrorHandler.open_config_file_error_decorator
+    @DeepCodeErrorHandler.open_config_file_error_decorator
     def update_config_file(self, config=None):
         with open(self.config_path, 'w') as config_file:
             json.dump(config or DEEPCODE_DEFAULT_CONFIG_FIELDS, config_file)
@@ -27,7 +27,7 @@ class DeepCodeConfig:
     def config_exists(self):
         return os.path.exists(self.config_path)
 
-    @ErrorHandler.open_config_file_error_decorator
+    @DeepCodeErrorHandler.open_config_file_error_decorator
     def get_config_from_file(self):
         with open(self.config_path) as config_file:
             return json.load(config_file)

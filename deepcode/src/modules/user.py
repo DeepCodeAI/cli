@@ -1,7 +1,7 @@
 import json
 import time
 
-from deepcode.src.modules.errors_handler import ErrorHandler
+from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 from deepcode.src.utils.api_utils import validate_login_response, validate_check_login_response
 
 from deepcode.src.constants.backend_constants import MAX_POLLS_LIMIT, POLLING_INTERVAL, BACKEND_STATUS_CODES
@@ -13,17 +13,17 @@ class DeepCodeUser:
     def __init__(self, http):
         self.http = http
 
-    @ErrorHandler.backend_error_decorator
+    @DeepCodeErrorHandler.backend_error_decorator
     def login(self):
         user_login_data = self.http.post(DEEPCODE_API_ROUTES['login'], {
             'data': DEEPCODE_SOURCE_NAME})
         if not validate_login_response(user_login_data):
-            ErrorHandler.raise_backend_error('invalid_login_response',
-                                             err_details=ErrorHandler.construct_backend_error_for_report(
-                                                 DEEPCODE_API_ROUTES['login'], user_login_data, 'invalid_login_response'))
+            DeepCodeErrorHandler.raise_backend_error('invalid_login_response',
+                                                     err_details=DeepCodeErrorHandler.construct_backend_error_for_report(
+                                                         DEEPCODE_API_ROUTES['login'], user_login_data, 'invalid_login_response'))
         return user_login_data
 
-    @ErrorHandler.backend_error_decorator
+    @DeepCodeErrorHandler.backend_error_decorator
     def check_login(self, token):
         for _ in range(MAX_POLLS_LIMIT):
             response = self.http.get(
@@ -32,9 +32,9 @@ class DeepCodeUser:
                 check_result = response.json()
                 if validate_check_login_response(check_result):
                     return check_result['type']
-                ErrorHandler.raise_backend_error(
+                DeepCodeErrorHandler.raise_backend_error(
                     'invalid_check_login_response',
-                    err_details=ErrorHandler.construct_backend_error_for_report(
+                    err_details=DeepCodeErrorHandler.construct_backend_error_for_report(
                         DEEPCODE_API_ROUTES['checkLogin'], check_result, 'invalid_check_login_response'))
             time.sleep(POLLING_INTERVAL)
 
