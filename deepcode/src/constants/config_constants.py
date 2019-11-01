@@ -1,5 +1,5 @@
 DEEPCODE_PACKAGE_NAME = 'deepcode'
-DEEPCODE_CONFIG_FILENAME = '.deepcodeConfig'
+DEEPCODE_CONFIG_FILENAME = '.deepcodeconfig'
 DEEPCODE_SOURCE_NAME = {'source': 'cli'}
 DEEPCODE_BACKEND_HOST = 'https://www.deepcode.ai'
 DEEPCODE_API_PREFIX = 'publicapi'

@@ -207,7 +207,9 @@ def construct_issue_positions_txt_view(issues_positions_list):
     singleline_issue_template_str = '{}line {}, symbols from {} to {}'
     multiline_issue_template_str = '{}lines from {} to {}, symbols from {} to {}'
     for idx, position in enumerate(issues_positions_list):
-        rows, cols = position.values()
+        rows = position['rows']
+        cols = position['cols']
+        markers = position['markers']
         start_row, end_row = rows
         if start_row == end_row:
             positions_of_issue_str += singleline_issue_template_str.format(

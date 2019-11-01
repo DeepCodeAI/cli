@@ -73,7 +73,7 @@ CLI module mode avaliable methods:
 
 ## Configuration
 
-By default a configuration will be created in `<user_home>/.deepcodeConfig`.
+By default a configuration will be created in `<user_home>/.deepcodeconfig`.
 
 ## Requirements (for Ubuntu >= 16.04)
 

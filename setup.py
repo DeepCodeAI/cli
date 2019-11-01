@@ -1,9 +1,18 @@
 import setuptools
+import os
 from deepcode.src.constants.config_constants import DEEPCODE_PACKAGE_NAME
 
+dir_name = os.path.dirname(os.path.realpath(__file__))
+
 # parse README file for description
-with open("README.md", "r") as readme:
+with open(os.path.join(dir_name, "README.md"), 'r') as readme:
     long_description = readme.read()
+
+
+requirements_file = os.path.join(dir_name, "requirements.txt")
+install_requires = []
+with open(requirements_file) as f:
+    install_requires = f.read().splitlines()
 
 # package description should be changed from test values to final before publishing to pip
 # if needed, LICENCE and README.md also can be modified
@@ -18,19 +27,7 @@ setuptools.setup(
     url="[TODO: add repo]",
     packages=setuptools.find_packages(),
     # dependencies
-    install_requires=[
-        'certifi==2019.3.9',
-        'chardet==3.0.4',
-        'futures==3.1.1',
-        'httpretty==0.9.6',
-        'idna==2.8',
-        'progressbar2==3.39.3',
-        'python-utils==2.3.0',
-        'requests==2.21.0',
-        'requests-futures==1.0.0',
-        'six==1.12.0',
-        'urllib3==1.24.3'
-    ],
+    install_requires=install_requires,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

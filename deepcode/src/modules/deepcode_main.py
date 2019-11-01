@@ -3,7 +3,7 @@ import json
 import webbrowser
 
 from deepcode.src.modules.user import DeepCodeUser
-from deepcode.src.modules.config import DeepCodeConfig
+from deepcode.src.modules.config import deepcodeconfig
 from deepcode.src.modules.args_parser import DeepCodeArgsParser
 from deepcode.src.modules.analyzer import DeepCodeAnalyzer
 from deepcode.src.modules.http import DeepCodeHttp
@@ -21,7 +21,7 @@ class DeepCodeMainModule:
         if self.is_cli_mode:
             self.args_parser = DeepCodeArgsParser()
 
-        self.config = DeepCodeConfig()
+        self.config = deepcodeconfig()
         self.http = DeepCodeHttp(self.config)
         self.user = DeepCodeUser(self.http)
         self.analyzer = DeepCodeAnalyzer(self.http)

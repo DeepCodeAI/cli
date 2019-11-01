@@ -9,7 +9,7 @@ from deepcode.src.constants.config_constants \
 from deepcode.src.helpers.cli_helpers import CONFIG_SETTINGS_MESSAGES
 
 
-class DeepCodeConfig:
+class deepcodeconfig:
     def __init__(self):
         self.config_path = self.default_config_path()
         if not self.config_exists():
@@ -22,7 +22,7 @@ class DeepCodeConfig:
     @DeepCodeErrorHandler.open_config_file_error_decorator
     def update_config_file(self, config=None):
         with open(self.config_path, 'w') as config_file:
-            json.dump(config or DEEPCODE_DEFAULT_CONFIG_FIELDS, config_file)
+            json.dump(config or DEEPCODE_DEFAULT_CONFIG_FIELDS, config_file, indent=2)
 
     def config_exists(self):
         return os.path.exists(self.config_path)
