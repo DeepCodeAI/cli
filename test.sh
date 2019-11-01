@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-python -m unittest discover tests
+
+# use python >=3.2
+python3 -m unittest discover deepcode/tests

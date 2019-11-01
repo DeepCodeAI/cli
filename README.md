@@ -3,140 +3,105 @@
 DeepCode's command line interface.
 
 ## Usage
-- log in: this will open a browser window to log into DeepCode.
+
+- login: this will open a browser window to log into DeepCode.
   ```bash
-  python main.py login
+  deepcode login
+  ```
+- logout: logout from cli
+  ```
+  deepcode logout
   ```
 - create/update configuration: this will walk you through some configuration steps in case you do not want to connect to
- https://www.deepcode.ai but to some other host running a DeepCode instance.
+  https://www.deepcode.ai but to some other host running a DeepCode instance.
+  Has a shortcut 'c' and options -f, --format to display current config. Supported formats: json, txt
   ```bash
-  python main.py config
+  deepcode config
   ```
-- analyze: do an audit for a specific version of code. This will show all suggestions that are present in the code.
-  ```bash
-  python main.py analyze (<folder> | <owner>/<repo> | <owner>/<repo>/<commit>)
+  list current config in json or text format. Examples:
   ```
-  Examples:
-  ```bash
-  python main.py analyze <path_to_some_local_folder>
-  python main.py analyze eclipse/che
-  python main.py analyze eclipse/che/08708f0f9a19d121b51af1741b8b5094fe38048b
+  deepcode config -f json
+  deepcode c -f txt
   ```
-  The second and third variants allow users to get suggestions without cloning a repository to your local machine.
-  Any repository form your platform (Bitbucket, GitHub or Gitlab) that the currently logged in user has access to, can be analyzed.
-  `<owner>` and `<repo>` can usually be extracted from the url of the repository.
-  In the above example this would be: https://github.com/eclipse/che.
-- diff: compare two versions of code. This will show all suggestions that were introduced with a code change.
-  The `<current>` code will be compared to the `<base>` code and only suggestions will be shown that were not present in
-  `<base>` but are present in `<current>`.
-  ```bash
-  python main.py diff <base> <current>
-        # where  <base> = (<folder> | <owner>/<repo> | <owner>/<repo>/<commit>)
-        # and <current> = (<folder> | <owner>/<repo> | <owner>/<repo>/<commit>)
-  ```
-- logout
-  ```bash
-  python main.py logout
-  ```
-- show help
-  ```bash
-  python main.py --help
-  ```
+- analyze: do analysis for a specific version of code. This will show all suggestions that are present in the code.
 
-Optinal arguments:
-- `-c <config_json>` path to config file, default is `<user_home>/.deepcodecli`
-- `--json` output results in json format to stdout, see json mode below
+```
+Required arguments:
+ {path} - Path to dir for analysis or path to git repo of logged in user. Any repository that the currently logged in user has access to, can be analyzed.
+ {base_path} {target_path} - paths for diff analysis. Can be either files paths or remote paths
+ Remote paths should contain owner, repo and optionally commit, e.g. owner>/repo/commit
+ For current files path '.' can be provided.
+ Has a shortcut 'a' and options:
+ -r, --remote: specifies analysis of remote
+ -s, --silent: if provided, cli progressbars will be hidden
+ -f, --format: results display format, supported formats: json, txt. if not specified, default format is txt
+```
 
-## json mode
+Examples:
 
-- login
-  ```bash
-  python main.py login --json
-  ```
-  Response:
-  - in case the user is logged in already (no user action required):
-  ```
-  {
-    "loggedIn": true,
-    "userType": "private" | "public"
-  }
-  ```
-  - in case the user needs to log in:
-  ```
-  {
-    "loggedIn": false,
-    "loginURL": string (uri)
-  }
-  ```
-- wait for login: This can be used to wait until the user login succeeded.
-  ```bash
-  python main.py wait_for_login --json
-  ```
-  Response:
-  ```
-  {
-    "loggedIn": true,
-    "userType": "private" | "public"
-  }
-  ```
-- analyze
-  ```bash
-  python main.py analyze (<folder> | <owner>/<repo> | <owner>/<repo>/<commit>) --json
-  ```
-  Response: *analysisResults* in json format as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles).
-- diff
-  ```bash
-  python main.py diff <base> <current> --json
-        # where  <base> = (<folder> | <owner>/<repo> | <owner>/<repo>/<commit>)
-        # and <current> = (<folder> | <owner>/<repo> | <owner>/<repo>/<commit>)
-  ```
-  Response: *analysisResults* in json format as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles).
-- logout
-  ```bash
-  python main.py logout --json
-  ```
-  The command will exit once the user is logged out.
-  Response:
-  ```
-  {
-    "loggedIn": false
-  }
-  ```
+```bash
+deepcode analyze (<folder path>) --format json
+deepcode a (<folder path>) -f json
+deepcode a . -f txt (alayze current folder and show results as text)
+deepcode a -r (<owner>/<repo> | <owner>/<repo>/<commit>) -f txt
+deepcode a -r (<owner>/<repo>) (<owner>/<repo>/<commit>) -f json #diff analysis of remote bundles
+deepcode a (<folder path>) (<folder path>) # diff analysis of folders
+
+```
+
+AnalysisResults in json format as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles)
+
+## CLI as module
+
+Deepcode CLI can be also used as module and can be imported into another python code with python import system
+CLI module mode avaliable methods:
+
+- analyze(parent_path: string, child_path: string, is_repo: boolean): json object
+
+  ````
+  Paths can be absolute path to bundle dir or path to remote repo of current registered user e.g.[user_name]/[repo_name]/[commit(optional)]
+  :param [parent_path] - if [parent_path] is not specified, current path will be taken to analyze
+  :param [child_path] - optional. Used for diff analysis. If specifed, diff analysis of two bundles will start
+  :param [is_repo] - optional. specifies that git remote repo should be ananlyzed.
+  :return - json with results e.g. {'files':{}, 'suggestions':{}} or json with error e.g. {"error": "[text of error]"}.
+
+  example:
+  deepcode.analyze('<owner/repo_name/commit>', is_repo=True) #analysis for remote bundle
+  deepcode.analyze('<path to files dir>') # analysis for files
+  deepcode.analyze() #analysis of current folder of file```
+  ````
 
 ## Configuration
 
-Required parameters in json config file:
-- dc_server_host
-- dc_server_port
+By default a configuration will be created in `<user_home>/.deepcodeConfig`.
 
-An example configuration can be found in `example_config.json`.
-By default a configuration will be created in `<user_home>/.deepcodecli`.
+## Requirements (for Ubuntu >= 16.04)
 
-## Requirements (for Ubuntu 18.04)
+### Python >= 3.2
+
 ### Pip
+
 ```bash
-sudo apt-get install python-pip
+sudo apt-get install python3-pip
 ```
 
-### Pip dependencies
-Install in virtualenv (requires additional dependency: `sudo pip install virtualenv`)
+### Installation of package locally and development mode
+
+For detailed information see [development docs](Development.md)
+
+### Installation of published package from PyPI
+
+Install in virtualenv (requires additional dependency: `sudo pip3 install virtualenv`)
+
 ```bash
-virtualenv venv \
-source venv/bin/activate \
-pip install -r requirements.txt
+virtualenv venv
+source venv/bin/activate
+pip3 install deepcode
 ```
+
 or install globally
-```bash
-sudo pip install -r requirements.txt
-```
 
-## Tests
-
-- unit tests
 ```bash
-./test.sh
-```
-- python2/python3 compatibility test (requires virtualenv and pip as well as python2 and python3 installation)
-```bash
-./test_python2_python3_compat.sh
+python3 setup.py install (for local package install)
+pip3 install deepcode
 ```
