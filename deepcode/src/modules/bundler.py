@@ -52,21 +52,25 @@ class DeepCodeBundler:
     # files bundles
     def create_files_bundle(self, bundle_path, show_progressbar=True):
         # filters
-        self.files_filters = self.create_files_fiters_from_server()
+        self.files_filters = self.create_files_filters_from_server()
         # absolute bundle path
         abs_path = self.create_abs_bundle_path(bundle_path)
         self.abs_bundle_paths[abs_path] = abs_path
         # create hashes bundle
-        self.create_hashes_bundle(abs_path, show_progressbar=show_progressbar)
+        self.hashes_bundles[abs_path] = self.create_hashes_bundle(
+            abs_path, show_progressbar=show_progressbar)
         # create remote bundle on server
-        self.create_files_server_bundle(abs_path)
+        server_start_bundle = self.create_files_server_bundle(
+            self.hashes_bundles[abs_path])
         # check for missing files and upload missing files
-        self.handle_server_bundle_missing_files(
+        self.server_bundles[abs_path] = self.handle_server_bundle_missing_files(
+            server_start_bundle,
+            self.hashes_bundles[abs_path],
             abs_path, show_progressbar=show_progressbar)
         return self.server_bundles[abs_path]
 
     @DeepCodeErrorHandler.backend_error_decorator
-    def create_files_fiters_from_server(self):
+    def create_files_filters_from_server(self):
         return self.http.get(DEEPCODE_API_ROUTES['files_filters'])
 
     @DeepCodeErrorHandler.bundle_path_error_decorator
@@ -81,7 +85,7 @@ class DeepCodeBundler:
 
     @DeepCodeErrorHandler.files_bundle_error_decorator
     def create_hashes_bundle(self, bundle_path, show_progressbar=True):
-        self.hashes_bundles[bundle_path] = hash_files(
+        return hash_files(
             self.abs_bundle_paths[bundle_path],
             MAX_FILE_SIZE,
             self.files_filters,
@@ -93,33 +97,37 @@ class DeepCodeBundler:
             DeepCodeErrorHandler.raise_files_bundle_error('empty_bundle')
 
     @DeepCodeErrorHandler.backend_error_decorator
-    def create_files_server_bundle(self, bundle_path):
+    def create_files_server_bundle(self, hashes_bundle):
         server_bundle = self.http.post(DEEPCODE_API_ROUTES['create_bundle'], {
-            'data': {'files': self.hashes_bundles[bundle_path]}})
+            'data': {'files': hashes_bundle}})
         if not validate_remote_bundle_response(server_bundle):
             DeepCodeErrorHandler.raise_backend_error('invalid_bundle_response',
                                                      err_details=DeepCodeErrorHandler.construct_backend_error_for_report(
                                                          DEEPCODE_API_ROUTES['create_bundle'], server_bundle, 'invalid_bundle_response'))
-        self.server_bundles[bundle_path] = server_bundle
+        return server_bundle
 
     @DeepCodeErrorHandler.backend_error_decorator
-    def handle_server_bundle_missing_files(self, bundle_path, show_progressbar=True):
+    def check_server_bundle_on_server(self, bundle_id):
+        return self.http.get(DEEPCODE_API_ROUTES['check_bundle'](bundle_id))
+
+    @DeepCodeErrorHandler.backend_error_decorator
+    def handle_server_bundle_missing_files(self, server_bundle, hashes_bundle, bundle_path, show_progressbar=True):
         def _iterate_func(progress_bar=None):
-            bundle_to_check = self.server_bundles[bundle_path]
+            bundle_to_check = server_bundle
             for idx in range(MAX_PROGRESS_VALUE):
                 if progress_bar:
                     progress_bar.update(idx)
-                bundle_to_check = self.http.get(
-                    DEEPCODE_API_ROUTES['check_bundle'](bundle_to_check['bundleId']))
-
                 missing_files_exist = self.missing_files_in_server_bundle(
                     bundle_to_check)
                 if not missing_files_exist:
                     if progress_bar:
                         progress_bar.update(MAX_PROGRESS_VALUE)
                     break
-                self.upload_missing_files(bundle_to_check, bundle_path)
-            self.server_bundles[bundle_path] = bundle_to_check
+                self.upload_missing_files(
+                    bundle_to_check, hashes_bundle, bundle_path)
+                bundle_to_check = self.check_server_bundle_on_server(
+                    bundle_to_check['bundleId'])
+            return bundle_to_check
 
         if show_progressbar:
             with construct_progress(prefix=BUNDLE_HELPERS['uploading'](bundle_path)) as progress:
@@ -132,7 +140,7 @@ class DeepCodeBundler:
         return missingFiles in bundle and len(bundle[missingFiles])
 
     @DeepCodeErrorHandler.backend_error_decorator
-    def upload_missing_files(self, server_bundle, bundle_path):
+    def upload_missing_files(self, server_bundle, hashes_bundle, bundle_path):
 
         def _upload_missing_to_server(batch):
             bundle_id = server_bundle['bundleId']
@@ -142,7 +150,7 @@ class DeepCodeBundler:
             }, response_to_json=False)
 
         missing_files_batch = self.create_missing_files_batch(
-            server_bundle['missingFiles'], self.hashes_bundles[bundle_path], self.abs_bundle_paths[bundle_path])
+            server_bundle['missingFiles'], hashes_bundle, bundle_path)
         response = _upload_missing_to_server(missing_files_batch)
         # handle too big payload of missing files
         if response.status_code == BACKEND_STATUS_CODES['large_payload']:

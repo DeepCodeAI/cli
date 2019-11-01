@@ -60,7 +60,7 @@ class DeepCodeHttp:
                 response.status_code == BACKEND_STATUS_CODES['large_payload']
                 and route == DEEPCODE_API_ROUTES['upload_files']
         }
-        if response.content.decode('UTF-8') == MISSING_CONSENT:
+        if response.content == MISSING_CONSENT:
             DeepCodeErrorHandler.raise_backend_error('missing_consent',
                                                      err_details=DeepCodeErrorHandler.construct_backend_error_for_report(
                                                          route, response, 'missing_consent'

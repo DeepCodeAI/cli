@@ -33,7 +33,6 @@ class DeepCodeAnalyzer:
         return self.analyze(bundle_id, show_progressbar=show_progressbar)
 
     # analyze methods for files bundles
-    @DeepCodeErrorHandler.backend_error_decorator
     def analyze_files_bundle(self, bundle_path, show_progressbar=True):
         remote_bundle = self.bundler.create_files_bundle(
             bundle_path, show_progressbar=show_progressbar)
