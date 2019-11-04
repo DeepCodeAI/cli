@@ -18,5 +18,6 @@ text__with_colors = {
 }
 
 text_decorations = {
-    'bold': lambda t: "\33[1m{}\33[0m".format(t)
+    'bold': lambda t: "\33[1m{}\33[0m".format(t),
+    'underlined': lambda t: '\033[4m{}\033[0m'.format(t)
 }

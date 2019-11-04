@@ -1,9 +1,10 @@
 import time
 import json
+import asyncio
 from operator import itemgetter
 from deepcode.src.modules.bundler import DeepCodeBundler
-from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES
-from deepcode.src.utils.analysis_utils import construct_issue_txt_view, execute_tasks_threads
+from deepcode.src.constants.config_constants import DEEPCODE_API_ROUTES, SEVERITIES
+from deepcode.src.utils.analysis_utils import construct_issues_complex_txt_view, construct_issues_json_view
 from deepcode.src.utils.api_utils import validate_analysis_response
 from deepcode.src.utils.cli_utils import construct_progress
 from deepcode.src.constants.cli_constants import MAX_PROGRESS_VALUE
@@ -40,21 +41,20 @@ class DeepCodeAnalyzer:
 
     def diff_analyze_files_bundles(self, paths, show_progressbar=True):
         remote_bundles_ids = []
+        loop = asyncio.get_event_loop()
 
-        def threads_cb(*p):
-            path = ''.join(p)
+        def _task_func(path):
             remote_bundle_data = self.bundler.create_files_bundle(
                 path, show_progressbar=show_progressbar)
-            return remote_bundle_data
+            return remote_bundle_data['bundleId']
 
-        def thread_results_cb(remote_bundle_data):
-            remote_bundles_ids.append(remote_bundle_data['bundleId'])
+        async def _tasks(paths):
+            for path in paths:
+                remote_bundles_ids.append(await loop.run_in_executor(
+                    None, _task_func, path))
 
-        execute_tasks_threads(
-            threads_cb=threads_cb,
-            thread_result_cb=thread_results_cb,
-            target=paths
-        )
+        loop.run_until_complete(_tasks(paths))
+        loop.close()
         bundle_id = '{}/{}'.format(*remote_bundles_ids)
         return self.analyze(bundle_id, show_progressbar=show_progressbar)
 
@@ -94,30 +94,8 @@ class DeepCodeAnalyzer:
             time.sleep(POLLING_INTERVAL)
 
     # display results methods
-    def analysis_results_in_json(self, analysis_results):
-        return json.dumps(analysis_results)
+    def analysis_results_in_json(self, analysis_results, is_silent=False):
+        return construct_issues_json_view(analysis_results, is_silent)
 
-    def display_analysis_results_in_txt(self, analysis_results, is_repo=False):
-        result_txt = ''
-        files, suggestions = itemgetter(
-            'files', 'suggestions')(analysis_results)
-        if not len(files) and not len(suggestions):
-            return ANALYSIS_HELPERS['empty_results']
-        files_list_last_element_idx = len(files)-1
-        for file_index, file_path in enumerate(files):
-            issue_file_path = file_path
-            for suggestion in files[file_path]:
-                issues_positions_list = files[file_path][suggestion]
-                issue_severity_number = suggestions[suggestion]['severity']
-                issue_message = suggestions[suggestion]['message']
-                issue_txt_view = construct_issue_txt_view(
-                    issue_file_path,
-                    issues_positions_list,
-                    issue_severity_number,
-                    issue_message
-                )
-                result_txt += \
-                    issue_txt_view \
-                    if file_index == files_list_last_element_idx \
-                    else '{}\n'.format(issue_txt_view)
-        return result_txt
+    def display_analysis_results_in_txt(self, analysis_results, is_silent=False):
+        return construct_issues_complex_txt_view(analysis_results, is_silent)

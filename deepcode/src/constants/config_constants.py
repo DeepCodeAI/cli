@@ -17,7 +17,6 @@ DEEPCODE_API_ROUTES = {
 
 DEEPCODE_CONFIG_NAMES = {
     'backend_host': 'BACKEND_HOST',
-    'is_logged_in': 'IS_LOGGED_IN',
     'token': 'TOKEN',
     'is_upload_confirmed': 'IS_UPLOAD_CONFIRMED',
     'account_type': 'ACCOUNT_TYPE'
@@ -25,7 +24,6 @@ DEEPCODE_CONFIG_NAMES = {
 
 DEEPCODE_DEFAULT_CONFIG_FIELDS = {
     DEEPCODE_CONFIG_NAMES['backend_host']: DEEPCODE_BACKEND_HOST,
-    DEEPCODE_CONFIG_NAMES['is_logged_in']: False,
     DEEPCODE_CONFIG_NAMES['token']: None,
     DEEPCODE_CONFIG_NAMES['is_upload_confirmed']: False,
     DEEPCODE_CONFIG_NAMES['account_type']: '',

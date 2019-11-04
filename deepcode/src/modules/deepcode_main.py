@@ -138,20 +138,16 @@ class DeepCodeMainModule:
             print(BUNDLE_HELPERS['empty'])
             return
         result_view_format = analyze_options['format']
-        should_analyze_remote = analyze_options['remote']
+        is_silent = analyze_options['silent']
         json_format, txt_format = SUPPORTED_RESULTS_FORMATS
         if not result_view_format or result_view_format == txt_format:
-            display_view = (
-                ANALYSIS_HELPERS['txt_view_results'],
-                self.analyzer.display_analysis_results_in_txt(
-                    analysis_results, is_repo=should_analyze_remote)
-            )
+            display_view = self.analyzer.display_analysis_results_in_txt(
+                analysis_results, is_silent=is_silent)
+
         if result_view_format == json_format:
-            display_view = (
-                ANALYSIS_HELPERS['json_view_results'],
-                self.analyzer.analysis_results_in_json(analysis_results)
-            )
-        print(*display_view, sep='\n')
+            display_view = self.analyzer.analysis_results_in_json(
+                analysis_results, is_silent=is_silent)
+        print(display_view)
 
     # analyze func for module mode
     @DeepCodeErrorHandler.module_mode_error_decorator

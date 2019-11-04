@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import asyncio
 from progressbar import progressbar
 from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 
@@ -76,16 +77,14 @@ class DeepCodeBundler:
     @DeepCodeErrorHandler.bundle_path_error_decorator
     def create_abs_bundle_path(self, bundle_path):
         is_current_path = bundle_path is CURRENT_FOLDER_PATH
-        result_path = os.path.abspath(
-            bundle_path) if is_current_path else bundle_path
-        result_path = os.path.join(os.path.sep, result_path)
+        result_path = os.path.join(os.path.sep, os.path.realpath(bundle_path))
         if not os.path.exists(result_path):
             DeepCodeErrorHandler.raise_path_error('no_path')
         return result_path
 
     @DeepCodeErrorHandler.files_bundle_error_decorator
     def create_hashes_bundle(self, bundle_path, show_progressbar=True):
-        return hash_files(
+        hashes_bundle = hash_files(
             self.abs_bundle_paths[bundle_path],
             MAX_FILE_SIZE,
             self.files_filters,
@@ -93,8 +92,9 @@ class DeepCodeBundler:
             progress_iterator=progress_iterator(
                 prefix=BUNDLE_HELPERS['creating'](bundle_path))
         )
-        if not len(self.hashes_bundles[bundle_path]):
+        if not len(hashes_bundle):
             DeepCodeErrorHandler.raise_files_bundle_error('empty_bundle')
+        return hashes_bundle
 
     @DeepCodeErrorHandler.backend_error_decorator
     def create_files_server_bundle(self, hashes_bundle):

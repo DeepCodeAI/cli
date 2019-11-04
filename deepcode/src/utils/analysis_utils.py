@@ -1,12 +1,13 @@
 import hashlib
 import os
 import io
-import multiprocessing
 import re
-from concurrent.futures import ThreadPoolExecutor
+import json
+from operator import itemgetter
 from deepcode.src.constants.config_constants import MAX_FILE_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME, SEVERITIES
 from deepcode.src.constants.common_ignore_dirs import COMMON_IGNORE_DIRS
 from deepcode.src.helpers.terminal_view_decorations import text__with_colors, text_with__color_marker, text_decorations
+from deepcode.src.helpers.cli_helpers import ANALYSIS_HELPERS
 
 
 def hash_file_content(content):
@@ -26,7 +27,7 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     """
     paths = []
 
-    ignores = COMMON_IGNORE_DIRS
+    ignores = COMMON_IGNORE_DIRS[:]
     progress_iterator_max_value = len(list(os.walk(path)))
     iteratable_range = progress_iterator(os.walk(
         path), max_value=progress_iterator_max_value) if show_progressbar else os.walk(path)
@@ -38,66 +39,27 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
         # ignoring all git folders
         if GIT_FOLDERNAME in root:
             continue
-
-        # threading checking folders in ignore folders
-        is_root_in_ignore = False
-
-        def thread_dir_result_cb(_):
-            nonlocal is_root_in_ignore
-            is_root_in_ignore = True
-            return False
         if len(ignores):
-            execute_tasks_threads(
-                threads_cb=lambda *p: regex_patterns_finder(root, ''.join(p)),
-                thread_result_cb=thread_dir_result_cb,
-                target=ignores,
-                kill_threads_on_success=True
-            )
-
-        if is_root_in_ignore:
-            # os.walk will skip all inner dirs of ignored dir
-            dirs[:] = []
-            continue
+            ignore = next(
+                (ignore for ignore in ignores if regex_patterns_finder(root, ignore)), None)
+            if ignore:
+                # os.walk will skip all inner dirs of ignored dir
+                dirs[:] = []
+                continue
         # filtering files
         for f in files:
             file_path = os.path.join(root, f)
             rel_path = os.path.relpath(file_path, path)
             if pass_filter(rel_path, filters_dict):
                 paths.append((file_path, rel_path))
-
     result = {}
-    # threading creations of hashes
-
-    def thread_file_result_cb(path_hash_tuple):
-        file_path, file_hash = path_hash_tuple
-        result[file_path] = file_hash
-
-    execute_tasks_threads(
-        threads_cb=lambda *p: create_file_hash_with_path(max_file_size, p),
-        thread_result_cb=thread_file_result_cb,
-        target=paths
-    )
-
+    # creations of hashes
+    for path in paths:
+        path_hash_tuple = create_file_hash_with_path(max_file_size, path)
+        if path_hash_tuple:
+            file_path, file_hash = path_hash_tuple
+            result[file_path] = file_hash
     return result
-
-
-def execute_tasks_threads(
-    threads_cb,
-    thread_result_cb,
-    target,
-    kill_threads_on_success=False
-):
-    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as threads_executor:
-        def thread_function(p):
-            return threads_executor.submit(threads_cb, *p)
-        futures = list(map(thread_function, target))
-        for f in futures:
-            res = f.result()
-            if res:
-                thread_result_cb(res)
-                if kill_threads_on_success:
-                    threads_executor.shutdown(wait=False)
-                    break
 
 
 def create_file_hash_with_path(max_file_size, path_list):
@@ -175,41 +137,57 @@ def regex_patterns_finder(path, pattern):
         return False
 
 
+def get_severities_colors():
+    return {
+        1: 'blue',
+        2: 'yellow',
+        3: 'red',
+    }
+
+
+def construct_severity_sub_header(severity_idx):
+    severity_color = get_severities_colors()[severity_idx]
+    sub_header_text = '{} issues'.format(SEVERITIES[severity_idx])
+    return text_with__color_marker[severity_color](sub_header_text)
+
+
 def construct_issue_txt_view(
     issue_file_path,
     issues_positions_list,
     issue_severity_number,
     issue_message
 ):
-    severities_colors = {
-        1: 'blue',
-        2: 'yellow',
-        3: 'red',
-    }
+    severities_colors = get_severities_colors()
+
     severity_color = severities_colors[issue_severity_number]
     with_severity_color = text__with_colors[severity_color]
-    with_severity_marker = text_with__color_marker[severity_color]
     positions_of_issue_str = construct_issue_positions_txt_view(
         issues_positions_list)
 
-    template_str = '{filepath}   {severity} {issue_msg}\n Issue positions:\n{positions}'
+    template_str = '{filepath} {issue_msg}\n Issue positions:\n{positions}'
     return template_str.format(
         filepath=text_decorations['bold'](issue_file_path),
-        severity=with_severity_marker(SEVERITIES[issue_severity_number]),
         issue_msg=with_severity_color(issue_message),
         positions=positions_of_issue_str
     )
 
 
+def create_singleline_positions_template_str():
+    return '{}line {}, symbols from {} to {}'
+
+
+def create_multiline_poitions_template_str():
+    return '{}lines from {} to {}, symbols from {} to {}'
+
+
 def construct_issue_positions_txt_view(issues_positions_list):
     positions_of_issue_str = ''
     EXTRA_SPACES_FOR_POSITION = ' '*5
-    singleline_issue_template_str = '{}line {}, symbols from {} to {}'
-    multiline_issue_template_str = '{}lines from {} to {}, symbols from {} to {}'
+    singleline_issue_template_str = create_singleline_positions_template_str()
+    multiline_issue_template_str = create_multiline_poitions_template_str()
     for idx, position in enumerate(issues_positions_list):
         rows = position['rows']
         cols = position['cols']
-        markers = position['markers']
         start_row, end_row = rows
         if start_row == end_row:
             positions_of_issue_str += singleline_issue_template_str.format(
@@ -217,6 +195,74 @@ def construct_issue_positions_txt_view(issues_positions_list):
         else:
             positions_of_issue_str += multiline_issue_template_str.format(
                 EXTRA_SPACES_FOR_POSITION, start_row, end_row, *cols)
+        if 'markers' in position:
+            positions_of_issue_str += create_issue_markers_positions(
+                position['markers'])
         if idx is not len(issues_positions_list)-1:
             positions_of_issue_str += '\n'
     return positions_of_issue_str
+
+
+def create_issue_markers_positions(markers):
+    EXTRA_SPACES_FOR_MARKERS_POSITION = ' '*10
+    singleline_issue_template_str = create_singleline_positions_template_str()
+    multiline_issue_template_str = create_multiline_poitions_template_str()
+    markers_subheader_str = '\n{}{}:\n'.format(
+        EXTRA_SPACES_FOR_MARKERS_POSITION, text_decorations['underlined']('issue helpers'))
+    markers_positions_str = ''
+    for marker in markers:
+        for pos in marker['pos']:
+            cols = pos['cols']
+            start_row, end_row = pos['rows']
+            if start_row == end_row:
+                markers_positions_str += singleline_issue_template_str.format(
+                    EXTRA_SPACES_FOR_MARKERS_POSITION, start_row, *cols)+'\n'
+            else:
+                markers_positions_str += multiline_issue_template_str.format(
+                    EXTRA_SPACES_FOR_MARKERS_POSITION, start_row, end_row, *cols)+'\n'
+    return '{}{}'.format(markers_subheader_str, markers_positions_str.rstrip())
+
+
+def construct_issues_complex_txt_view(analysis_results, is_silent=False):
+    result_txt = '' if is_silent else '{}\n'.format(
+        ANALYSIS_HELPERS['txt_view_results'])
+    files, suggestions = itemgetter(
+        'files', 'suggestions')(analysis_results)
+    if not len(files) and not len(suggestions):
+        return ANALYSIS_HELPERS['empty_results']
+
+    info, warning, critical = SEVERITIES.keys()
+    grouped_issues = {
+        critical: '',
+        warning: '',
+        info: ''
+    }
+
+    for file_index, file_path in enumerate(files):
+        issue_file_path = file_path
+        for suggestion in files[file_path]:
+            issues_positions_list = files[file_path][suggestion]
+            issue_severity_number = suggestions[suggestion]['severity']
+            issue_message = suggestions[suggestion]['message']
+            issue_txt_view = construct_issue_txt_view(
+                issue_file_path,
+                issues_positions_list,
+                issue_severity_number,
+                issue_message
+            )
+            grouped_issues[issue_severity_number] += '{}\n'.format(
+                issue_txt_view)
+
+    for idx, severity in enumerate(grouped_issues):
+        if grouped_issues[severity]:
+            result_txt += '{}\n{}'.format(
+                construct_severity_sub_header(severity), grouped_issues[severity].rstrip())
+            if idx < len(grouped_issues)-1:
+                result_txt += '\n'
+    return result_txt
+
+
+def construct_issues_json_view(analysis_results, is_silent=False):
+    if is_silent:
+        return '{}'.format(json.dumps(analysis_results))
+    return '{}\n{}'.format(ANALYSIS_HELPERS['json_view_results'], json.dumps(analysis_results))
