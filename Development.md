@@ -2,6 +2,20 @@
 
 Python >= 3.2 is required for this package
 
+### Virtual environment
+
+Package can be developed/built with python virtualenv:
+
+Install in virtualenv (requires additional dependency: `sudo pip3 install virtualenv`)
+Start virtualenv:
+
+```bash
+virtualenv venv
+source venv/bin/activate
+```
+
+After that, develop and build bash commands are exactly the same as for global develop/install
+
 ### Required python packages before working/building package:
 
 ```bash
@@ -11,6 +25,21 @@ sudo python3 -m pip install --user --upgrade twine
 ```
 
 if you have both python2 and python3, use python3
+
+### Installing requirements and setup:
+
+```bash
+sudo -H pip3 install -r ./requirements.txt
+```
+
+## Package development mode with built-in hot reload
+
+```bash
+sudo -H python3 setup.py develop
+sudo -H python3 setup.py develop -u #removing installed package
+```
+
+(how it works: the cmd runs once, after that the code can be modified and all changes will be avaliable at once)
 
 ## Descritption of cli options
 
@@ -48,15 +77,6 @@ optional arguments:
 CLI can work as command line interface and as imported module.
 To read more about module mode, see [readme docs](README.md)
 
-## Package development mode with built-in hot reload
-
-```bash
-python3 setup.py develop
-python3 setup.py develop -u #removing installed package
-```
-
-(how it works: the cmd runs once, after that the code can be modified and all changes will be avaliable at once)
-
 ## Package local build
 
 ```bash
@@ -78,20 +98,6 @@ python setup.py develop -u
 ```
 
 Otherwise, you might get import errors or other errors because of conflicts of package both in dev and prod modes
-
-### Virtual environment
-
-Package can be developed/built with python virtualenv:
-
-Install in virtualenv (requires additional dependency: `sudo pip3 install virtualenv`)
-Start virtualenv:
-
-```bash
-virtualenv venv
-source venv/bin/activate
-```
-
-After that, develop and build bash commands are exactly the same as for global develop/install
 
 ### Publishing
 
