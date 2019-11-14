@@ -42,8 +42,7 @@ class DeepCodeMainModule:
             config: lambda: self.cli_config_actions(cli_args_dict),
             analyze: lambda: self.cli_analyze_actions(cli_args_dict)
         }
-        command_trigger[CLI_ALIASES[command]
-                        if command in CLI_ALIASES.keys() else command]()
+        command_trigger[command and CLI_ALIASES.get(command)]()
 
     # handle cli config command
     def cli_config_actions(self, cli_args_dict):
@@ -108,7 +107,7 @@ class DeepCodeMainModule:
             return
         single_path, two_paths = (1, 2)
         paths = analyze_options['path']
-        paths_count = len(paths)
+        # paths_count = len(paths)
         if len(paths) > two_paths:
             self.args_parser.show_help_for_many_bundles()
             return
@@ -156,7 +155,7 @@ class DeepCodeMainModule:
     # analyze func for module mode
     @DeepCodeErrorHandler.module_mode_error_decorator
     def module_analyze_actions(self, paths, is_repo=False):
-        is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
+        is_user_logged_in = self.config.check_login_and_confirm()[0]
         if not is_user_logged_in:
             DeepCodeErrorHandler.raise_backend_error('token')
 

@@ -70,6 +70,7 @@ class DeepCodeAnalyzer:
     # fetching analysis method
     @DeepCodeErrorHandler.backend_error_decorator
     def fetch_analysis_from_server(self, route, bundle_id, progress_bar=None,):
+        # deepcode ignore replace~range~list: using iterator inside forloop is good
         for _ in range(MAX_POLLS_LIMIT):
             analysis_response = self.http.get(route, response_to_json=False)
             analysis_results = analysis_response.json()

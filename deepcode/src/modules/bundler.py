@@ -114,6 +114,7 @@ class DeepCodeBundler:
     def handle_server_bundle_missing_files(self, server_bundle, hashes_bundle, bundle_path, show_progressbar=True):
         def _iterate_func(progress_bar=None):
             bundle_to_check = server_bundle
+            # deepcode ignore replace~range~list: Iterator in for-loop is considered good
             for idx in range(MAX_PROGRESS_VALUE):
                 if progress_bar:
                     progress_bar.update(idx)

@@ -88,9 +88,7 @@ def execute_tasks_threads(
     kill_threads_on_success=False
 ):
     with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as threads_executor:
-        def thread_function(p):
-            return threads_executor.submit(threads_cb, *p)
-        futures = list(map(thread_function, target))
+        futures = [threads_executor.submit(threads_cb, *t) for t in target]
         for f in futures:
             res = f.result()
             if res:
