@@ -14,11 +14,9 @@ install_requires = []
 with open(requirements_file) as f:
     install_requires = f.read().splitlines()
 
-# package description should be changed from test values to final before publishing to pip
-# if needed, LICENCE and README.md also can be modified
 setuptools.setup(
     name=DEEPCODE_PACKAGE_NAME,
-    version="0.0.2",
+    version="0.0.3",
     author="DeepCode.ai",
     author_email="contact@deepcode.com",
     description="DeepCode cli for code review",
@@ -29,9 +27,19 @@ setuptools.setup(
     # dependencies
     install_requires=install_requires,
     classifiers=[
+        # How mature is this project? Common values are
+        #   3 - Alpha
+        #   4 - Beta
+        #   5 - Production/Stable
+        'Development Status :: 3 - Beta',
+
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: CI Tools',
         "Programming Language :: Python :: 3",
+
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        'Programming Language :: Python :: 3'
     ],
     entry_points={
         'console_scripts': [
