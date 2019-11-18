@@ -42,7 +42,7 @@ class DeepCodeMainModule:
             config: lambda: self.cli_config_actions(cli_args_dict),
             analyze: lambda: self.cli_analyze_actions(cli_args_dict)
         }
-        command_trigger[command and CLI_ALIASES.get(command)]()
+        command_trigger[CLI_ALIASES.get(command) or command]()
 
     # handle cli config command
     def cli_config_actions(self, cli_args_dict):

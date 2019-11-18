@@ -18,13 +18,13 @@ with open(requirements_file) as f:
 # if needed, LICENCE and README.md also can be modified
 setuptools.setup(
     name=DEEPCODE_PACKAGE_NAME,
-    version="0.0.1",
-    author="DeepCode",
-    author_email="deepcode@deepcode.com",
+    version="0.0.2",
+    author="DeepCode.ai",
+    author_email="contact@deepcode.com",
     description="DeepCode cli for code review",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="[TODO: add repo]",
+    url="https://github.com/DeepCodeAI/cli",
     packages=setuptools.find_packages(),
     # dependencies
     install_requires=install_requires,
