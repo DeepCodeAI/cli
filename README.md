@@ -77,7 +77,7 @@ By default a configuration will be created in `<user_home>/.deepcodeconfig`.
 
 ## Requirements (for Ubuntu >= 16.04)
 
-### Python >= 3.2
+### Python >= 3.4
 
 ### Pip
 
@@ -104,4 +104,12 @@ or install globally
 ```bash
 python3 setup.py install (for local package install)
 pip3 install deepcode
+```
+
+### Tests
+
+Run tests:
+
+```bash
+./test.sh
 ```

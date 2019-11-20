@@ -22,7 +22,8 @@ class deepcodeconfig:
     @DeepCodeErrorHandler.open_config_file_error_decorator
     def update_config_file(self, config=None):
         with open(self.config_path, 'w') as config_file:
-            json.dump(config or DEEPCODE_DEFAULT_CONFIG_FIELDS, config_file, indent=2)
+            json.dump(config or DEEPCODE_DEFAULT_CONFIG_FIELDS,
+                      config_file, indent=2)
 
     def config_exists(self):
         return os.path.exists(self.config_path)
@@ -49,7 +50,6 @@ class deepcodeconfig:
         self.update_config_file(self.current_config)
 
     def delete_user_config(self, update_file=True):
-        self.current_config[DEEPCODE_CONFIG_NAMES['is_logged_in']] = False
         self.current_config[DEEPCODE_CONFIG_NAMES['token']] = ''
         self.current_config[DEEPCODE_CONFIG_NAMES['account_type']] = ''
         self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']] = False
@@ -66,7 +66,6 @@ class deepcodeconfig:
     def set_user_login_config(self, token, account_type, upload_confrm):
         logged_in_config = {
             'token': token,
-            'is_logged_in': True,
             'account_type': account_type
         }
         if upload_confrm:
@@ -74,7 +73,7 @@ class deepcodeconfig:
         self.update_config(logged_in_config)
 
     def is_user_logged_in(self):
-        return self.current_config[DEEPCODE_CONFIG_NAMES['is_logged_in']]
+        return bool(self.current_config[DEEPCODE_CONFIG_NAMES['token']])
 
     def is_code_upload_confirmed(self):
         return self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']]
