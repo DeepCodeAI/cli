@@ -1,6 +1,6 @@
 ### DEEPCODE CLI development mode description for developers
 
-Python >= 3.2 is required for this package
+Python >= 3.4 is required for this package
 
 ### Virtual environment
 
@@ -104,3 +104,11 @@ Otherwise, you might get import errors or other errors because of conflicts of p
 Before publishing setup.py should be modified and package info should be added for production build
 
 For more info about develop and publish packages, please see [packaging python docs](https://packaging.python.org/tutorials/packaging-projects/)
+
+### Tests
+
+Run tests:
+
+```bash
+./test.sh
+```

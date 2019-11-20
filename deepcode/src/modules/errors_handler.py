@@ -115,7 +115,6 @@ class DeepCodeErrorHandler:
         def _err_handler(err):
             file_bundle_err = cls.FilesBundlesException
             error_name = type(err).__name__
-            print(err, error_name, FILES_BUNDLE_ERRORS[str(err)])
             if error_name is file_bundle_err and str(err) in FILES_BUNDLE_ERRORS:
                 return cls.return_error_msg_depending_on_mode(FILES_BUNDLE_ERRORS[str(err)])
             else:

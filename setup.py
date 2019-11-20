@@ -46,5 +46,5 @@ setuptools.setup(
             'deepcode=deepcode.command_line:cli_entry_point'
         ]
     },
-    python_requires='>=3.2',
+    python_requires='>=3.4',
 )
