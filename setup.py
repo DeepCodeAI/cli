@@ -16,7 +16,7 @@ with open(requirements_file) as f:
 
 setuptools.setup(
     name=DEEPCODE_PACKAGE_NAME,
-    version="0.0.3",
+    version="0.0.4",
     author="DeepCode.ai",
     author_email="contact@deepcode.com",
     description="DeepCode cli for code review",
@@ -31,10 +31,10 @@ setuptools.setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Beta',
+        'Development Status :: 4 - Beta',
 
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: CI Tools',
+        'Topic :: Software Development :: Quality Assurance',
         "Programming Language :: Python :: 3",
 
         "License :: OSI Approved :: MIT License",
