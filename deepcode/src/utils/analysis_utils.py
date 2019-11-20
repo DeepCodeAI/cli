@@ -81,21 +81,22 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     return result
 
 
-def execute_tasks_threads(
-    threads_cb,
-    thread_result_cb,
-    target,
-    kill_threads_on_success=False
-):
-    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as threads_executor:
-        futures = [threads_executor.submit(threads_cb, *t) for t in target]
-        for f in futures:
-            res = f.result()
-            if res:
-                thread_result_cb(res)
-                if kill_threads_on_success:
-                    threads_executor.shutdown(wait=False)
-                    break
+
+# def execute_tasks_threads(
+#     threads_cb,
+#     thread_result_cb,
+#     target,
+#     kill_threads_on_success=False
+# ):
+#     with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as threads_executor:
+#         futures = [threads_executor.submit(threads_cb, *t) for t in target]
+#         for f in futures:
+#             res = f.result()
+#             if res:
+#                 thread_result_cb(res)
+#                 if kill_threads_on_success:
+#                     threads_executor.shutdown(wait=False)
+#                     break
 
 
 def create_file_hash_with_path(max_file_size, path_list):
@@ -207,7 +208,6 @@ def construct_issue_positions_txt_view(issues_positions_list):
     for idx, position in enumerate(issues_positions_list):
         rows = position['rows']
         cols = position['cols']
-        # markers = position['markers']
         start_row, end_row = rows
         if start_row == end_row:
             positions_of_issue_str += singleline_issue_template_str.format(
