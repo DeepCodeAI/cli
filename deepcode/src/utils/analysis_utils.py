@@ -81,24 +81,6 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     return result
 
 
-
-# def execute_tasks_threads(
-#     threads_cb,
-#     thread_result_cb,
-#     target,
-#     kill_threads_on_success=False
-# ):
-#     with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as threads_executor:
-#         futures = [threads_executor.submit(threads_cb, *t) for t in target]
-#         for f in futures:
-#             res = f.result()
-#             if res:
-#                 thread_result_cb(res)
-#                 if kill_threads_on_success:
-#                     threads_executor.shutdown(wait=False)
-#                     break
-
-
 def create_file_hash_with_path(max_file_size, path_list):
     abs_path_, rel_path_ = path_list
     file_content = file_contents_as_string(abs_path_, max_file_size)
