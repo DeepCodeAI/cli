@@ -13,7 +13,7 @@ MOCKED_BACKEND_HOST = 'https://test_backend_host'
 MOCKED_TOKEN = 'TEST_TOKEN'
 
 login_response = {'sessionToken': MOCKED_TOKEN, 'loginURL': 'test_login_URL'}
-check_login_response = {'type': 'user_account_type'}
+check_login_response = ''
 filters_response = {'extensions': [], 'configFiles': []}
 bundle_response = {
     'bundleId': 'test_bundle_id',
@@ -91,7 +91,7 @@ class TestHttp(TestCase):
     def test_check_login(self, mock_object):
         response_data = self.deepcode_test_module.user.check_login(
             token='TEST_TOKEN')
-        self.assertEqual(response_data, check_login_response['type'])
+        self.assertEqual(response_data, True)
 
     @mock.patch('requests.get', side_effect=response_side_effect)
     def test_get_filters(self, mocked_response):

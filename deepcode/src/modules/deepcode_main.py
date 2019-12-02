@@ -71,11 +71,11 @@ class DeepCodeMainModule:
         [token, login_url] = logged_in.values()
         webbrowser.get().open_new(login_url)
         print(LOGIN_HELPERS['url'](login_url))
-        login_account_type = self.user.check_login(token)
+        self.user.check_login(token)
         print(LOGIN_HELPERS['login_success'])
         confirm_response = self.user.confirm_code_upload()
         self.config.set_user_login_config(
-            token, login_account_type, confirm_response)
+            token, confirm_response)
 
     # confirm uploading code
     def confirm_upload_common_actions(self):
