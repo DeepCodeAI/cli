@@ -2,7 +2,6 @@
 BACKEND_ERRORS = {
     'token': 'Missing or invalid sessionToken or incomplete login process',
     'invalid_content': 'Request content doesn’t match the specifications or attempted to upload files to a git bundle',
-    'missing_consent': 'Missing open source consent',
     'invalid_bundle_access': 'Unauthorized access to requested bundle or repository',
     'large_payload': 'Payload is too large',
     'expired_bundle': 'Uploaded bundle has expired or unable to resolve requested oid for git repository',
