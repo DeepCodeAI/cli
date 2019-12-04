@@ -5,7 +5,7 @@ from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 
 from deepcode.src.constants.config_constants \
     import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_CONFIG_NAMES
-from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES, MISSING_CONSENT
+from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES
 
 
 class DeepCodeHttp:
@@ -60,11 +60,6 @@ class DeepCodeHttp:
                 response.status_code == BACKEND_STATUS_CODES['large_payload']
                 and route == DEEPCODE_API_ROUTES['upload_files']
         }
-        if response.content == MISSING_CONSENT:
-            DeepCodeErrorHandler.raise_backend_error('missing_consent',
-                                                     err_details=DeepCodeErrorHandler.construct_backend_error_for_report(
-                                                         route, response, 'missing_consent'
-                                                     ))
         if response.status_code is not BACKEND_STATUS_CODES['success']:
             if codes_ignores['check_login'] \
                     or codes_ignores['big_upload_for_missing_files']:
