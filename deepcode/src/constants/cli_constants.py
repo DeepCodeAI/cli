@@ -9,7 +9,8 @@ CLI_SUPPORTED_OPTIONS = [
     ['path'],
     ['-r', '--remote'],
     ['-f', '--format'],
-    ['-s', '--silent']
+    ['-s', '--silent'],
+    ['-v', '--version']
 ]
 SUPPORTED_RESULTS_FORMATS = ['json', 'txt']
 MAX_PROGRESS_VALUE = 100

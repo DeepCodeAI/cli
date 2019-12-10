@@ -1,15 +1,15 @@
 from deepcode.src.constants.config_constants import DEEPCODE_BACKEND_HOST
+from deepcode.src.constants.config_constants import DEEPCODE_PACKAGE_VERSION
 from deepcode.src.helpers.terminal_view_decorations import text_decorations, text__with_colors
 
 CLI_PARSER_HELP_MESSAGES = {
     'login_help': 'login to DeepCode CLI',
-    'logout_help': 'Logout from DeepCOde CLI',
+    'logout_help': 'Logout from DeepCode CLI',
     'config_help': '''Configure or show CLI config.\n Optional avaliable arguments: [-f], [--format] - types [json, txt]''',
     'analyze_help': 'Analyze code. Usage: analyze [-r] [path] [-f, --format] [json, txt].'
 }
 
-CLI_MAIN_HELP_DESCRIPTION = '''
-DeepCode CLI for analyzing code
+CLI_MAIN_HELP_DESCRIPTION = 'DeepCode CLI for analyzing code (version ' + DEEPCODE_PACKAGE_VERSION + ')\n' + '''
 
 DeepCode's AI algorithms continuously learn from bugs and issues fixed on open source
 repos. CLI will analyze your code and infrom you about critical vulnerabilities you need to solve
@@ -45,6 +45,7 @@ analyze (a) Command to analyze code.
                 deepcode a -r [owner/repo/commit] [owner/repo/commit] -f txt #will perform diff analysis of two remote bundles and display results in text
 optional arguments:
 -h, --help            show this help message and exit
+-v, --version         show version number and exit
 \n
 '''
 

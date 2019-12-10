@@ -1,6 +1,7 @@
 import setuptools
 import os
 from deepcode.src.constants.config_constants import DEEPCODE_PACKAGE_NAME
+from deepcode.src.constants.config_constants import DEEPCODE_PACKAGE_VERSION
 
 dir_name = os.path.dirname(os.path.realpath(__file__))
 
@@ -16,7 +17,7 @@ with open(requirements_file) as f:
 
 setuptools.setup(
     name=DEEPCODE_PACKAGE_NAME,
-    version="0.0.4",
+    version=DEEPCODE_PACKAGE_VERSION,  #"0.0.4",
     author="DeepCode.ai",
     author_email="contact@deepcode.com",
     description="DeepCode cli for code review",

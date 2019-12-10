@@ -36,7 +36,19 @@ sudo -H pip3 install -r ./requirements.txt
 
 ```bash
 sudo -H python3 setup.py develop
-sudo -H python3 setup.py develop -u #removing installed package
+```
+
+to remove the package again:
+
+```
+sudo -H python3 setup.py develop
+```
+
+Note that clashes with pip3-installed packages are possible. To make sure the deepcode command
+invokes development code with hot reloading, it is apparently necessary to do:
+
+```
+sudo pip3 uninstall deepcode
 ```
 
 (how it works: the cmd runs once, after that the code can be modified and all changes will be avaliable at once)

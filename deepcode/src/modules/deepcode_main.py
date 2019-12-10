@@ -118,7 +118,7 @@ class DeepCodeMainModule:
 
     def analyze_main_actions(self, bundle_path, analyze_options, is_diff_analysis=False):
         analyze_func = lambda *args, **kwargs: None
-        should_analyze_remote = analyze_options['remote']
+        should_analyze_remote = analyze_options['remote']    # NW TODO make clear, e.g. using shared constants, that these options correspond to those defined in deepcode/src/constants/cli_constants.py - if indeed they do?
         show_progressbar = not analyze_options['silent']
         if should_analyze_remote:
             analyze_func = self.analyzer.analyze_diff_repos if is_diff_analysis else self.analyzer.analyze_repo

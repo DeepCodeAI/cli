@@ -2,8 +2,10 @@ import sys
 import argparse
 from deepcode.src.constants.cli_constants \
     import CLI_NAME, CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, CLI_SUPPORTED_OPTIONS, SUPPORTED_RESULTS_FORMATS
+from deepcode.src.constants.config_constants import DEEPCODE_PACKAGE_VERSION
 from deepcode.src.helpers.cli_helpers import CLI_PARSER_HELP_MESSAGES, CLI_MAIN_HELP_DESCRIPTION
 from deepcode.src.helpers import errors_messages
+
 
 
 class DeepCodeCliHelper(argparse.HelpFormatter):
@@ -28,7 +30,7 @@ class DeepCodeArgsParser:
 
         [login, logout, analyze, config] = CLI_SUPPORTED_COMMANDS
         [path_option, bundle_type_option, format_option,
-            silent_option] = CLI_SUPPORTED_OPTIONS
+            silent_option, version_option] = CLI_SUPPORTED_OPTIONS
 
         login_help, logout_help, config_help, analyze_help = CLI_PARSER_HELP_MESSAGES.values()
 
@@ -55,11 +57,15 @@ class DeepCodeArgsParser:
             *silent_option, action='store_true'
         )
 
+        # TODO -v/--version is doing the same thing as -h/--help for now - adapt how?
+        self.parser.add_argument(*version_option, action='version', version=DEEPCODE_PACKAGE_VERSION)
+
     def parse(self):
         if len(sys.argv) == 1:
             self.parser.print_help()
             return {}
-        return vars(self.parser.parse_args())
+        result = vars(self.parser.parse_args())
+        return result
 
     def show_help_for_many_bundles(self):
         print(errors_messages.PATH_ERRORS['path_args_error'])
