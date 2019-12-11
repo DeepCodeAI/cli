@@ -41,7 +41,7 @@ sudo -H python3 setup.py develop
 to remove the package again:
 
 ```
-sudo -H python3 setup.py develop
+sudo -H python3 setup.py develop -u
 ```
 
 Note that clashes with pip3-installed packages are possible. To make sure the deepcode command
