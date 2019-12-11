@@ -63,7 +63,7 @@ usage: deepcode [command] [command argument] [-option] [option_argument]
 positional arguments:
 login       Login to DeepCode CLI using GitHub or BitBucket account
 logout      Logout from CLI
-config (c)  Configure Deepcode CLI backend host. Without options will provide steps to configure CLI.
+config (c)  Configure DeepCode CLI backend host. Without options will provide steps to configure CLI.
             shortcuts: c
             options: [-f], [--format] - specifies results display format, supported formats: [json, txt]
             example:

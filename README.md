@@ -53,7 +53,7 @@ AnalysisResults in json format as described [here](https://www.deepcode.ai/docs/
 
 ## CLI as module
 
-Deepcode CLI can be also used as module and can be imported into another python code with python import system
+DeepCode CLI can be also used as module and can be imported into another python code with python import system
 CLI module mode avaliable methods:
 
 - analyze(parent_path: string, child_path: string, is_repo: boolean): json object

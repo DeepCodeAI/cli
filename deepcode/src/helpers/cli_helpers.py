@@ -21,7 +21,7 @@ usage: deepcode [command] [command argument] [-option] [option_argument]
 positional arguments:
 login       Login to DeepCode CLI using GitHub or BitBucket account
 logout      Logout from CLI
-config (c)  Configure Deepcode CLI backend host. Without options will provide steps to configure CLI.
+config (c)  Configure DeepCode CLI backend host. Without options will provide steps to configure CLI.
             shortcuts: c
             options: [-f], [--format] - specifies results display format, supported formats: [json, txt]
             example:
@@ -77,8 +77,8 @@ LOGIN_HELPERS = {
 
 ANALYSIS_HELPERS = {
     'analyzing': text__with_colors['blue']('Analyzing...'),
-    'json_view_results': text__with_colors['green']('Deepcode Analysis Results in json format:'),
-    'txt_view_results': text__with_colors['green']('Deepcode Analysis Results in text format:'),
+    'json_view_results': text__with_colors['green']('DeepCode Analysis Results in json format:'),
+    'txt_view_results': text__with_colors['green']('DeepCode Analysis Results in text format:'),
     'empty_results': text__with_colors['green']('Everything is fine. No issues found.')
 }
 
