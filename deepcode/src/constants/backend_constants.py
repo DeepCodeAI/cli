@@ -1,5 +1,4 @@
 LOGIN_RESPONSE_FIELDS = ('sessionToken', 'loginURL')
-CHECK_LOGIN_RESPONSE_FIELDS = ('type')
 BUNDLE_RESPONSE_FIELDS = ('bundleId', 'uploadURL', 'missingFiles')
 ANALYSIS_RESPONSE_FIELDS = (
     'status', 'progress', 'analysisURL', 'analysisResults')
@@ -23,8 +22,6 @@ ANALYSIS_RESPONSE_STATUSES = {
     'fetching': 'FETCHING',
     'failed': 'FAILED'
 }
-
-MISSING_CONSENT = 'MISSING_CONSENT'
 
 MAX_POLLS_LIMIT = 1000
 POLLING_INTERVAL = 1  # 1sec
