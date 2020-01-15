@@ -1,5 +1,7 @@
 # A list of commonly ignored directories
 
+# TODO: remove this module completely
+
 #  Bash command to produce this list:
 #
 #  git clone https://github.com/toptal/gitignore &&
