@@ -27,6 +27,8 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     """
     paths = []
 
+    print ("hashing files here --> ", path)
+
     ignores = COMMON_IGNORE_DIRS[:]
     progress_iterator_max_value = len(list(os.walk(path)))
     iteratable_range = progress_iterator(os.walk(
@@ -54,6 +56,7 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
                 paths.append((file_path, rel_path))
     result = {}
     # creations of hashes
+    print("creating hash for paths --> ", paths)
     for path in paths:
         path_hash_tuple = create_file_hash_with_path(max_file_size, path)
         if path_hash_tuple:
