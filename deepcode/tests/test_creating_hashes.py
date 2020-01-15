@@ -32,7 +32,7 @@ class TestFileIsoHash(unittest.TestCase):
         sha256 = hash_file_content(
             file_contents_as_string(path, MAX_FILE_SIZE))
         self.assertEqual(
-            'a7f2b4086183e471a0024b96a2de53b4a46eef78f4cf33b8dab61eae5e27eb83', sha256)
+            '5bec5abb7c26e8d2347881d022ebf46221f29ef50dda7c37f62c69b9a4a2bb1e', sha256)
 
 
 class TestHashFilesBundle(unittest.TestCase):
@@ -48,7 +48,7 @@ class TestHashFilesBundle(unittest.TestCase):
         self.assertEqual(3, len(res))
         res_set = set((res[item], item)for item in res)
         self.assertIn(
-            ('a7f2b4086183e471a0024b96a2de53b4a46eef78f4cf33b8dab61eae5e27eb83', 'main.js'), res_set)
+            ('5bec5abb7c26e8d2347881d022ebf46221f29ef50dda7c37f62c69b9a4a2bb1e', 'main.js'), res_set)
         self.assertIn(('c8bc645260a7d1a0d1349a72150cb65fa005188142dca30d09c3cc67c7974923',
                        'sub_folder/test2.js'), res_set)
         self.assertIn(
