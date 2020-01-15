@@ -1,3 +1,7 @@
+## [0.0.5] - 2019-01-15
+- Hotfixes
+- Added "--version" command argument
+
 ## [0.0.4] - 2019-11-20
 - Hotfixes
 - Improved multi threading

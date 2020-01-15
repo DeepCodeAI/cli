@@ -53,7 +53,7 @@ sudo pip3 uninstall deepcode
 
 (how it works: the cmd runs once, after that the code can be modified and all changes will be avaliable at once)
 
-## Descritption of cli options
+## Description of cli options
 
 ```
 after install/start dev mode, cli is avaliable in terminal by calling 'deepcode'.
