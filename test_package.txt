@@ -1,0 +1,21 @@
+TODO:
+	- write auto-testing scripts
+		- how to pass script to virtual environment? (or drop venv and clean up using other commands instead?)
+		- how to handle interactive I/O requirement? (just for login: could use predefined config for other tests) 
+
+
+
+To test the released cli package in a clean environment, run:
+
+	# Remove config (required to re-trigger login/setup info querying)
+	rm ~/.deepcodeconfig
+	# Switch to clean virtual environment
+	virtualenv python3 -p python3
+	source python3/bin/activate
+	# Install and use cli
+	pip install deepcode
+	deepcode login
+
+After interactively performing the login and remote transfer confirmation,
+positive cli output and a proper ~/.deepcodeconfig should be generated
+(version 0.0.4 fails with a JSON error instead).
