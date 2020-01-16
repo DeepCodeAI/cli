@@ -1,3 +1,6 @@
+## [0.0.6] - 2019-01-16
+- Added support of very large folders
+
 ## [0.0.5] - 2019-01-15
 - Hotfixes
 - Added "--version" command argument
