@@ -113,7 +113,11 @@ Otherwise, you might get import errors or other errors because of conflicts of p
 
 ### Publishing
 
-Before publishing setup.py should be modified and package info should be added for production build
+```
+source ./venv/bin/activate
+pip install -U twine
+twine upload dist/*
+```
 
 For more info about develop and publish packages, please see [packaging python docs](https://packaging.python.org/tutorials/packaging-projects/)
 
@@ -121,6 +125,6 @@ For more info about develop and publish packages, please see [packaging python d
 
 Run tests:
 
-```bash
-./test.sh
+```
+source ./test.sh
 ```
