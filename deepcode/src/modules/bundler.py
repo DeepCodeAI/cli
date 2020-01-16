@@ -152,14 +152,28 @@ class DeepCodeBundler:
 
         missing_files_batch = self.create_missing_files_batch(
             server_bundle['missingFiles'], hashes_bundle, bundle_path)
-        response = _upload_missing_to_server(missing_files_batch)
-        # handle too big payload of missing files
-        if response.status_code == BACKEND_STATUS_CODES['large_payload']:
-            separate_batches = self.split_missing_files_into_batches(
-                missing_files_batch)
-            for idx in separate_batches:
-                _upload_missing_to_server(separate_batches[idx])
-                time.sleep(POLLING_INTERVAL)  # delay between uplading batches
+
+        # split into smaller batches if necessary
+        separate_batches = self.split_missing_files_into_batches(
+            missing_files_batch)
+        i = 1
+
+        for batch in separate_batches:
+            if len(separate_batches) > 1:   # TODO proper progress output
+                print("Processing batch " + str(i) + " of " + str(len(separate_batches)))
+            i = i + 1
+            _upload_missing_to_server(batch)
+            time.sleep(POLLING_INTERVAL)  # delay between uplading batches
+
+    def compute_files_batch_size(self, batch):
+        # Process batch as created by create_missing_files_batch(). Previous versions
+        # computed size using sys.getsizeof(), but this results in a "shallow" computation
+        # excluding the actual data objects
+        total_size = 0
+        for f in batch:
+            total_size += len(f['fileHash']) + len(f['fileContent']) + 20   # TODO what is the exact size? guess 20 or fewer extra bytes for formatting
+                                                                            # TODO check: are encoding risks handled properly?
+        return total_size
 
     @DeepCodeErrorHandler.files_bundle_error_decorator
     def create_missing_files_batch(self, missing_files, hashes_bundle, abs_bundle_path):
@@ -174,14 +188,16 @@ class DeepCodeBundler:
                     {'fileHash': file_hash, 'fileContent': file_content})
         return missing_files_batch
 
+
+
     @DeepCodeErrorHandler.files_bundle_error_decorator
     def split_missing_files_into_batches(self, missing_files_batch):
-        if missing_files_batch > MAX_BATCH_CONTENT_SIZE:
+        if self.compute_files_batch_size(missing_files_batch) > MAX_BATCH_CONTENT_SIZE:
             separate_batches = []
             single_batch = []
-            for idx in missing_files_batch:
-                single_batch.append(missing_files_batch[idx])
-                if sys.getsizeof(single_batch) == MAX_BATCH_CONTENT_SIZE:
+            for batch in missing_files_batch:
+                single_batch.append(batch)
+                if self.compute_files_batch_size(single_batch) >= MAX_BATCH_CONTENT_SIZE:
                     separate_batches.append(single_batch)
                     single_batch = []
             return separate_batches
