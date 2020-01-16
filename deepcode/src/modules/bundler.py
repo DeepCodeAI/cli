@@ -125,7 +125,7 @@ class DeepCodeBundler:
                         progress_bar.update(MAX_PROGRESS_VALUE)
                     break
                 self.upload_missing_files(
-                    bundle_to_check, hashes_bundle, bundle_path)
+                    bundle_to_check, hashes_bundle, bundle_path, show_progressbar)
                 bundle_to_check = self.check_server_bundle_on_server(
                     bundle_to_check['bundleId'])
             return bundle_to_check
@@ -141,7 +141,7 @@ class DeepCodeBundler:
         return missingFiles in bundle and len(bundle[missingFiles])
 
     @DeepCodeErrorHandler.backend_error_decorator
-    def upload_missing_files(self, server_bundle, hashes_bundle, bundle_path):
+    def upload_missing_files(self, server_bundle, hashes_bundle, bundle_path, show_progressbar):
 
         def _upload_missing_to_server(batch):
             bundle_id = server_bundle['bundleId']
@@ -158,21 +158,28 @@ class DeepCodeBundler:
             missing_files_batch)
         i = 1
 
+        multi_bundle_progress_bar = None
+        if show_progressbar:
+            multi_bundle_progress_bar = construct_progress(prefix=BUNDLE_HELPERS['uploading']("split"), min_value=0, max_value=len(separate_batches))
+
+
         for batch in separate_batches:
-            if len(separate_batches) > 1:   # TODO proper progress output
-                print("Processing batch " + str(i) + " of " + str(len(separate_batches)))
+            if multi_bundle_progress_bar != None:
+                multi_bundle_progress_bar.update(i)
             i = i + 1
             _upload_missing_to_server(batch)
             time.sleep(POLLING_INTERVAL)  # delay between uplading batches
 
     def compute_files_batch_size(self, batch):
+        return len(batch['fileHash']) + len(batch['fileContent']) + 20   # TODO what is the exact size? guess 20 or fewer extra bytes for formatting
+                                                                         # TODO check: are encoding risks handled properly?
+    def compute_files_batch_list_size(self, batch):
         # Process batch as created by create_missing_files_batch(). Previous versions
         # computed size using sys.getsizeof(), but this results in a "shallow" computation
         # excluding the actual data objects
         total_size = 0
         for f in batch:
-            total_size += len(f['fileHash']) + len(f['fileContent']) + 20   # TODO what is the exact size? guess 20 or fewer extra bytes for formatting
-                                                                            # TODO check: are encoding risks handled properly?
+            total_size += self.compute_files_batch_size(f)
         return total_size
 
     @DeepCodeErrorHandler.files_bundle_error_decorator
@@ -192,13 +199,13 @@ class DeepCodeBundler:
 
     @DeepCodeErrorHandler.files_bundle_error_decorator
     def split_missing_files_into_batches(self, missing_files_batch):
-        if self.compute_files_batch_size(missing_files_batch) > MAX_BATCH_CONTENT_SIZE:
+        if self.compute_files_batch_list_size(missing_files_batch) > MAX_BATCH_CONTENT_SIZE:
             separate_batches = []
             single_batch = []
             for batch in missing_files_batch:
-                single_batch.append(batch)
-                if self.compute_files_batch_size(single_batch) >= MAX_BATCH_CONTENT_SIZE:
+                if self.compute_files_batch_list_size(single_batch) + self.compute_files_batch_size(batch) >= MAX_BATCH_CONTENT_SIZE:
                     separate_batches.append(single_batch)
                     single_batch = []
+                single_batch.append(batch)
             return separate_batches
         return missing_files_batch
