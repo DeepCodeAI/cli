@@ -164,7 +164,7 @@ class DeepCodeBundler:
 
 
         for batch in separate_batches:
-            if multi_bundle_progress_bar != None:
+            if multi_bundle_progress_bar is None:
                 multi_bundle_progress_bar.update(i)
             i = i + 1
             _upload_missing_to_server(batch)
