@@ -14,7 +14,6 @@ var agt = navigator.userAgent.toLowerCase();
 var browserType;
 var browserVer;
 
-// file deepcode ignore ~~~~equality: wrong suggestion for Python
 if (agt.indexOf("opera") != -1) {
   browserType = "Opera";
 
