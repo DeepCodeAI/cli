@@ -1,8 +1,10 @@
-## [0.0.7] - 2019-01-31
-- Bugfixes
+## [0.0.8] - 2019-02-02
+- Removed confirmation step for uploading folders
+- Simplified logging
 
 ## [0.0.7] - 2019-01-16
 - Added support of very large folders
+- Bugfixes
 
 ## [0.0.5] - 2019-01-15
 - Hotfixes
