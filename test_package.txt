@@ -16,6 +16,6 @@ To test the released cli package in a clean environment, run:
 	pip install deepcode
 	deepcode login
 
-After interactively performing the login and remote transfer confirmation,
+After interactively performing the login,
 positive cli output and a proper ~/.deepcodeconfig should be generated
 (version 0.0.4 fails with a JSON error instead).

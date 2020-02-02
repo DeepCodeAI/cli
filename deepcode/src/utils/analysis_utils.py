@@ -49,9 +49,8 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
         # filtering files
         for f in files:
             file_path = os.path.join(root, f)
-            rel_path = os.path.relpath(file_path, path)
-            if pass_filter(rel_path, filters_dict):
-                paths.append((file_path, rel_path))
+            if pass_filter(file_path, filters_dict):
+                paths.append(file_path)
     result = {}
     # creations of hashes
     for path in paths:
@@ -62,14 +61,12 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     return result
 
 
-def create_file_hash_with_path(max_file_size, path_list):
-    abs_path_, rel_path_ = path_list
-    file_content = file_contents_as_string(abs_path_, max_file_size)
+def create_file_hash_with_path(max_file_size, file_path):
+    file_content = file_contents_as_string(file_path, max_file_size)
     if not file_content:
         return None
-    file_hash = hash_file_content(file_content)
-
-    return rel_path_, file_hash
+    
+    return file_path, hash_file_content(file_content)
 
 
 def file_contents_as_string(path, max_file_size=MAX_FILE_SIZE):

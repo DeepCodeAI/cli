@@ -58,19 +58,12 @@ CONFIG_SETTINGS_MESSAGES = {
         'Backend host for DeepCode CLI has been successfully updated\nNow {new_host} is used.'.format(new_host=new_host))
 }
 
-CONFRIM_UPLOAD_HELPERS = {
-    'confirm': text__with_colors['blue']('To analyze code, confirm remote analysis by DeepCode. Confirm? (y/n): '),
-    'success': text__with_colors['green']('Remote analysis is successfully confirmed.'),
-    'fail': text__with_colors['red']('Remote analysis is not confirmed.')
-}
-
 LOGIN_HELPERS = {
     'url': lambda login_url:
     text__with_colors['blue']('The deepCode login page {} is opened in browser.\nWaiting for login...'.format(
         text_decorations['bold'](login_url))),
     'login_success': text__with_colors['green']('Login has been successfull'),
     'logout': text__with_colors['green']('Logout has been successfull'),
-    'login_without_confirm': text__with_colors['red']('Already logged in, but remote analysis is not confirmed'),
     'already_login': text__with_colors['green']('Already logged in'),
     'not_logged_in': text__with_colors['red']('Not logged in'),
 }
@@ -83,8 +76,8 @@ ANALYSIS_HELPERS = {
 }
 
 BUNDLE_HELPERS = {
-    'creating': lambda path='': text__with_colors['blue']('Creating {} bundle...'.format(path)),
-    'uploading': lambda path='': text__with_colors['blue']('Uploading {} bundle...'.format(path)),
-    'empty': lambda path='': text__with_colors['blue']('Bundle {} is empty, nothing to analyze.'.format(path)),
+    'creating': text__with_colors['blue']('Creating bundle...'),
+    'uploading': text__with_colors['blue']('Uploading bundle...'),
+    'empty': text__with_colors['blue']('Bundle is empty, nothing to analyze.'),
     'creating_diff': 'Creating bundles...'
 }

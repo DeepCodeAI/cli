@@ -1,5 +1,5 @@
 DEEPCODE_PACKAGE_NAME = 'deepcode'
-DEEPCODE_PACKAGE_VERSION = '0.0.7'
+DEEPCODE_PACKAGE_VERSION = '0.0.8'
 DEEPCODE_CONFIG_FILENAME = '.deepcodeconfig'
 DEEPCODE_SOURCE_NAME = {'source': 'cli'}
 DEEPCODE_BACKEND_HOST = 'https://www.deepcode.ai'
@@ -19,13 +19,11 @@ DEEPCODE_API_ROUTES = {
 DEEPCODE_CONFIG_NAMES = {
     'backend_host': 'BACKEND_HOST',
     'token': 'TOKEN',
-    'is_upload_confirmed': 'IS_UPLOAD_CONFIRMED',
 }
 
 DEEPCODE_DEFAULT_CONFIG_FIELDS = {
     DEEPCODE_CONFIG_NAMES['backend_host']: DEEPCODE_BACKEND_HOST,
-    DEEPCODE_CONFIG_NAMES['token']: None,
-    DEEPCODE_CONFIG_NAMES['is_upload_confirmed']: False,
+    DEEPCODE_CONFIG_NAMES['token']: None
 }
 
 CURRENT_FOLDER_PATH = '.'
