@@ -57,14 +57,10 @@ class DeepCodeMainModule:
 
     # handle cli login command
     def cli_login_actions(self):
-        is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
+        is_user_logged_in = self.config.is_user_logged_in()
         # if user is already logged in
         if is_user_logged_in:
-            if not is_upload_confirmed:
-                print(LOGIN_HELPERS['login_without_confirm'])
-                self.confirm_upload_common_actions()
-            else:
-                print(LOGIN_HELPERS['already_login'])
+            print(LOGIN_HELPERS['already_login'])
             return
         # login user flow
         logged_in = self.user.login()
@@ -73,15 +69,7 @@ class DeepCodeMainModule:
         print(LOGIN_HELPERS['url'](login_url))
         self.user.check_login(token)
         print(LOGIN_HELPERS['login_success'])
-        confirm_response = self.user.confirm_code_upload()
-        self.config.set_user_login_config(
-            token, confirm_response)
-
-    # confirm uploading code
-    def confirm_upload_common_actions(self):
-        confirm_response = self.user.confirm_code_upload()
-        if confirm_response:
-            self.config.activate_code_upload()
+        self.config.set_user_login_config(token)
 
     # logout of user (cleans up user config data)
     def cli_logout_actions(self):
@@ -97,14 +85,11 @@ class DeepCodeMainModule:
         self.cli_analysis_display_actions(analysis_results, analyze_options)
 
     def cli_pre_analyze_actions(self, analyze_options):
-        is_user_logged_in, is_upload_confirmed = self.config.check_login_and_confirm()
+        is_user_logged_in = self.config.is_user_logged_in()
         if not is_user_logged_in:
             print(LOGIN_HELPERS['not_logged_in'])
             return
-        if not is_upload_confirmed:
-            print(LOGIN_HELPERS['login_without_confirm'])
-            self.confirm_upload_common_actions()
-            return
+        
         single_path, two_paths = (1, 2)
         paths = analyze_options['path']
         # paths_count = len(paths)
@@ -151,7 +136,7 @@ class DeepCodeMainModule:
     # analyze func for module mode
     @DeepCodeErrorHandler.module_mode_error_decorator
     def module_analyze_actions(self, paths, is_repo=False):
-        is_user_logged_in = self.config.check_login_and_confirm()[0]
+        is_user_logged_in = self.config.is_user_logged_in()
         if not is_user_logged_in:
             DeepCodeErrorHandler.raise_backend_error('token')
 

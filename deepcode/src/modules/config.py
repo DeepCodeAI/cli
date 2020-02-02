@@ -51,7 +51,6 @@ class deepcodeconfig:
 
     def delete_user_config(self, update_file=True):
         self.current_config[DEEPCODE_CONFIG_NAMES['token']] = ''
-        self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']] = False
         if update_file:
             self.update_config_file(self.current_config)
 
@@ -62,26 +61,14 @@ class deepcodeconfig:
     def is_current_backend_host_is_default(self):
         return self.current_config[DEEPCODE_CONFIG_NAMES['backend_host']] == DEEPCODE_BACKEND_HOST
 
-    def set_user_login_config(self, token, upload_confrm):
+    def set_user_login_config(self, token):
         logged_in_config = {
             'token': token,
         }
-        if upload_confrm:
-            logged_in_config['is_upload_confirmed'] = True
         self.update_config(logged_in_config)
 
     def is_user_logged_in(self):
         return bool(self.current_config[DEEPCODE_CONFIG_NAMES['token']])
-
-    def is_code_upload_confirmed(self):
-        return self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']]
-
-    def check_login_and_confirm(self):
-        return [self.is_user_logged_in(), self.is_code_upload_confirmed()]
-
-    def activate_code_upload(self):
-        self.current_config[DEEPCODE_CONFIG_NAMES['is_upload_confirmed']] = True
-        self.update_config_file(self.current_config)
 
     def configure_cli(self):
         new_backend_host = input(
