@@ -3,15 +3,16 @@ import json
 
 from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 
-from deepcode.src.constants.config_constants \
-    import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_CONFIG_NAMES
+from deepcode.src.constants.config_constants import (
+    DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_CONFIG_NAMES, DEEPCODE_BACKEND_HOST
+)
 from deepcode.src.constants.backend_constants import BACKEND_STATUS_CODES
 
 
 class DeepCodeHttp:
     def __init__(self, config):
         self.config = config.current_config
-        self.base_endpoint = self.config[DEEPCODE_CONFIG_NAMES['backend_host']]
+        self.base_endpoint = self.config.get(DEEPCODE_CONFIG_NAMES['backend_host']) or DEEPCODE_BACKEND_HOST
         self.routes_prefix = DEEPCODE_API_PREFIX
 
     def construct_endpoint(self, route):
@@ -21,7 +22,7 @@ class DeepCodeHttp:
         headers = dict()
         if token:
             headers["Session-Token"] = \
-                self.config[DEEPCODE_CONFIG_NAMES['token']] or options['token']
+                self.config.get(DEEPCODE_CONFIG_NAMES['token']) or options['token']
 
         if isJson:
             headers["Content-Type"] = 'application/json'

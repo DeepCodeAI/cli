@@ -24,7 +24,6 @@ class DeepCodeUser:
 
     @DeepCodeErrorHandler.backend_error_decorator
     def check_login(self, token):
-        # deepcode ignore replace~range~list: using iterator is good in for-loop
         for _ in range(MAX_POLLS_LIMIT):
             response = self.http.get(
                 DEEPCODE_API_ROUTES['checkLogin'], {'token': token}, response_to_json=False)

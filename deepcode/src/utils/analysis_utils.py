@@ -4,7 +4,7 @@ import io
 import re
 import json
 from operator import itemgetter
-from deepcode.src.constants.config_constants import MAX_FILE_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME, SEVERITIES
+from deepcode.src.constants.config_constants import MAX_REQUEST_BODY_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME, SEVERITIES
 from deepcode.src.constants.common_ignore_dirs import COMMON_IGNORE_DIRS
 from deepcode.src.helpers.terminal_view_decorations import text__with_colors, text_with__color_marker, text_decorations
 from deepcode.src.helpers.cli_helpers import ANALYSIS_HELPERS
@@ -69,7 +69,7 @@ def create_file_hash_with_path(max_file_size, file_path):
     return file_path, hash_file_content(file_content)
 
 
-def file_contents_as_string(path, max_file_size=MAX_FILE_SIZE):
+def file_contents_as_string(path, max_file_size=MAX_REQUEST_BODY_SIZE):
     """
     Read contents of file as utf-8 string
     :param path: absolute path to the file

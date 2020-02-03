@@ -31,7 +31,7 @@ class DeepCodeErrorHandler:
     @classmethod
     def set_mode_for_handling_errors(cls, is_cli_mode, config):
         cls.is_cli_mode = is_cli_mode
-        cls.backend_host = config.current_config[DEEPCODE_CONFIG_NAMES['backend_host']]
+        cls.backend_host = config.current_config.get(DEEPCODE_CONFIG_NAMES['backend_host']) or DEEPCODE_BACKEND_HOST
 
     @classmethod
     def ExceptionsFactory(cls, exception_name):

@@ -17,8 +17,8 @@ MOCKED_BUNDLE_ID = 'test_bundle_id'
 
 class MockedConfig:
     mocked_current_config = {
-        'BACKEND_HOST': MOCKED_API_BASE,
-        'TOKEN': 'TEST_TOKEN'
+        'backend_host': MOCKED_API_BASE,
+        'token': 'TEST_TOKEN'
     }
 
     def __init__(self):

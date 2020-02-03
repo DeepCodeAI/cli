@@ -11,7 +11,6 @@ from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 
 from deepcode.src.constants.cli_constants \
     import CLI_ARGS_NAMESPACE_NAME, CLI_SUPPORTED_COMMANDS, SUPPORTED_RESULTS_FORMATS, CLI_ALIASES
-from deepcode.src.constants.config_constants import CURRENT_FOLDER_PATH
 from deepcode.src.helpers.cli_helpers import LOGIN_HELPERS, ANALYSIS_HELPERS, BUNDLE_HELPERS
 
 
@@ -50,10 +49,6 @@ class DeepCodeMainModule:
         chosen_format = cli_args_dict['format']
         if not chosen_format:
             return self.config.configure_cli()
-        if chosen_format == json_format:
-            print(self.config.display_config_to_json())
-        if chosen_format == txt_format:
-            print(self.config.display_config_to_txt())
 
     # handle cli login command
     def cli_login_actions(self):
@@ -142,8 +137,7 @@ class DeepCodeMainModule:
 
         parent_path, child_path = paths.values()
         is_diff_analysis = bool(child_path)
-        path_to_analyze = [
-            parent_path, child_path] if is_diff_analysis else parent_path or CURRENT_FOLDER_PATH
+        path_to_analyze = [parent_path, child_path] if is_diff_analysis else parent_path or '.'
         analysis_options = {
             'remote': is_repo,
             'silent': True

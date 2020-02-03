@@ -63,8 +63,8 @@ def response_side_effect(*args, **kwargs):
 class MockedConfig:
     def __init__(self):
         self.current_config = {
-            'BACKEND_HOST': MOCKED_BACKEND_HOST,
-            'TOKEN': MOCKED_TOKEN,
+            'backend_host': MOCKED_BACKEND_HOST,
+            'token': MOCKED_TOKEN,
         }
 
 

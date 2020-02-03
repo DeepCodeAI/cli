@@ -10,8 +10,7 @@ from deepcode.src.utils.analysis_utils\
 from deepcode.src.utils.api_utils import validate_remote_bundle_response
 from deepcode.src.utils.cli_utils import construct_progress, progress_iterator
 
-from deepcode.src.constants.config_constants import\
-    MAX_FILE_SIZE, MAX_BATCH_CONTENT_SIZE, CURRENT_FOLDER_PATH, DEEPCODE_API_ROUTES
+from deepcode.src.constants.config_constants import MAX_REQUEST_BODY_SIZE, DEEPCODE_API_ROUTES
 from deepcode.src.constants.cli_constants import MAX_PROGRESS_VALUE
 from deepcode.src.constants.backend_constants \
     import BUNDLE_RESPONSE_FIELDS, POLLING_INTERVAL, BACKEND_STATUS_CODES
@@ -82,7 +81,6 @@ class DeepCodeBundler:
 
     @DeepCodeErrorHandler.bundle_path_error_decorator
     def create_abs_bundle_path(self, bundle_path):
-        # is_current_path = bundle_path is CURRENT_FOLDER_PATH
         result_path = os.path.join(os.path.sep, os.path.realpath(bundle_path))
         if not os.path.exists(result_path):
             DeepCodeErrorHandler.raise_path_error('no_path')
@@ -92,7 +90,7 @@ class DeepCodeBundler:
     def create_hashes_bundle(self, bundle_path, show_progressbar=True):
         hashes_bundle = hash_files(
             self.abs_bundle_paths[bundle_path],
-            MAX_FILE_SIZE,
+            MAX_REQUEST_BODY_SIZE,
             self.files_filters,
             show_progressbar=show_progressbar,
             progress_iterator=progress_iterator(
@@ -206,11 +204,11 @@ class DeepCodeBundler:
 
     @DeepCodeErrorHandler.files_bundle_error_decorator
     def split_missing_files_into_batches(self, missing_files_batch):
-        if self.compute_files_batch_list_size(missing_files_batch) > MAX_BATCH_CONTENT_SIZE:
+        if self.compute_files_batch_list_size(missing_files_batch) > MAX_REQUEST_BODY_SIZE:
             separate_batches = []
             single_batch = []
             for batch in missing_files_batch:
-                if self.compute_files_batch_list_size(single_batch) + self.compute_files_batch_size(batch) >= MAX_BATCH_CONTENT_SIZE:
+                if self.compute_files_batch_list_size(single_batch) + self.compute_files_batch_size(batch) >= MAX_REQUEST_BODY_SIZE:
                     separate_batches.append(single_batch)
                     single_batch = []
                 single_batch.append(batch)

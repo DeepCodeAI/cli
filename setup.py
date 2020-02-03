@@ -17,7 +17,7 @@ with open(requirements_file) as f:
 
 setuptools.setup(
     name=DEEPCODE_PACKAGE_NAME,
-    version=DEEPCODE_PACKAGE_VERSION,  #"0.0.4",
+    version=DEEPCODE_PACKAGE_VERSION,
     author="DeepCode.ai",
     author_email="contact@deepcode.com",
     description="DeepCode cli for code review",

@@ -2,7 +2,7 @@ import unittest
 import os
 from deepcode.src.utils.analysis_utils import hash_file_content, file_contents_as_string, hash_files
 
-MAX_FILE_SIZE = 1000000
+MAX_REQUEST_BODY_SIZE = 1000000
 
 
 class TestFileHash(unittest.TestCase):
@@ -10,7 +10,7 @@ class TestFileHash(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__),
                             'mocked_for_tests', 'test.java')
         sha256 = hash_file_content(
-            file_contents_as_string(path, MAX_FILE_SIZE))
+            file_contents_as_string(path, MAX_REQUEST_BODY_SIZE))
         self.assertEqual(
             '09f4ca64118f029e5a894305dfc329c930ebd2a258052de9e81f895b055ec929', sha256)
 
@@ -20,7 +20,7 @@ class TestFileUtf8Hash(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__),
                             'mocked_for_tests', 'sample_repository/utf8.js')
         sha256 = hash_file_content(
-            file_contents_as_string(path, MAX_FILE_SIZE))
+            file_contents_as_string(path, MAX_REQUEST_BODY_SIZE))
         self.assertEqual(
             'cc2b67993e547813db67f57c6b20bff83bf4ade64ea2c3fb468d927425502804', sha256)
 
@@ -30,7 +30,7 @@ class TestFileIsoHash(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__),
                             'mocked_for_tests', 'sample_repository/main.js')
         sha256 = hash_file_content(
-            file_contents_as_string(path, MAX_FILE_SIZE))
+            file_contents_as_string(path, MAX_REQUEST_BODY_SIZE))
         self.assertEqual(
             '5bec5abb7c26e8d2347881d022ebf46221f29ef50dda7c37f62c69b9a4a2bb1e', sha256)
 
@@ -43,7 +43,7 @@ class TestHashFilesBundle(unittest.TestCase):
 
         path = os.path.join(os.path.dirname(__file__),
                             'mocked_for_tests', 'sample_repository')
-        res = hash_files(path=path, max_file_size=MAX_FILE_SIZE,
+        res = hash_files(path=path, max_file_size=MAX_REQUEST_BODY_SIZE,
                          filters_dict=mocked_files_filters, show_progressbar=False)
         self.assertEqual(3, len(res))
         res_set = set((res[item], item)for item in res)
