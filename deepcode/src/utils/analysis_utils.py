@@ -5,7 +5,6 @@ import re
 import json
 from operator import itemgetter
 from deepcode.src.constants.config_constants import MAX_REQUEST_BODY_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME, SEVERITIES
-from deepcode.src.constants.common_ignore_dirs import COMMON_IGNORE_DIRS
 from deepcode.src.helpers.terminal_view_decorations import text__with_colors, text_with__color_marker, text_decorations
 from deepcode.src.helpers.cli_helpers import ANALYSIS_HELPERS
 
@@ -27,7 +26,7 @@ def hash_files(path, max_file_size, filters_dict, show_progressbar=True, progres
     """
     paths = []
 
-    ignores = COMMON_IGNORE_DIRS[:]
+    ignores = []
     progress_iterator_max_value = len(list(os.walk(path)))
     iteratable_range = progress_iterator(os.walk(
         path), max_value=progress_iterator_max_value) if show_progressbar else os.walk(path)

@@ -4,7 +4,7 @@ from deepcode.src.modules.errors_handler import DeepCodeErrorHandler
 
 from deepcode.src.utils.config_utils import handle_backend_host_last_slash
 
-from deepcode.src.constants.config_constants import DEEPCODE_CONFIG_FILENAME, DEEPCODE_CONFIG_NAMES
+from deepcode.src.constants.config_constants import DEEPCODE_CONFIG_FILENAME
 from deepcode.src.helpers.cli_helpers import CONFIG_SETTINGS_MESSAGES
 
 
@@ -33,12 +33,11 @@ class deepcodeconfig:
 
     def update_config(self, new_fields={}):
         for field in new_fields:
-            self.current_config[DEEPCODE_CONFIG_NAMES[field]
-                                ] = new_fields[field]
+            self.current_config[field] = new_fields[field]
         self.update_config_file(self.current_config)
 
     def delete_user_config(self, update_file=True):
-        self.current_config[DEEPCODE_CONFIG_NAMES['token']] = ''
+        self.current_config['token'] = ''
         if update_file:
             self.update_config_file(self.current_config)
 
@@ -53,7 +52,7 @@ class deepcodeconfig:
         self.update_config(logged_in_config)
 
     def is_user_logged_in(self):
-        return bool(self.current_config.get(DEEPCODE_CONFIG_NAMES['token']))
+        return bool(self.current_config.get('token'))
 
     def configure_cli(self):
         new_backend_host = input(CONFIG_SETTINGS_MESSAGES['configure_backend_host'])

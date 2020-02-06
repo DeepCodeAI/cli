@@ -16,11 +16,6 @@ DEEPCODE_API_ROUTES = {
     'diff': lambda parent_id, child_id: 'analysis/{}/{}'.format(parent_id, child_id)
 }
 
-DEEPCODE_CONFIG_NAMES = {
-    'backend_host': 'service_url',
-    'token': 'token',
-}
-
 MAX_REQUEST_BODY_SIZE = 4 * 1024 * 1024  # 4MB
 
 GITIGNORE_FILENAME = '.gitignore'

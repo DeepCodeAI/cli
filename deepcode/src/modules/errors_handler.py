@@ -3,8 +3,9 @@ import requests
 import json
 
 from deepcode.src.utils.config_utils import is_package_in_dev_mode
-from deepcode.src.constants.config_constants \
-    import DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST, DEEPCODE_SOURCE_NAME, DEEPCODE_CONFIG_NAMES
+from deepcode.src.constants.config_constants import (
+    DEEPCODE_API_ROUTES, DEEPCODE_API_PREFIX, DEEPCODE_BACKEND_HOST, DEEPCODE_SOURCE_NAME
+    )
 from deepcode.src.helpers.errors_messages \
     import BACKEND_ERRORS, OPEN_FILE_ERROR, PARSE_API_RESPONSE_JSON_ERROR, PATH_ERRORS, FILES_BUNDLE_ERRORS
 
@@ -31,7 +32,7 @@ class DeepCodeErrorHandler:
     @classmethod
     def set_mode_for_handling_errors(cls, is_cli_mode, config):
         cls.is_cli_mode = is_cli_mode
-        cls.backend_host = config.current_config.get(DEEPCODE_CONFIG_NAMES['backend_host']) or DEEPCODE_BACKEND_HOST
+        cls.backend_host = config.current_config.get('backend_host') or DEEPCODE_BACKEND_HOST
 
     @classmethod
     def ExceptionsFactory(cls, exception_name):
