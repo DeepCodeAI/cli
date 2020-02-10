@@ -11,10 +11,15 @@ async def get_filters():
     # print('filters --> ', filters)
     return filters
 
-
 async def create_bundle(file_hashes):
-    bundle = await api_call('bundle', method='POST', data={'files': file_hashes})
-    return bundle
+    data = await api_call('bundle', method='POST', data={'files': file_hashes})
+    return data['bundleId'], data['missingFiles']
+
+
+async def check_bundle(bundle_id):
+    data = await api_call('bundle/{}'.format(bundle_id), method='GET')
+    return data['missingFiles']
+
 
 async def upload_bundle_files(bundle_id, entries, index):
     """
@@ -39,10 +44,9 @@ async def upload_bundle_files(bundle_id, entries, index):
 
     print('#{:2.0f} in {:10.2f} sec | sent {} files with size: {}'.format(index, time.time() - start_time, len(entries), sum([e[2] for e in entries])))
 
-async def fulfill_bundle(bundle):
-    missing_files = bundle['missingFiles']
-    bundle_id = bundle['bundleId']
 
+async def fulfill_bundle(bundle_id, missing_files):
+    
     if not missing_files:
         return
     
@@ -53,4 +57,4 @@ async def fulfill_bundle(bundle):
     if tasks:
         await asyncio.gather(*tasks)
     else:
-        print('All files have been uploaded earlier')
+        print('No new files sent, as all files have been uploaded earlier')

@@ -4,12 +4,15 @@ import os
 import time
 
 from .files import collect_bundle_files, prepare_bundle_hashes
-from .bundle import get_filters, create_bundle, fulfill_bundle
+from .bundle import get_filters, create_bundle, fulfill_bundle, check_bundle
+from .analysis import get_analysis
 
 logging.basicConfig(level=logging.DEBUG)
 
 PATH = '/Users/arvid/workspace/test/DefinitelyTyped'
 #PATH = '/Users/arvid/workspace/dc/cli'
+
+LINTERS_ENABLED = False
 
 async def main(path):
     start_time = time.time()
@@ -32,13 +35,23 @@ async def main(path):
     print("--- {:10.2f} sec for prepare_bundle_hashes ---".format(time.time() - start_time))
 
     start_time = time.time()
-    bundle = await create_bundle(file_hashes)
+    bundle_id, missing_files = await create_bundle(file_hashes)
     #print('bundle --> ', bundle)
     print("--- {:10.2f} sec for create_bundle ---".format(time.time() - start_time))
 
+    while(missing_files):
+        start_time = time.time()
+        await fulfill_bundle(bundle_id, missing_files)
+        print("--- {:10.2f} sec for fulfill_bundle ---".format(time.time() - start_time))
+
+        start_time = time.time()
+        missing_files = await check_bundle(bundle_id)
+        print("--- {:10.2f} sec for check_bundle ---".format(time.time() - start_time))
+        
+    
     start_time = time.time()
-    await fulfill_bundle(bundle)
-    print("--- {:10.2f} sec for fulfill_bundle ---".format(time.time() - start_time))
+    missing_files = await get_analysis(bundle_id, linters_enabled=LINTERS_ENABLED)
+    print("--- {:10.2f} sec for get_analysis ---".format(time.time() - start_time))
 
 
 def run_main_loop(path):

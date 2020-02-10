@@ -89,11 +89,14 @@ def get_file_meta(file_path):
     return (len(content), hasher.hexdigest())
 
 
-def prepare_bundle_hashes(bundle_files):
-    return dict([
-        (entry.path, get_file_meta(entry.path)[1])
-        for entry in bundle_files
-        ])
+def prepare_bundle_hashes(bundle_files, bucket_size=MAX_BUCKET_SIZE):
+    items = []
+    for entry in bundle_files:
+        file_size, file_hash = get_file_meta(entry.path)
+        if file_size < bucket_size:
+            items.append((entry.path, file_hash))
+    
+    return dict(items)
 
 
 def compose_file_buckets(file_paths, bucket_size=MAX_BUCKET_SIZE):
