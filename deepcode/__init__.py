@@ -1,28 +1,48 @@
-"""
-DeepCode module for analyzing code.
-Avaliable methods:
-  analyze([parent_path: string], [child_path:string], [is_repo: boolean]): -> return json
-"""
-from deepcode.src.module import deepcode_module
+import asyncio
+import logging
+import os
+import time
 
-name = "deepcode"
-description = "This package is avaliable as imported module and as cli tool. To use it as imported module, please import it and call avaliable methods with args. To use it in terminal, just call deepcode in terminal and pass args"
+from .files import collect_bundle_files, prepare_bundle_hashes
+from .bundle import get_filters, create_bundle, fulfill_bundle
 
-# avaliable methods for module
+logging.basicConfig(level=logging.DEBUG)
+
+PATH = '/Users/arvid/workspace/test/DefinitelyTyped'
+#PATH = '/Users/arvid/workspace/dc/cli'
+
+async def main(path):
+    start_time = time.time()
+    filters = await get_filters()
+    print("--- {:10.2f} sec for getting filters ---".format(time.time() - start_time))
+    
+    supported_extensions = set(filters['extensions'])
+    expected_config_files = set(filters['configFiles'])
+    file_filter = lambda n: os.path.splitext(n)[-1] in supported_extensions or n in expected_config_files
+
+    bundle_files = []
+    
+    start_time = time.time()
+    bundle_files = await collect_bundle_files(path, file_filter)
+    print('bundle_files --> ', len(bundle_files))
+    print("--- {:10.2f} sec for collect_bundle_files ---".format(time.time() - start_time))
+
+    start_time = time.time()
+    file_hashes = prepare_bundle_hashes(bundle_files)
+    print("--- {:10.2f} sec for prepare_bundle_hashes ---".format(time.time() - start_time))
+
+    start_time = time.time()
+    bundle = await create_bundle(file_hashes)
+    #print('bundle --> ', bundle)
+    print("--- {:10.2f} sec for create_bundle ---".format(time.time() - start_time))
+
+    start_time = time.time()
+    await fulfill_bundle(bundle)
+    print("--- {:10.2f} sec for fulfill_bundle ---".format(time.time() - start_time))
 
 
-def analyze(parent_path=None, child_path=None, is_repo=False):
-    '''
-    analyze([parent_path: string], [child_path:string], [is_repo: boolean]): -> return json\n
-      Paths can be absolute path to bundle dir or path to remote repo of current registered user e.g.[user_name]/[repo_name]/[commit(optional)]\n
-      :param [parent_path] - if [parent_path] is not specified, current path will be taken to analyze\n
-      :param [child_path] - optional. Used for diff analysis. If specifed, diff analysis of two bundles will start\n
-      :param [is_repo] - optional. specifies that git remote repo should be ananlyzed.\n
-      :return - json with results e.g. {'files':{}, 'suggestions':{}} or json with error e.g. {"error": "[text of error]"}.\n
-      example:\n
-        deepcode.analyze('<owner/repo_name/commit>', is_repo=True) #analysis for remote bundle\n
-        deepcode.analyze('<path to files dir>') # analysis for files\n
-        deepcode.analyze() #analysis of current folder of file\n
-    '''
-    return deepcode_module.analyze(
-        parent_path, child_path, is_repo)
+def run_main_loop(path):
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main(path))
+    loop.run_until_complete(loop.shutdown_asyncgens())
+    
