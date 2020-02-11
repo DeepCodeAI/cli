@@ -31,10 +31,16 @@ brotlipy = "^0.7.0"
 cchardet = "^2.1.5"
 asyncio = "^3.4.3"
 aiofiles = "^0.4.0"
+click = "^7.0"
+click-option-group = "^0.2.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 
+[tool.poetry.scripts]
+deepcode = 'deepcode.cli:process'
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+

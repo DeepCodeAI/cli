@@ -1,61 +1,34 @@
 import asyncio
-import logging
 import os
-import time
 
-from .files import collect_bundle_files, prepare_bundle_hashes
-from .bundle import get_filters, create_bundle, fulfill_bundle, check_bundle
+from .files import prepare_bundle_files
+from .bundle import get_filters, generate_bundles, create_git_bundle, fulfill_bundle, check_bundle
 from .analysis import get_analysis
+from .utils import logger, profile_speed
 
-logging.basicConfig(level=logging.DEBUG)
 
-PATH = '/Users/arvid/workspace/test/DefinitelyTyped'
-#PATH = '/Users/arvid/workspace/dc/cli'
+@profile_speed
+async def analize_folders(paths, linters_enabled=False):
+    """ Entire flow of analyzing local folders. """
+    file_filter = await get_filters()
 
-LINTERS_ENABLED = False
+    file_hashes = prepare_bundle_files(paths, file_filter)
+    logger.info('Files to be analyzed --> {}'.format( len(file_hashes) ))
 
-async def main(path):
-    start_time = time.time()
-    filters = await get_filters()
-    print("--- {:10.2f} sec for getting filters ---".format(time.time() - start_time))
-    
-    supported_extensions = set(filters['extensions'])
-    expected_config_files = set(filters['configFiles'])
-    file_filter = lambda n: os.path.splitext(n)[-1] in supported_extensions or n in expected_config_files
-
-    bundle_files = []
-    
-    start_time = time.time()
-    bundle_files = await collect_bundle_files(path, file_filter)
-    print('bundle_files --> ', len(bundle_files))
-    print("--- {:10.2f} sec for collect_bundle_files ---".format(time.time() - start_time))
-
-    start_time = time.time()
-    file_hashes = prepare_bundle_hashes(bundle_files)
-    print("--- {:10.2f} sec for prepare_bundle_hashes ---".format(time.time() - start_time))
-
-    start_time = time.time()
-    bundle_id, missing_files = await create_bundle(file_hashes)
-    #print('bundle --> ', bundle)
-    print("--- {:10.2f} sec for create_bundle ---".format(time.time() - start_time))
-
-    while(missing_files):
-        start_time = time.time()
-        await fulfill_bundle(bundle_id, missing_files)
-        print("--- {:10.2f} sec for fulfill_bundle ---".format(time.time() - start_time))
-
-        start_time = time.time()
-        missing_files = await check_bundle(bundle_id)
-        print("--- {:10.2f} sec for check_bundle ---".format(time.time() - start_time))
+    async for bundle_id, missing_files in generate_bundles(file_hashes):
         
+        while(missing_files):
+            await fulfill_bundle(bundle_id, missing_files)
+            
+            missing_files = await check_bundle(bundle_id)
     
-    start_time = time.time()
-    missing_files = await get_analysis(bundle_id, linters_enabled=LINTERS_ENABLED)
-    print("--- {:10.2f} sec for get_analysis ---".format(time.time() - start_time))
+    return await get_analysis(bundle_id, linters_enabled=linters_enabled)
 
 
-def run_main_loop(path):
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(path))
-    loop.run_until_complete(loop.shutdown_asyncgens())
+@profile_speed
+async def analize_git(platform, owner, repo, oid=None, linters_enabled=False):
+    """ Entire flow of analyzing remote git repositories. """
+    bundle_id = await create_git_bundle(platform, owner, repo, oid)
     
+    return await get_analysis(bundle_id, linters_enabled=linters_enabled)
+

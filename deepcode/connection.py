@@ -1,15 +1,48 @@
 from urllib.parse import urljoin
 import aiohttp
+import asyncio
 import zlib
+import os
 from json import dumps
+from functools import wraps
+
+from .utils import logger
 
 # API_TOKEN = '1eea7e6a02f82252a71732401eb2f6b3711f2db306e0bf88c3e50fd2b640fe79'
 API_TOKEN = 'd9f5eb73e28d31bdc65d3eed3df165b16ac078477d0fa4749db2e8a5df5d499f'
-#SERVICE_URL = 'https://www.deepcode.ai/publicapi/'
-SERVICE_URL = 'http://localhost:8080/publicapi/'
 
-async def api_call(path, method='GET', data=None, extra_headers={}, callback=lambda resp: resp.json()):
-    url = urljoin(SERVICE_URL, path)
+DEFAULT_SERVICE_URL = 'https://www.deepcode.ai'
+NETWORK_RETRY_DELAY = 5
+
+# BACKEND_STATUS_CODES = {
+#     'success': 200,
+#     'login_in_progress': 304,
+#     'token': 401,
+#     'invalid_content': 400,
+#     'invalid_bundle_access': 403,
+#     'expired_bundle': 404,
+#     'large_payload': 413
+# }
+
+def reconnect(func):
+  
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        while(True):
+            try:
+                return await func(*args, **kwargs)
+            except aiohttp.client_exceptions.ClientConnectionError:
+                logger.info("Server is not available. Retrying in {} seconds".format(NETWORK_RETRY_DELAY))
+                # In case of network disruptions, we just retry without affecting any logic
+                await asyncio.sleep(NETWORK_RETRY_DELAY)
+
+    return wrapper
+    
+
+@reconnect
+async def api_call(path, method='GET', data=None, extra_headers={}, callback=lambda resp: resp.json(), compression_level=6):
+    SERVICE_URL = os.environ.get('SERVICE_URL', DEFAULT_SERVICE_URL)
+    url = urljoin(urljoin(SERVICE_URL, '/publicapi/'), path)
     
     default_headers = {
         'Session-Token': API_TOKEN,
@@ -18,7 +51,7 @@ async def api_call(path, method='GET', data=None, extra_headers={}, callback=lam
     if data:
         # Expect json string here
         data = dumps(data).encode('utf-8')
-        data = zlib.compress(data, 9) if data else None
+        data = zlib.compress(data, level=compression_level)
 
         default_headers.update({
             'Content-Type': 'application/json',
@@ -26,19 +59,21 @@ async def api_call(path, method='GET', data=None, extra_headers={}, callback=lam
         })
     
     # async def on_request_start(session, trace_config_ctx, params):
-    #     print("Starting request")
+    #     logger.debug("Starting request")
 
     # async def on_request_end(session, trace_config_ctx, params):
-    #     print("Ending request")
+    #     logger.debug("Ending request")
 
     async with aiohttp.request(
         url=url, method=method, 
         data=data, 
+        raise_for_status=True,
         headers=dict(default_headers, **extra_headers), 
         compress=None
         ) as resp:
         
+        # logger.debug('status --> {}'.format(resp.status))
         # content = await resp.text()
-        #print('request succeeded with response --> ', content)
-        #print('!'*80)
+        #logger.debug('request succeeded with response --> {}'.format(content))
+        #logger.debug('!'*80)
         return await callback(resp)

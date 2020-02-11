@@ -6,6 +6,8 @@ from funcy import lcat, project
 from itertools import chain
 import hashlib
 
+from .utils import profile_speed, logger
+
 IGNORES_DEFAULT = {
     '**/.git',
 }
@@ -25,49 +27,53 @@ def parse_file_ignores(file_path):
     dirname = os.path.dirname(file_path)
     with open(file_path, mode='r') as f:
         for l in f.readlines():
-            yield os.path.join(dirname, l.strip())
+            rule = l.strip()
+            if not rule.startswith('#'):
+                yield os.path.join(dirname, rule)
 
 def is_ignored(path, file_ignores):
     return any(i for i in file_ignores if fnmatch.fnmatch(path, i))
     
 
-async def collect_bundle_files(path, file_filter, file_ignores=IGNORES_DEFAULT):
+def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
     local_files = []
-    with os.scandir(path) as it:
-        sub_dirs = []
-        local_ignore_file = False
-        for entry in it:
+    
+    for path in paths:
+        with os.scandir(path) as it:
+            sub_dirs = []
+            local_ignore_file = False
+            for entry in it:
 
-            if entry.is_symlink():
-                # To prevent possible infinite loops, we ignore symlinks for now
-                continue
-            
-            if entry.is_dir():
-                sub_dirs.append(entry.path)
-                continue
-
-            if entry.name in IGNORE_FILES_NAMES:
-                for ignore_rule in parse_file_ignores(entry.path):
-                    file_ignores.add(ignore_rule)
-                local_ignore_file = True
-                #print('updated ignores to --> ', file_ignores)
-                continue 
-            
-            if entry.is_file() \
-            and not is_ignored(entry.path, file_ignores) \
-            and file_filter(entry.name):
+                if entry.is_symlink():
+                    # To prevent possible infinite loops, we ignore symlinks for now
+                    continue
                 
-                local_files.append(entry)
-        
-        if local_ignore_file:
-            local_files = [f for f in local_files if not is_ignored(f.path, file_ignores)]
-        
-        results = await asyncio.gather(*[
-            collect_bundle_files(subdir, file_filter, file_ignores) 
-            for subdir in sub_dirs
-            if not is_ignored(subdir, file_ignores)
-            ])
-        local_files.extend(chain(*results))
+                if entry.is_dir():
+                    sub_dirs.append(entry.path)
+                    continue
+
+                if entry.name in IGNORE_FILES_NAMES:
+                    for ignore_rule in parse_file_ignores(entry.path):
+                        file_ignores.add(ignore_rule)
+                    local_ignore_file = True
+                    logger.debug('recognized ignore rules in file --> {}'.format(entry.path))
+                    continue 
+                
+                if entry.is_file() \
+                and not is_ignored(entry.path, file_ignores) \
+                and file_filter(entry.name):
+                    
+                    local_files.append(entry)
+            
+            if local_ignore_file:
+                local_files = [f for f in local_files if not is_ignored(f.path, file_ignores)]
+            
+            sub_dirs = [
+                subdir for subdir in sub_dirs
+                if not is_ignored(subdir, file_ignores)
+                ]
+            results = collect_bundle_files(sub_dirs, file_filter, file_ignores) 
+            local_files.extend(results)
     
     return local_files
 
@@ -96,20 +102,25 @@ def prepare_bundle_hashes(bundle_files, bucket_size=MAX_BUCKET_SIZE):
         if file_size < bucket_size:
             items.append((entry.path, file_hash))
     
-    return dict(items)
+    return items
+
+
+@profile_speed
+def prepare_bundle_files(paths, file_filter):
+    """ Prepare files for bundle. """
+    bundle_files = collect_bundle_files(paths, file_filter)
+    return prepare_bundle_hashes(bundle_files)
 
 
 def compose_file_buckets(file_paths, bucket_size=MAX_BUCKET_SIZE):
     """
-    Split into buckets of some max size
-    Return list of items: (path, hash)
+    Split files into buckets with limiting max size
+    Return list of items: (path, hash, size)
     """
     buckets = [{
         'size': bucket_size,
         'files': []
     }]
-
-    #print('compose_file_buckets files --> ', file_paths)
 
     def route_file_to_bucket(file_path):
         # Get file details
@@ -122,23 +133,18 @@ def compose_file_buckets(file_paths, bucket_size=MAX_BUCKET_SIZE):
         # Try to find existing bucket
         for bucket in buckets:
             if bucket['size'] >= file_size:
-                bucket['files'].append( (file_path, file_hash, file_size) )
+                bucket['files'].append( (file_path, file_hash) )
                 bucket['size'] -= file_size
                 return bucket
         
         bucket = {
             'size': bucket_size - file_size,
-            'files': [ (file_path, file_hash, file_size) ]
+            'files': [ (file_path, file_hash) ]
         }
         buckets.append(bucket)
         return bucket
     
-    def print_buckets():
-        bucket_repr = lambda b: 's:{},f:{}'.format(b['size'], len(b['files']))
-        print( ' | '.join([bucket_repr(b) for b in buckets]) )
-
     for file_path in file_paths:
-        #print_buckets()
         bucket = route_file_to_bucket(file_path)
         if not bucket:
             continue
