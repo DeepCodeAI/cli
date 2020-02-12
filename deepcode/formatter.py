@@ -1,7 +1,6 @@
 import json
 from operator import itemgetter
 #from deepcode.src.constants.config_constants import SEVERITIES
-#from deepcode.src.helpers.cli_helpers import ANALYSIS_HELPERS
 
 SEVERITIES_COLOR = {
     1: 'blue',
@@ -109,46 +108,41 @@ def create_issue_markers_positions(markers):
     return '{}{}'.format(markers_subheader_str, markers_positions_str.rstrip())
 
 
-def construct_issues_complex_txt_view(analysis_results, is_silent=False):
-    result_txt = '' if is_silent else '{}\n'.format(
-        ANALYSIS_HELPERS['txt_view_results'])
-    files, suggestions = itemgetter(
-        'files', 'suggestions')(analysis_results)
+def construct_issues_complex_txt_view(analysis_results):
+    result_txt = '{}'.format(ANALYSIS_HELPERS['txt_view_results'])
+    files, suggestions = itemgetter('files', 'suggestions')(analysis_results)
     if not len(files) and not len(suggestions):
         return ANALYSIS_HELPERS['empty_results']
 
     info, warning, critical = SEVERITIES.keys()
     grouped_issues = {
-        critical: '',
-        warning: '',
-        info: ''
+        critical: [],
+        warning: [],
+        info: []
     }
 
-    for file_index, file_path in enumerate(files):
-        issue_file_path = file_path
+    for file_path in files:
         for suggestion in files[file_path]:
-            issues_positions_list = files[file_path][suggestion]
-            issue_severity_number = suggestions[suggestion]['severity']
-            issue_message = suggestions[suggestion]['message']
+            issue_severity = suggestions[suggestion]['severity']
             issue_txt_view = construct_issue_txt_view(
-                issue_file_path,
-                issues_positions_list,
-                issue_severity_number,
-                issue_message
+                file_path,
+                files[file_path][suggestion],
+                issue_severity,
+                suggestions[suggestion]['message']
             )
-            grouped_issues[issue_severity_number] += '{}\n'.format(
-                issue_txt_view)
+            grouped_issues[issue_severity].append(issue_txt_view)
 
     for idx, severity in enumerate(grouped_issues):
         if grouped_issues[severity]:
             result_txt += '{}\n{}'.format(
-                construct_severity_sub_header(severity), grouped_issues[severity].rstrip())
+                construct_severity_sub_header(severity), 
+                grouped_issues[severity].rstrip())
             if idx < len(grouped_issues)-1:
                 result_txt += '\n'
     return result_txt
 
 
-def construct_issues_json_view(analysis_results, is_silent=False):
-    if is_silent:
-        return '{}'.format(json.dumps(analysis_results))
-    return '{}\n{}'.format(ANALYSIS_HELPERS['json_view_results'], json.dumps(analysis_results))
+ANALYSIS_HELPERS = {
+    'txt_view_results': text__with_colors['green']('DeepCode Analysis Results in text format:'),
+    'empty_results': text__with_colors['green']('Everything is fine. No issues found.')
+}
