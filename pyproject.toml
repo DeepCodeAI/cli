@@ -33,6 +33,7 @@ asyncio = "^3.4.3"
 aiofiles = "^0.4.0"
 click = "^7.0"
 click-option-group = "^0.2.3"
+tqdm = "^4.42.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

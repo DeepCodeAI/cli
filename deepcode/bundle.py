@@ -3,12 +3,13 @@ import json
 import asyncio
 import time
 from funcy import chunks
+from tqdm import tqdm
 
 from .connection import api_call
 from .files import get_file_content, compose_file_buckets, MAX_BUCKET_SIZE
-from .utils import profile_speed, logger
+from .utils import logger
 
-@profile_speed
+
 async def get_filters():
     """ Fetch supported file extensions """
     filters = await api_call('filters')
@@ -18,6 +19,7 @@ async def get_filters():
 
 
 async def _request_file_bundle(path, method, file_hashes):
+
     res = await api_call(
         path='bundle', method='POST', 
         data={'files': dict(file_hashes), 'removedFiles': []}, 
@@ -27,33 +29,44 @@ async def _request_file_bundle(path, method, file_hashes):
     logger.debug('bundle id: {} | missing_files: {}'.format(bundle_id, len(missing_files)))
     return bundle_id, missing_files
 
-@profile_speed
-async def create_file_bundle(file_hashes):
+
+def create_file_bundle(file_hashes):
     """ Create a new bundle via API  """
-    return await _request_file_bundle('bundle', 'POST', file_hashes)
+    return _request_file_bundle('bundle', 'POST', file_hashes)
 
-@profile_speed
-async def extend_file_bundle(bundle_id, file_hashes):
+
+def extend_file_bundle(bundle_id, file_hashes):
     """ Extend bundle via API  """
-    return await _request_file_bundle('bundle/{}'.format(bundle_id), 'PUT', file_hashes)
+    return _request_file_bundle('bundle/{}'.format(bundle_id), 'PUT', file_hashes)
 
 
-async def generate_bundles(file_hashes):
-    """ Generate bundles via API. Split files into chunks. """
+async def generate_bundle(file_hashes):
+    """ Generate bundles via API. Incapsulates all logic of our bundle protocol. """
 
-    bundle_id, missing_files = None, []
+    async def _complete_bundle(bundle_task):
+        bundle_id, missing_files = await bundle_task
+        while(missing_files):
+            await fulfill_bundle(bundle_id, missing_files) # Send all missing files
+            missing_files = await check_bundle(bundle_id) # Check that all files are uploaded
+        
+        return bundle_id
+
+    bundle_id = None
     
-    for index, chunked_files in enumerate(chunks(int(MAX_BUCKET_SIZE // 200), file_hashes)):
-        logger.debug('#{} chunk with {} files'.format(index, len(chunked_files)))
-        if not bundle_id:
-            bundle_id, missing_files = await create_file_bundle(chunked_files)
-        else:
-            bundle_id, missing_files = await extend_file_bundle(bundle_id, chunked_files)
+    with tqdm(total=len(file_hashes), desc='Generated bundles', unit='bundle', leave=False) as pbar:
 
-        yield bundle_id, missing_files
-    
+        for chunked_files in chunks(int(MAX_BUCKET_SIZE // 200), file_hashes):
+            
+            if not bundle_id:
+                bundle_id = await _complete_bundle( create_file_bundle(chunked_files) )
+            else:
+                bundle_id = await _complete_bundle( extend_file_bundle(bundle_id, chunked_files) )
 
-@profile_speed
+            pbar.update(len(chunked_files))
+            
+        return bundle_id
+        
+
 async def create_git_bundle(platform, owner, repo, oid):
     """ Create a git bundle via API  """
     data = {
@@ -68,7 +81,7 @@ async def create_git_bundle(platform, owner, repo, oid):
     res = await api_call('bundle', method='POST', data=data, compression_level=9)
     return res['bundleId']
 
-@profile_speed
+
 async def check_bundle(bundle_id):
     """ Check missing files in bundle via API """
     data = await api_call('bundle/{}'.format(bundle_id), method='GET')
@@ -79,7 +92,6 @@ async def upload_bundle_files(bundle_id, entries):
     """
     Each entry should contain of: (path, hash)
     """
-    start_time = time.time()
     
     data = []
     for file_path, file_hash in entries:
@@ -96,23 +108,23 @@ async def upload_bundle_files(bundle_id, entries):
         callback=lambda resp: resp.text()
         )
 
-    logger.debug('{:10.2f} sec | sent {} files'.format(
-        time.time() - start_time, 
-        len(entries)
-        ))
 
-
-@profile_speed
 async def fulfill_bundle(bundle_id, missing_files):
     """ Upload missing files to bundle via API """
     if not missing_files:
         return
-    
-    tasks = [
-        upload_bundle_files(bundle_id, chunk)
-        for chunk in compose_file_buckets(missing_files)
-    ]
-    if tasks:
-        await asyncio.gather(*tasks)
-    else:
-        logger.info('No new files sent, as all files have been uploaded earlier')
+    logger.debug('Uploading {} missing files'.format(len(missing_files)))
+    with tqdm(total=len(missing_files), desc='Uploading missing files', unit='files', leave=False) as pbar:
+
+        async def _wrap(chunk):
+            await upload_bundle_files(bundle_id, chunk)
+            pbar.update(len(chunk))
+
+        tasks = [
+            _wrap(chunk)
+            for chunk in compose_file_buckets(missing_files)
+        ]
+        if tasks:
+            await asyncio.wait(tasks)
+        else:
+            logger.info('No new files sent, as all files have been uploaded earlier')

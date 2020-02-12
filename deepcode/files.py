@@ -1,12 +1,11 @@
 import os
 import fnmatch
 import aiofiles
-import asyncio
 from funcy import lcat, project
 from itertools import chain
 import hashlib
 
-from .utils import profile_speed, logger
+from .utils import logger
 
 IGNORES_DEFAULT = {
     '**/.git',
@@ -36,10 +35,9 @@ def is_ignored(path, file_ignores):
     
 
 def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
-    local_files = []
-    
     for path in paths:
         with os.scandir(path) as it:
+            local_files = []
             sub_dirs = []
             local_ignore_file = False
             for entry in it:
@@ -68,26 +66,16 @@ def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
             if local_ignore_file:
                 local_files = [f for f in local_files if not is_ignored(f.path, file_ignores)]
             
+            yield from local_files
+
             sub_dirs = [
                 subdir for subdir in sub_dirs
                 if not is_ignored(subdir, file_ignores)
                 ]
-            results = collect_bundle_files(sub_dirs, file_filter, file_ignores) 
-            local_files.extend(results)
-    
-    return local_files
+            yield from collect_bundle_files(sub_dirs, file_filter, file_ignores)
 
 
 def get_file_meta(file_path):
-    
-    # stat = os.stat(file_path)
-    # sg = lambda f: getattr(stat, f, '')
-    # hasher.update('{}{}{}{}'.format(
-    #     stat.st_size, sg('st_rsize'), # file sizes
-    #     sg('st_mtime'), # modified
-    #     sg('st_type') # file type
-    #     ).encode('utf-8') )
-    
     content = get_file_content(file_path)
     hasher = hashlib.sha256()
     hasher.update(content.encode('utf-8'))
@@ -105,17 +93,10 @@ def prepare_bundle_hashes(bundle_files, bucket_size=MAX_BUCKET_SIZE):
     return items
 
 
-@profile_speed
-def prepare_bundle_files(paths, file_filter):
-    """ Prepare files for bundle. """
-    bundle_files = collect_bundle_files(paths, file_filter)
-    return prepare_bundle_hashes(bundle_files)
-
-
 def compose_file_buckets(file_paths, bucket_size=MAX_BUCKET_SIZE):
     """
-    Split files into buckets with limiting max size
-    Return list of items: (path, hash, size)
+    Splits files into buckets with limiting max size
+    Returns list of items: (path, hash)
     """
     buckets = [{
         'size': bucket_size,
@@ -128,6 +109,7 @@ def compose_file_buckets(file_paths, bucket_size=MAX_BUCKET_SIZE):
 
         # Check that file does not exceed max bucket size
         if file_size > bucket_size:
+            logger.debug('ecxluded big file --> {} ({} bytes)'.format(file_path, file_size))
             return
 
         # Try to find existing bucket
