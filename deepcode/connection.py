@@ -8,11 +8,12 @@ from functools import wraps
 
 from .utils import logger
 
-# API_TOKEN = '1eea7e6a02f82252a71732401eb2f6b3711f2db306e0bf88c3e50fd2b640fe79'
-API_TOKEN = 'd9f5eb73e28d31bdc65d3eed3df165b16ac078477d0fa4749db2e8a5df5d499f'
+# API_KEY = '1eea7e6a02f82252a71732401eb2f6b3711f2db306e0bf88c3e50fd2b640fe79'
+# API_KEY = 'd9f5eb73e28d31bdc65d3eed3df165b16ac078477d0fa4749db2e8a5df5d499f' # localhost
 
 DEFAULT_SERVICE_URL = 'https://www.deepcode.ai'
 NETWORK_RETRY_DELAY = 5
+SOURCE = 'CLI'
 
 # BACKEND_STATUS_CODES = {
 #     'success': 200,
@@ -41,11 +42,13 @@ def reconnect(func):
 
 @reconnect
 async def api_call(path, method='GET', data=None, extra_headers={}, callback=lambda resp: resp.json(), compression_level=6):
-    SERVICE_URL = os.environ.get('SERVICE_URL', DEFAULT_SERVICE_URL)
+    SERVICE_URL = os.environ.get('DEEPCODE_SERVICE_URL', '') or DEFAULT_SERVICE_URL
+    API_KEY = os.environ.get('DEEPCODE_API_KEY', '')
+
     url = urljoin(urljoin(SERVICE_URL, '/publicapi/'), path)
     
     default_headers = {
-        'Session-Token': API_TOKEN,
+        'Session-Token': API_KEY,
         }
     
     if data:

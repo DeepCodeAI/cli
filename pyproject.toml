@@ -39,7 +39,7 @@ tqdm = "^4.42.1"
 pytest = "^5.2"
 
 [tool.poetry.scripts]
-deepcode = 'deepcode.cli:process'
+deepcode = 'deepcode.cli:main'
 
 [build-system]
 requires = ["poetry>=0.12"]
