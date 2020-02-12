@@ -5,6 +5,7 @@ import zlib
 import os
 from json import dumps
 from functools import wraps
+import inspect
 
 from .utils import logger
 
@@ -36,14 +37,21 @@ def reconnect(func):
                 logger.info("Server is not available. Retrying in {} seconds".format(NETWORK_RETRY_DELAY))
                 # In case of network disruptions, we just retry without affecting any logic
                 await asyncio.sleep(NETWORK_RETRY_DELAY)
+            except aiohttp.client_exceptions.ClientResponseError as exc:
+                if exc.status == 500:
+                    logger.info("Server gives 500. Retrying in {} seconds".format(NETWORK_RETRY_DELAY))
+                    # In case of temporary server failures, we just retry without affecting any logic
+                    await asyncio.sleep(NETWORK_RETRY_DELAY)
+                else:
+                    raise
 
     return wrapper
     
 
 @reconnect
-async def api_call(path, method='GET', data=None, extra_headers={}, callback=lambda resp: resp.json(), compression_level=6):
+async def api_call(path, method='GET', data=None, extra_headers={}, callback=lambda resp: resp.json(), compression_level=6, api_key=''):
     SERVICE_URL = os.environ.get('DEEPCODE_SERVICE_URL', '') or DEFAULT_SERVICE_URL
-    API_KEY = os.environ.get('DEEPCODE_API_KEY', '')
+    API_KEY = api_key or os.environ.get('DEEPCODE_API_KEY', '')
 
     url = urljoin(urljoin(SERVICE_URL, '/publicapi/'), path)
     
@@ -77,6 +85,6 @@ async def api_call(path, method='GET', data=None, extra_headers={}, callback=lam
         
         # logger.debug('status --> {}'.format(resp.status))
         # content = await resp.text()
-        #logger.debug('request succeeded with response --> {}'.format(content))
-        #logger.debug('!'*80)
+        
         return await callback(resp)
+        

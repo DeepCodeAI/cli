@@ -9,6 +9,14 @@ ANALYSIS_PROGRESS_INTERVAL = 2
 ANALYSIS_RETRY_DELAY = 5
 ANALYSIS_RETRIES = 3
 
+STATUS_MAPPING = {
+    'DC_DONE': 'Linters running',
+    'DONE': 'Completed analysis'
+}
+
+def _status_decription(status):
+    return STATUS_MAPPING.get(status, status).lower().capitalize()
+
 
 async def get_analysis(bundle_id, linters_enabled):
     """ Initiate analysis via API and wait for results. """
@@ -23,7 +31,9 @@ async def get_analysis(bundle_id, linters_enabled):
             path = ('analysis/{}?linters' if linters_enabled else 'analysis/{}').format(bundle_id)
             data = await api_call(path)
 
-            pbar.set_description(data.get('status', '').lower().capitalize())
+            pbar.set_description(
+                _status_decription(data.get('status', ''))
+                )
             
             if data.get('status') in success_statuses and data.get('analysisResults'):
                 return {

@@ -7,12 +7,11 @@ import logging
 from click_option_group import optgroup, RequiredMutuallyExclusiveOptionGroup
 
 from . import analize_folders, analize_git
-from .utils import logger
-from .auth import login
+from .utils import logger, coro
+from .auth import login as login_task
 from .git_utils import parse_git_uri
 from .connection import DEFAULT_SERVICE_URL
-
-format_txt = lambda r: print(r)
+from .formatter import format_txt
 
 CONFIG_FILE_PATH = '~/.deepcode.json'
 
@@ -52,13 +51,24 @@ def main(ctx, service_url, api_key, config_file):
     config_data = {}
     if (not service_url or not api_key) and os.path.exists(filename):
         with open(filename) as cfg:
-            config_data = json.loads(cfg.read())
+            try:
+                config_data = json.loads(cfg.read())
+            except json.JSONDecodeError:
+                logger.error('config file seems to be broken. Please run \"deepcode config\"')
 
     ctx.obj = {
         'service_url': service_url or config_data.get('service_url', ''),
         'api_key': api_key or config_data.get('api_key', ''),
         'config_file': filename
     }
+
+    service_url = ctx.obj.get('service_url', '')
+    if service_url:
+        os.environ['DEEPCODE_SERVICE_URL'] = service_url
+
+    api_key = ctx.obj.get('api_key', '')
+    if api_key:
+        os.environ['DEEPCODE_API_KEY'] = api_key
 
 
 @main.command()
@@ -83,7 +93,8 @@ def config(ctx):
 
 @main.command()
 @click.pass_context
-def login(ctx):
+@coro
+async def login(ctx):
     """
     Initiate a new login protocal.
     User will be forwarded to Deepcode website to complete the process.
@@ -91,13 +102,11 @@ def login(ctx):
     
     service_url = ctx.obj.get('service_url', '')
 
-    async def task(service_url):
-        api_key = await login(service_url)
+    api_key = await login_task(service_url)
 
-        _save_config(service_url, api_key, ctx.obj['config_file'])
+    _save_config(service_url, api_key, ctx.obj['config_file'])
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(task)
+    print('Login Successful! You API key \"{}\" is saved.'.format(api_key))
 
 
 class GitURI(click.ParamType):
@@ -132,18 +141,11 @@ class GitURI(click.ParamType):
 @click.option('--format', default='json',
     type=click.Choice(['txt', 'json'], case_sensitive=False))
 @click.pass_context
-def analyze(ctx, linters_enabled, paths, remote_params, logging_level, format):
+@coro
+async def analyze(ctx, linters_enabled, paths, remote_params, logging_level, format):
     """
     Analyzes your code using Deepcode AI engine. 
     """
-    service_url = ctx.obj.get('service_url', '')
-    if service_url:
-        os.environ['DEEPCODE_SERVICE_URL'] = service_url
-
-    api_key = ctx.obj.get('api_key', '')
-    if api_key:
-        os.environ['DEEPCODE_API_KEY'] = api_key
-
     if logging_level:
         logging_levels = {
             'debug': logging.DEBUG, 
@@ -154,25 +156,21 @@ def analyze(ctx, linters_enabled, paths, remote_params, logging_level, format):
         }
         logging.basicConfig(level=logging_levels[logging_level])
 
-    async def runner(func, *args, **kwargs):
-        try:
-            results = await func(*args, **kwargs)
+    try:
+        if paths:
+            paths = [os.path.abspath(p) for p in paths]
+            results = await analize_folders(paths=paths, linters_enabled=linters_enabled)
+        else:
+            results = await analize_git(linters_enabled=linters_enabled, **remote_params)
 
-            if format == 'txt':
-                format_txt(results)
-            else:
-                print(results)
-        except aiohttp.client_exceptions.ClientResponseError as exc:
-            if exc.status == 401:
-                logger.error('Auth token seems to be missing or incorrect')
-            else:
-                logger.error(exc)
+        if format == 'txt':
+            format_txt(results)
+        else:
+            print(results)
+    except aiohttp.client_exceptions.ClientResponseError as exc:
+        if exc.status == 401:
+            logger.error('Auth token seems to be missing or incorrect. Run \"deepcode login\"')
+        else:
+            logger.error(exc)
 
-    if paths:
-        paths = [os.path.abspath(p) for p in paths]
-        task = runner(analize_folders, paths=paths, linters_enabled=linters_enabled)
-    else:
-        task = runner(analize_git, linters_enabled=linters_enabled, **remote_params)
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(task)
+    

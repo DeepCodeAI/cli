@@ -1,6 +1,5 @@
 import os
 import fnmatch
-import aiofiles
 from funcy import lcat, project
 from itertools import chain
 import hashlib

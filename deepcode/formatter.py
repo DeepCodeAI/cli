@@ -1,23 +1,40 @@
-import hashlib
-import os
-import io
-import re
 import json
 from operator import itemgetter
-from deepcode.src.constants.config_constants import MAX_REQUEST_BODY_SIZE, GIT_FOLDERNAME, GITIGNORE_FILENAME, SEVERITIES
-from deepcode.src.helpers.terminal_view_decorations import text__with_colors, text_with__color_marker, text_decorations
-from deepcode.src.helpers.cli_helpers import ANALYSIS_HELPERS
+#from deepcode.src.constants.config_constants import SEVERITIES
+#from deepcode.src.helpers.cli_helpers import ANALYSIS_HELPERS
 
-def get_severities_colors():
-    return {
-        1: 'blue',
-        2: 'yellow',
-        3: 'red',
-    }
+SEVERITIES_COLOR = {
+    1: 'blue',
+    2: 'yellow',
+    3: 'red',
+}
 
+# colors text background like marker
+text_with__color_marker = {
+    'blue': lambda sev: "\x1b[5;30;44m{}\x1b[0m".format(sev),
+    'yellow': lambda sev: "\x1b[5;30;43m{}\x1b[0m".format(sev),
+    'red': lambda sev: "\x1b[5;30;41m{}\x1b[0m".format(sev),
+}
+
+# colors text font
+text__with_colors = {
+    # blue text for info
+    'blue': lambda text: "\33[94m{}\33[0m".format(text),
+    # yellow text for warnings
+    'yellow': lambda text: "\33[93m{}\33[0m".format(text),
+    # red text for critical or errors
+    'red': lambda text: "\33[91m{}\33[0m".format(text),
+    # green color for success
+    'green': lambda text: "\33[92m{}\33[0m".format(text),
+}
+
+text_decorations = {
+    'bold': lambda t: "\33[1m{}\33[0m".format(t),
+    'underlined': lambda t: '\033[4m{}\033[0m'.format(t)
+}
 
 def construct_severity_sub_header(severity_idx):
-    severity_color = get_severities_colors()[severity_idx]
+    severity_color = SEVERITIES_COLOR[severity_idx]
     sub_header_text = '{} issues'.format(SEVERITIES[severity_idx])
     return text_with__color_marker[severity_color](sub_header_text)
 
@@ -28,9 +45,7 @@ def construct_issue_txt_view(
     issue_severity_number,
     issue_message
 ):
-    severities_colors = get_severities_colors()
-
-    severity_color = severities_colors[issue_severity_number]
+    severity_color = SEVERITIES_COLOR[issue_severity_number]
     with_severity_color = text__with_colors[severity_color]
     positions_of_issue_str = construct_issue_positions_txt_view(
         issues_positions_list)
