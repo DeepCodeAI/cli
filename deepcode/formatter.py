@@ -1,5 +1,10 @@
+"""
+Module dedicated to formatting suggestion data to nice text view.
+"""
+
 import json
 from operator import itemgetter
+
 
 SEVERITIES = {
     1: {

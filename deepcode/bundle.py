@@ -1,3 +1,7 @@
+"""
+A module dedicated to implementing an bundle protocol.
+"""
+
 import os
 import json
 import asyncio

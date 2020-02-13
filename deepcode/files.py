@@ -1,3 +1,6 @@
+"""
+A module dedicated to working with local folders/files.
+"""
 import os
 import fnmatch
 from itertools import chain

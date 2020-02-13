@@ -1,3 +1,7 @@
+"""
+Command line interface for Deepcode
+"""
+
 import click
 import json
 import asyncio

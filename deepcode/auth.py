@@ -1,3 +1,7 @@
+"""
+A module dedicated to authenticating users via Deepcode website
+"""
+
 import asyncio
 import webbrowser
 import aiohttp

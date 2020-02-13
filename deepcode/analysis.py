@@ -1,3 +1,7 @@
+"""
+A module dedicated to implementing an analysis protocol.
+"""
+
 import asyncio
 import aiohttp
 from tqdm import tqdm

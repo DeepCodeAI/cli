@@ -1,3 +1,6 @@
+"""
+A module dedicated to communication with Deepcode API.
+"""
 from urllib.parse import urljoin
 import aiohttp
 import asyncio
