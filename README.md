@@ -103,7 +103,7 @@ Available methods:
   ````
   :param [paths] - Paths should be a list of absolute paths to bundle dir
   :param [linters_enabled] - optional. requestes also linter analysis
-  :return - dictionary with results e.g. as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles)
+  :return - dictionary with results e.g. as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles) plus: 'id' for bundle id and 'url' for online view of analysis results
 
   example:
   deepcode.analize_folders('<path to files dir>')
@@ -116,7 +116,7 @@ Available methods:
   :param [owner] - repository account. (e.g. facebook)
   :param [repo] - repository. (e.g. react)
   :param [linters_enabled] - optional. requestes also linter analysis
-  :return - dictionary with results e.g. as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles)
+  :return - dictionary with results e.g. as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles) plus: 'id' for bundle id and 'url' for online view of analysis results
 
   example:
   deepcode.analize_git('github.com', 'facebook', 'react')
