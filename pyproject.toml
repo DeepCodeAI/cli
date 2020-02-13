@@ -20,7 +20,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/DeepCodeAI/cli/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7 | ^3.7 | ^3.8"
+python = "^3.6 | ^3.7 | ^3.8"
 funcy = "^1.14"
 aiohttp = "^3.6.2"
 cchardet = "^2.1.5"

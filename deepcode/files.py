@@ -11,12 +11,12 @@ from .utils import logger
 from .constants import (IGNORES_DEFAULT, IGNORE_FILES_NAMES, MAX_BUCKET_SIZE)
 
 def get_file_content(file_path):
-    with open(file_path, mode='r') as f:
+    with open(file_path, encoding='utf-8', mode='r') as f:
         return f.read()
 
 def parse_file_ignores(file_path):
     dirname = os.path.dirname(file_path)
-    with open(file_path, mode='r') as f:
+    with open(file_path, encoding='utf-8', mode='r') as f:
         for l in f.readlines():
             rule = l.strip()
             if not rule.startswith('#'):
