@@ -36,7 +36,7 @@ def _config_logging(log_file):
             datefmt='%m-%d %H:%M',
             filename=os.path.expanduser(log_file),
             filemode='w')
-    
+
     console = logging.StreamHandler()
     console.setLevel(logging.WARNING)
     formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
@@ -46,10 +46,10 @@ def _config_logging(log_file):
 
 @click.group()
 @click.option('--service-url', '-s', 'service_url',
-    default=lambda: os.environ.get(SERVICE_URL_ENV, ''), 
+    default=lambda: os.environ.get(SERVICE_URL_ENV, ''),
     help="Custom DeepCode service URL (default: {})".format(DEFAULT_SERVICE_URL))
-@click.option('--api-key', '-a', 'api_key', 
-    default=lambda: os.environ.get(API_KEY_ENV, ''), 
+@click.option('--api-key', '-a', 'api_key',
+    default=lambda: os.environ.get(API_KEY_ENV, ''),
     help="Deepcode API key")
 @click.option(
     '--config-file', '-c',
@@ -65,11 +65,12 @@ def main(ctx, service_url, api_key, config_file):
     """
 
     filename = os.path.expanduser(config_file)
-    
+
     config_data = {}
     if (not service_url or not api_key) and os.path.exists(filename):
         with open(filename) as cfg:
             try:
+                # deepcode ignore replace~read~decode~json.loads: 'str' object has no attribute 'decode'
                 config_data = json.loads(cfg.read())
             except json.JSONDecodeError:
                 logger.error('config file seems to be broken. Please run \"deepcode config\"')
@@ -95,7 +96,7 @@ def config(ctx):
     """
     Store configuration values in a file.
     """
-    
+
     service_url = click.prompt(
         "Please enter Deepcode Service URL (or leave it blank to use {})".format(DEFAULT_SERVICE_URL),
         default=ctx.obj.get('service_url', '')
@@ -117,7 +118,7 @@ async def login(ctx):
     Initiate a new login protocal.
     User will be forwarded to Deepcode website to complete the process.
     """
-    
+
     service_url = ctx.obj.get('service_url', '')
 
     api_key = await login_task(service_url)
@@ -142,14 +143,14 @@ class GitURI(click.ParamType):
                 param,
                 ctx,
             )
-        
+
         return data
 
 @main.command()
-@optgroup.group('Source location', 
+@optgroup.group('Source location',
     cls=RequiredMutuallyExclusiveOptionGroup,
     help='The configuration of repository location')
-@optgroup.option("--path", "-p", "paths", 
+@optgroup.option("--path", "-p", "paths",
     multiple=True,
     type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True, resolve_path=True),
     help="Path to folder to be processed. Multiple paths are allowed")
@@ -166,10 +167,10 @@ class GitURI(click.ParamType):
 @coro
 async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_txt):
     """
-    Analyzes your code using Deepcode AI engine. 
+    Analyzes your code using Deepcode AI engine.
     """
     _config_logging(log_file)
-    
+
     try:
         if paths: # Local folders are going to be analysed
             paths = [os.path.abspath(p) for p in paths]
@@ -186,5 +187,3 @@ async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_t
             logger.error('Auth token seems to be missing or incorrect. Run \"deepcode login\"')
         else:
             logger.error(exc)
-
-    
