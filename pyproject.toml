@@ -20,7 +20,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/DeepCodeAI/cli/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7 | ^3.7 | ^3.8"
 funcy = "^1.14"
 aiohttp = "^3.6.2"
 cchardet = "^2.1.5"
@@ -28,10 +28,13 @@ asyncio = "^3.4.3"
 click = "^7.0"
 click-option-group = "^0.2.3"
 tqdm = "^4.42.1"
+httpretty = "^0.9.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 pylint = "^2.4.4"
+pytest-asyncio = "^0.10.0"
+pytest-aiohttp = "^0.3.0"
 
 [tool.poetry.scripts]
 deepcode = 'deepcode.cli:main'

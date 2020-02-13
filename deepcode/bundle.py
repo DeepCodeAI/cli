@@ -15,9 +15,9 @@ from .utils import logger
 from .constants import MAX_BUCKET_SIZE
 
 
-async def get_filters():
+async def get_filters(api_key=''):
     """ Fetch supported file extensions """
-    filters = await api_call('filters')
+    filters = await api_call('filters', api_key=api_key)
     logger.debug('allowed files: {}'.format(filters))
     supported_extensions, expected_config_files = set(filters['extensions']), set(filters['configFiles'])
     return lambda n: os.path.splitext(n)[-1] in supported_extensions or n in expected_config_files
