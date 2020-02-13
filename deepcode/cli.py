@@ -15,7 +15,7 @@ from .utils import logger, coro
 from .auth import login as login_task
 from .git_utils import parse_git_uri
 from .constants import (DEFAULT_SERVICE_URL, CONFIG_FILE_PATH, SERVICE_URL_ENV, API_KEY_ENV)
-from .formatter import format_txt
+from .formatter import format_txt, text_decorations, text_with_colors
 
 
 def _save_config(service_url, api_key, config_file):
@@ -124,7 +124,11 @@ async def login(ctx):
 
     _save_config(service_url, api_key, ctx.obj['config_file'])
 
-    print('Login Successful! You API key \"{}\" is saved.'.format(api_key))
+    print(text_with_colors['green']('Login Successful!'))
+    print('You API key {} has been saved.'.format(api_key))
+    print('You can manage your keys online: {}'.format(
+        text_decorations['underlined']('{}/app/~platform/account'.format(service_url or DEFAULT_SERVICE_URL))
+        ))
 
 
 class GitURI(click.ParamType):
