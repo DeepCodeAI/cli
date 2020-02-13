@@ -78,9 +78,13 @@ def get_file_meta(file_path):
 def prepare_bundle_hashes(bundle_files, bucket_size=MAX_BUCKET_SIZE):
     items = []
     for file_path in bundle_files:
-        file_size, file_hash = get_file_meta(file_path)
-        if file_size < bucket_size:
-            items.append((file_path, file_hash))
+        try:
+            file_size, file_hash = get_file_meta(file_path)
+        except UnicodeDecodeError:
+            logger.debug('ecxluded a file --> {} (Unicode Decode Error)'.format(file_path))
+        else:
+            if file_size < bucket_size:
+                items.append((file_path, file_hash))
     
     return items
 

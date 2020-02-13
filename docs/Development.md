@@ -1,6 +1,7 @@
 ### DEEPCODE CLI development mode description for developers
 
-Python >= 3.7 is required for this package
+Python >= 3.6 is required for this package
+If you have an older version, please consider using [pyenv](https://realpython.com/intro-to-pyenv/) to manage different python versions.
 
 ### Environment setup
 
