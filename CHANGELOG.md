@@ -2,7 +2,7 @@
 - Rewritten from scratch
 - Much faster and reliable execution
 - Backwards incompatible changes
-- Stringent python requirements: 3.7+
+- Stringent python requirements: 3.6+
 
 ## [0.0.8] - 2019-02-02
 - Removed confirmation step for uploading folders

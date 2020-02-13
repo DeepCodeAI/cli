@@ -7,13 +7,12 @@ import asyncio
 logger = logging.getLogger('deepcode')
 
 
-
 def coro(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(f(*args, **kwargs))
-        #return asyncio.run()
+        #return asyncio.run() # supported only from 3.7+
 
     return wrapper
 
