@@ -34,12 +34,12 @@ def reconnect(func):
             try:
                 return await func(*args, **kwargs)
             except aiohttp.client_exceptions.ClientConnectionError:
-                logger.info("Server is not available. Retrying in {} seconds".format(NETWORK_RETRY_DELAY))
+                logger.warning("Server is not available. Retrying in {} seconds".format(NETWORK_RETRY_DELAY))
                 # In case of network disruptions, we just retry without affecting any logic
                 await asyncio.sleep(NETWORK_RETRY_DELAY)
             except aiohttp.client_exceptions.ClientResponseError as exc:
                 if exc.status == 500:
-                    logger.info("Server gives 500. Retrying in {} seconds".format(NETWORK_RETRY_DELAY))
+                    logger.warning("Server gives 500. Retrying in {} seconds".format(NETWORK_RETRY_DELAY))
                     # In case of temporary server failures, we just retry without affecting any logic
                     await asyncio.sleep(NETWORK_RETRY_DELAY)
                 else:

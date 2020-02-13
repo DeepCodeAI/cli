@@ -17,7 +17,7 @@ def coro(f):
 
 def profile_speed(func):
     
-    log_timing = lambda d: logger.info("- {:6.2f} sec: Done - \"{}\"".format(
+    log_timing = lambda d: logger.debug("- {:6.2f} sec: Done - \"{}\"".format(
                     d, func.__doc__ or func.__name__))
 
     if inspect.iscoroutinefunction(func):

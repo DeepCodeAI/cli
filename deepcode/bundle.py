@@ -127,4 +127,4 @@ async def fulfill_bundle(bundle_id, missing_files):
         if tasks:
             await asyncio.wait(tasks)
         else:
-            logger.info('No new files sent, as all files have been uploaded earlier')
+            logger.debug('No new files sent, as all files have been uploaded earlier')

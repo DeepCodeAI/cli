@@ -46,7 +46,7 @@ async def get_analysis(bundle_id, linters_enabled):
                 if attempt >= ANALYSIS_RETRIES:
                     raise RuntimeError("Analysis failed for {} times. It seems, Deepcode has some issues. Please contact Deepcode. Response --> {}".format(ANALYSIS_RETRIES, data))
                 
-                logger.info('Analysis failed. Retrying in {} sec'.format(ANALYSIS_RETRY_DELAY))
+                logger.warning('Analysis failed. Retrying in {} sec'.format(ANALYSIS_RETRY_DELAY))
                 attempt += 1
                 await asyncio.sleep(ANALYSIS_RETRY_DELAY)
 
@@ -59,5 +59,4 @@ async def get_analysis(bundle_id, linters_enabled):
                 await asyncio.sleep(ANALYSIS_PROGRESS_INTERVAL)
 
             else:
-                logger.info('initialising...')
                 await asyncio.sleep(ANALYSIS_PROGRESS_INTERVAL)

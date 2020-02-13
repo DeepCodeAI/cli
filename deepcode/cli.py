@@ -25,11 +25,26 @@ def _save_config(service_url, api_key, config_file):
     with open(config_file, 'w') as cfg:
         cfg.write(json.dumps(data))
 
+def _config_logging(log_file):
+    if log_file:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+            datefmt='%m-%d %H:%M',
+            filename=os.path.expanduser(log_file),
+            filemode='w')
+    
+    console = logging.StreamHandler()
+    console.setLevel(logging.WARNING)
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
+
 
 @click.group()
 @click.option('--service-url', '-s', 'service_url',
     default=lambda: os.environ.get('DEEPCODE_SERVICE_URL', ''), 
-    help="Custom DeepCode service URL (e.g. {})".format(DEFAULT_SERVICE_URL))
+    help="Custom DeepCode service URL (default: {})".format(DEFAULT_SERVICE_URL))
 @click.option('--api-key', '-a', 'api_key', 
     default=lambda: os.environ.get('DEEPCODE_API_KEY', ''), 
     help="Deepcode API key")
@@ -47,7 +62,7 @@ def main(ctx, service_url, api_key, config_file):
     """
 
     filename = os.path.expanduser(config_file)
-
+    
     config_data = {}
     if (not service_url or not api_key) and os.path.exists(filename):
         with open(filename) as cfg:
@@ -135,38 +150,30 @@ class GitURI(click.ParamType):
     type=GitURI(),
     help="Git URI (e.g. git@<platform>:<owner>/<repo>.git@<oid> or https://<platform>/<owner>/<repo>.git@<oid>)",
 )
-@click.option('--linters', '-l', 'linters_enabled', is_flag=True, help="Enable linters")
-@click.option('--logging', '-log', 'logging_level', default='error',
-    type=click.Choice(['debug', 'info', 'warning', 'error', 'critical'], case_sensitive=False))
-@click.option('--format', default='json',
-    type=click.Choice(['txt', 'json'], case_sensitive=False))
+@click.option('--with-linters', '-l', 'linters_enabled', is_flag=True, help="Enable linters")
+@click.option('--log-file', '-log', 'log_file',
+    type=click.Path(file_okay=True, dir_okay=False),
+    help="Forward all debugging messages to a file")
+@click.option('--result-text', '-txt', 'result_txt', is_flag=True, help="Present results in txt format")
 @click.pass_context
 @coro
-async def analyze(ctx, linters_enabled, paths, remote_params, logging_level, format):
+async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_txt):
     """
     Analyzes your code using Deepcode AI engine. 
     """
-    if logging_level:
-        logging_levels = {
-            'debug': logging.DEBUG, 
-            'info': logging.INFO, 
-            'warning': logging.WARNING, 
-            'error': logging.ERROR, 
-            'critical': logging.CRITICAL
-        }
-        logging.basicConfig(level=logging_levels[logging_level])
-
+    _config_logging(log_file)
+    
     try:
-        if paths:
+        if paths: # Local folders are going to be analysed
             paths = [os.path.abspath(p) for p in paths]
             results = await analize_folders(paths=paths, linters_enabled=linters_enabled)
         else:
+            # Deepcode server will fetch git repository and analize it
             results = await analize_git(linters_enabled=linters_enabled, **remote_params)
 
-        if format == 'txt':
-            format_txt(results)
-        else:
-            print(results)
+        # Present results in json or textual way
+        print( format_txt(results) if result_txt else json.dumps(results, sort_keys=True, indent=2) )
+
     except aiohttp.client_exceptions.ClientResponseError as exc:
         if exc.status == 401:
             logger.error('Auth token seems to be missing or incorrect. Run \"deepcode login\"')

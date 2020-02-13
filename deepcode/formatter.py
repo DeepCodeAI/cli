@@ -1,22 +1,30 @@
 import json
 from operator import itemgetter
-#from deepcode.src.constants.config_constants import SEVERITIES
 
-SEVERITIES_COLOR = {
-    1: 'blue',
-    2: 'yellow',
-    3: 'red',
+SEVERITIES = {
+    1: {
+        'title': 'Info',
+        'color': 'blue',
+    },
+    2: {
+        'title': 'Warning',
+        'color': 'yellow',
+    },
+    3: {
+        'title': 'Critical',
+        'color': 'red',
+    },
 }
 
 # colors text background like marker
-text_with__color_marker = {
+text_with_color_marker = {
     'blue': lambda sev: "\x1b[5;30;44m{}\x1b[0m".format(sev),
     'yellow': lambda sev: "\x1b[5;30;43m{}\x1b[0m".format(sev),
     'red': lambda sev: "\x1b[5;30;41m{}\x1b[0m".format(sev),
 }
 
 # colors text font
-text__with_colors = {
+text_with_colors = {
     # blue text for info
     'blue': lambda text: "\33[94m{}\33[0m".format(text),
     # yellow text for warnings
@@ -32,117 +40,117 @@ text_decorations = {
     'underlined': lambda t: '\033[4m{}\033[0m'.format(t)
 }
 
+SINGLELINE_POSITIONS_TEMPLATE = '{}line {}, symbols from {} to {}'
+MULTILINE_POSITIONS_TEMPLATE = '{}lines from {} to {}, symbols from {} to {}'
+
 def construct_severity_sub_header(severity_idx):
-    severity_color = SEVERITIES_COLOR[severity_idx]
-    sub_header_text = '{} issues'.format(SEVERITIES[severity_idx])
-    return text_with__color_marker[severity_color](sub_header_text)
-
-
-def construct_issue_txt_view(
-    issue_file_path,
-    issues_positions_list,
-    issue_severity_number,
-    issue_message
-):
-    severity_color = SEVERITIES_COLOR[issue_severity_number]
-    with_severity_color = text__with_colors[severity_color]
-    positions_of_issue_str = construct_issue_positions_txt_view(
-        issues_positions_list)
-
-    template_str = '{filepath} {issue_msg}\n Issue positions:\n{positions}'
-    return template_str.format(
-        filepath=text_decorations['bold'](issue_file_path),
-        issue_msg=with_severity_color(issue_message),
-        positions=positions_of_issue_str
+    color = SEVERITIES[severity_idx]['color']
+    return text_with_color_marker[color](
+        '{} issues'.format( SEVERITIES[severity_idx]['title'] )
     )
 
 
-def create_singleline_positions_template_str():
-    return '{}line {}, symbols from {} to {}'
-
-
-def create_multiline_poitions_template_str():
-    return '{}lines from {} to {}, symbols from {} to {}'
+def construct_issue_txt_view(file_path, positions_list, severity, message):
+    color = SEVERITIES[severity]['color']
+    
+    return '{filepath} {issue_msg}\n Issue positions:\n{positions}'.format(
+        filepath=text_decorations['bold'](file_path),
+        issue_msg=text_with_colors[color](message),
+        positions=construct_issue_positions_txt_view(positions_list)
+    )
 
 
 def construct_issue_positions_txt_view(issues_positions_list):
-    positions_of_issue_str = ''
+    positions = []
     EXTRA_SPACES_FOR_POSITION = ' '*5
-    singleline_issue_template_str = create_singleline_positions_template_str()
-    multiline_issue_template_str = create_multiline_poitions_template_str()
-    for idx, position in enumerate(issues_positions_list):
+    for position in issues_positions_list:
         rows = position['rows']
         cols = position['cols']
         start_row, end_row = rows
+
         if start_row == end_row:
-            positions_of_issue_str += singleline_issue_template_str.format(
+            item = SINGLELINE_POSITIONS_TEMPLATE.format(
                 EXTRA_SPACES_FOR_POSITION, start_row, *cols)
         else:
-            positions_of_issue_str += multiline_issue_template_str.format(
+            item = MULTILINE_POSITIONS_TEMPLATE.format(
                 EXTRA_SPACES_FOR_POSITION, start_row, end_row, *cols)
+        
+        positions.append(item.rstrip())
+
         if 'markers' in position:
-            positions_of_issue_str += create_issue_markers_positions(
-                position['markers'])
-        if idx is not len(issues_positions_list)-1:
-            positions_of_issue_str += '\n'
-    return positions_of_issue_str
+            positions.append(
+                create_issue_markers_positions(position['markers'])
+            )
+    
+    return '\n'.join(positions)
 
 
 def create_issue_markers_positions(markers):
     EXTRA_SPACES_FOR_MARKERS_POSITION = ' '*10
-    singleline_issue_template_str = create_singleline_positions_template_str()
-    multiline_issue_template_str = create_multiline_poitions_template_str()
-    markers_subheader_str = '\n{}{}:\n'.format(
-        EXTRA_SPACES_FOR_MARKERS_POSITION, text_decorations['underlined']('issue helpers'))
-    markers_positions_str = ''
+    
+    markers_positions = []
     for marker in markers:
         for pos in marker['pos']:
             cols = pos['cols']
             start_row, end_row = pos['rows']
             if start_row == end_row:
-                markers_positions_str += singleline_issue_template_str.format(
-                    EXTRA_SPACES_FOR_MARKERS_POSITION, start_row, *cols)+'\n'
+                marker_position = SINGLELINE_POSITIONS_TEMPLATE.format(
+                        EXTRA_SPACES_FOR_MARKERS_POSITION, 
+                        start_row, *cols)
+                
             else:
-                markers_positions_str += multiline_issue_template_str.format(
-                    EXTRA_SPACES_FOR_MARKERS_POSITION, start_row, end_row, *cols)+'\n'
-    return '{}{}'.format(markers_subheader_str, markers_positions_str.rstrip())
+                marker_position = MULTILINE_POSITIONS_TEMPLATE.format(
+                        EXTRA_SPACES_FOR_MARKERS_POSITION, 
+                        start_row, end_row, *cols)
+            
+            markers_positions.append(marker_position)
+    
+    if not markers_positions:
+        return ''
+    
+    return '\n{}{}:\n{}'.format(
+        EXTRA_SPACES_FOR_MARKERS_POSITION, 
+        text_decorations['underlined']('issue helpers'), 
+        '\n'.join(markers_positions))
 
 
-def construct_issues_complex_txt_view(analysis_results):
-    result_txt = '{}'.format(ANALYSIS_HELPERS['txt_view_results'])
-    files, suggestions = itemgetter('files', 'suggestions')(analysis_results)
+def format_txt(data):
+    """
+    Presentation level. Parse json results into textual form.
+    """
+    
+    url, results = itemgetter('url', 'results')(data)
+    files, suggestions = itemgetter('files', 'suggestions')(results)
     if not len(files) and not len(suggestions):
-        return ANALYSIS_HELPERS['empty_results']
+        return text_with_colors['green']('Everything is fine. No issues found.')
 
-    info, warning, critical = SEVERITIES.keys()
-    grouped_issues = {
-        critical: [],
-        warning: [],
-        info: []
-    }
+    paragraphs = []
+
+    grouped_issues = dict(zip(SEVERITIES.keys(), ([], [], [])))
 
     for file_path in files:
         for suggestion in files[file_path]:
-            issue_severity = suggestions[suggestion]['severity']
+            severity = suggestions[suggestion]['severity']
             issue_txt_view = construct_issue_txt_view(
                 file_path,
                 files[file_path][suggestion],
-                issue_severity,
+                severity,
                 suggestions[suggestion]['message']
             )
-            grouped_issues[issue_severity].append(issue_txt_view)
+            grouped_issues[severity].append(issue_txt_view)
 
-    for idx, severity in enumerate(grouped_issues):
-        if grouped_issues[severity]:
-            result_txt += '{}\n{}'.format(
-                construct_severity_sub_header(severity), 
-                grouped_issues[severity].rstrip())
-            if idx < len(grouped_issues)-1:
-                result_txt += '\n'
-    return result_txt
+    for severity, issues in sorted(grouped_issues.items(), key=lambda i: -i[0]):
+        if issues:
+            paragraphs.append(
+                '\n'.join([
+                    construct_severity_sub_header(severity), 
+                    '\n'.join(issues)
+                ])
+            )
+    
+    paragraphs.extend([
+        text_with_colors['green']('\n[Online analysis results]: '),
+        text_decorations['underlined'](url),
+    ])
 
-
-ANALYSIS_HELPERS = {
-    'txt_view_results': text__with_colors['green']('DeepCode Analysis Results in text format:'),
-    'empty_results': text__with_colors['green']('Everything is fine. No issues found.')
-}
+    return '\n'.join(paragraphs)
