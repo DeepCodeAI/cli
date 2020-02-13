@@ -1,3 +1,9 @@
+## [1.0.0] - 2019-02-13
+- Rewritten from scratch
+- Much faster and reliable execution
+- Backwards incompatible changes
+- Stringent python requirements: 3.7+
+
 ## [0.0.8] - 2019-02-02
 - Removed confirmation step for uploading folders
 - Simplified logging

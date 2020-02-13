@@ -1,87 +1,38 @@
 ### DEEPCODE CLI development mode description for developers
 
-Python >= 3.4 is required for this package
+Python >= 3.7 is required for this package
 
-### Virtual environment
+### Environment setup
 
-Package can be developed/built with python virtualenv:
+Package can be developed/built with Poetry:
 
-Install in virtualenv (requires additional dependency: `sudo pip3 install virtualenv`)
-Start virtualenv:
-
+Install poetry, dependencies and activate virtual environment:
 ```bash
-virtualenv venv
-source venv/bin/activate
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 ```
 
-After that, develop and build bash commands are exactly the same as for global develop/install
+For more details refer to [Poetry documentation](https://python-poetry.org/docs/)
 
-### Required python packages before working/building package:
-
+### Create virtual environment
 ```bash
-sudo python3 -m pip install --upgrade pip setuptools wheel
-sudo python3 -m pip install tqdm
-sudo python3 -m pip install --user --upgrade twine
+poetry shell
 ```
 
-if you have both python2 and python3, use python3
-
-### Installing requirements and setup:
-
+(OPTIONAL) If you prefer to have all dependencies in the same place together with your code, create a virtualenv manually:
 ```bash
-sudo -H pip3 install -r ./requirements.txt
+virtualenv ./venv
+source ./venv/bin/activate
 ```
 
-## Package development mode with built-in hot reload
-
+### Install dependencies
 ```bash
-sudo -H python3 setup.py develop
+poetry install
 ```
-
-to remove the package again:
-
-```
-sudo -H python3 setup.py develop -u
-```
-
-Note that clashes with pip3-installed packages are possible. To make sure the deepcode command
-invokes development code with hot reloading, it is apparently necessary to do:
-
-```
-sudo pip3 uninstall deepcode
-```
-
-(how it works: the cmd runs once, after that the code can be modified and all changes will be avaliable at once)
 
 ## Description of cli options
 
-```
-after install/start dev mode, cli is avaliable in terminal by calling 'deepcode'.
-
-usage: deepcode [command] [command argument] [-option] [option_argument]
-
-positional arguments:
-login       Login to DeepCode CLI using GitHub or BitBucket account
-logout      Logout from CLI
-config (c)  Configure DeepCode CLI backend host. Without options will provide steps to configure CLI.
-            shortcuts: c
-            options: [-f], [--format] - specifies results display format, supported formats: [json, txt]
-            example:
-                deepcode config -f txt #will display cli config in txt foromat
-analyze (a) Command to analyze code.
-            shortcuts: a
-            required: [path] - should be provided to specify the path to analyze.
-                [path] can be absolute path to files directory,
-                or path to git repo from GitHub/BitBucket account of logged in user, e.g.[git_username]/[git_repo_name]/[commit(optional)]
-            options:
-                [-r], [--remote] - if specified, analyzes git repository
-                [-s], [--silent] - if specified, cli progressbar will be hidden
-                [-f], [--format] - specifies results display format, supported formats: [json, txt]
-            examples:
-                deepcode analyze [path_to_files_dir] -f json  #will analyze specified path and display results in json
-                deepcode analyze -r [git_username/git_repo_name] -f txt  #will analyze specified repo of logged in user and display results as readable text
-optional arguments:
--h, --help            show this help message and exit
+```bash
+poetry run deepcode --help
 ```
 
 ## Module mode
@@ -89,42 +40,22 @@ optional arguments:
 CLI can work as command line interface and as imported module.
 To read more about module mode, see [readme docs](README.md)
 
-## Package local build
+## Package build
 
 ```bash
-python3 setup.py sdist bdist_wheel
+poetry build
 ```
-
-## Package local install
-
-```bash
-sudo pip3 install dist/deepcode-0.0.1.tar.gz
-sudo pip3 install --upgrade dist/deepcode-0.0.1.tar.gz // to update installed package
-```
-
-IMPORTANT! Before installing package locally, please make sure, that package was removed from dev mode,
-to uninstall dev mode use:
-
-```bash
-python setup.py develop -u
-```
-
-Otherwise, you might get import errors or other errors because of conflicts of package both in dev and prod modes
 
 ### Publishing
 
+```bash
+poetry publish
 ```
-source ./venv/bin/activate
-pip install -U twine
-twine upload dist/*
-```
-
-For more info about develop and publish packages, please see [packaging python docs](https://packaging.python.org/tutorials/packaging-projects/)
 
 ### Tests
 
 Run tests:
 
-```
-source ./test.sh
+```bash
+poetry run pytest tests
 ```

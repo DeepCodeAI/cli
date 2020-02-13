@@ -10,10 +10,9 @@ from . import analize_folders, analize_git
 from .utils import logger, coro
 from .auth import login as login_task
 from .git_utils import parse_git_uri
-from .connection import DEFAULT_SERVICE_URL
+from .constants import (DEFAULT_SERVICE_URL, CONFIG_FILE_PATH, SERVICE_URL_ENV, API_KEY_ENV)
 from .formatter import format_txt
 
-CONFIG_FILE_PATH = '~/.deepcode.json'
 
 def _save_config(service_url, api_key, config_file):
     data = {
@@ -43,10 +42,10 @@ def _config_logging(log_file):
 
 @click.group()
 @click.option('--service-url', '-s', 'service_url',
-    default=lambda: os.environ.get('DEEPCODE_SERVICE_URL', ''), 
+    default=lambda: os.environ.get(SERVICE_URL_ENV, ''), 
     help="Custom DeepCode service URL (default: {})".format(DEFAULT_SERVICE_URL))
 @click.option('--api-key', '-a', 'api_key', 
-    default=lambda: os.environ.get('DEEPCODE_API_KEY', ''), 
+    default=lambda: os.environ.get(API_KEY_ENV, ''), 
     help="Deepcode API key")
 @click.option(
     '--config-file', '-c',
@@ -79,11 +78,11 @@ def main(ctx, service_url, api_key, config_file):
 
     service_url = ctx.obj.get('service_url', '')
     if service_url:
-        os.environ['DEEPCODE_SERVICE_URL'] = service_url
+        os.environ[SERVICE_URL_ENV] = service_url
 
     api_key = ctx.obj.get('api_key', '')
     if api_key:
-        os.environ['DEEPCODE_API_KEY'] = api_key
+        os.environ[API_KEY_ENV] = api_key
 
 
 @main.command()

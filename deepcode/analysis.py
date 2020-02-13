@@ -4,10 +4,7 @@ from tqdm import tqdm
 
 from .connection import api_call
 from .utils import logger
-
-ANALYSIS_PROGRESS_INTERVAL = 2
-ANALYSIS_RETRY_DELAY = 5
-ANALYSIS_RETRIES = 3
+from .constants import (ANALYSIS_PROGRESS_INTERVAL, ANALYSIS_RETRY_DELAY, ANALYSIS_RETRIES)
 
 STATUS_MAPPING = {
     'DC_DONE': 'Linters running',

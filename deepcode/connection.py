@@ -5,26 +5,9 @@ import zlib
 import os
 from json import dumps
 from functools import wraps
-import inspect
 
 from .utils import logger
-
-# API_KEY = '1eea7e6a02f82252a71732401eb2f6b3711f2db306e0bf88c3e50fd2b640fe79'
-# API_KEY = 'd9f5eb73e28d31bdc65d3eed3df165b16ac078477d0fa4749db2e8a5df5d499f' # localhost
-
-DEFAULT_SERVICE_URL = 'https://www.deepcode.ai'
-NETWORK_RETRY_DELAY = 5
-SOURCE = 'CLI'
-
-# BACKEND_STATUS_CODES = {
-#     'success': 200,
-#     'login_in_progress': 304,
-#     'token': 401,
-#     'invalid_content': 400,
-#     'invalid_bundle_access': 403,
-#     'expired_bundle': 404,
-#     'large_payload': 413
-# }
+from .constants import (DEFAULT_SERVICE_URL, NETWORK_RETRY_DELAY, SOURCE, SERVICE_URL_ENV, API_KEY_ENV)
 
 def reconnect(func):
   
@@ -50,8 +33,8 @@ def reconnect(func):
 
 @reconnect
 async def api_call(path, method='GET', data=None, extra_headers={}, callback=lambda resp: resp.json(), compression_level=6, api_key=''):
-    SERVICE_URL = os.environ.get('DEEPCODE_SERVICE_URL', '') or DEFAULT_SERVICE_URL
-    API_KEY = api_key or os.environ.get('DEEPCODE_API_KEY', '')
+    SERVICE_URL = os.environ.get(SERVICE_URL_ENV, '') or DEFAULT_SERVICE_URL
+    API_KEY = api_key or os.environ.get(API_KEY_ENV, '')
 
     url = urljoin(urljoin(SERVICE_URL, '/publicapi/'), path)
     

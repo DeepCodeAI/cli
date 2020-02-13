@@ -4,8 +4,8 @@ import aiohttp
 
 from .utils import logger
 from .connection import api_call, SOURCE
+from .constants import AUTH_POLLING_INTERVAL
 
-POLLING_INTERVAL = 2
 
 async def login(service_url):
     """
@@ -20,12 +20,12 @@ async def login(service_url):
 
     while(True):
         try:
-            await asyncio.sleep(POLLING_INTERVAL)
+            await asyncio.sleep(AUTH_POLLING_INTERVAL)
             status = await api_call('session', method="GET", 
                 callback=asyncio.coroutine(lambda r: r.status), 
                 api_key=api_key)
             if status == 304:
-                print('Please, complete login process in opened browser. Re-checking session in {} sec'.format(POLLING_INTERVAL))
+                print('Please, complete login process in opened browser. Re-checking session in {} sec'.format(AUTH_POLLING_INTERVAL))
                 continue
             else:
                 # it means success, when we got 200 status code

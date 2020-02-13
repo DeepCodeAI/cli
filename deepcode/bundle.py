@@ -6,14 +6,15 @@ from funcy import chunks
 from tqdm import tqdm
 
 from .connection import api_call
-from .files import get_file_content, compose_file_buckets, MAX_BUCKET_SIZE
+from .files import get_file_content, compose_file_buckets
 from .utils import logger
+from .constants import MAX_BUCKET_SIZE
 
 
 async def get_filters():
     """ Fetch supported file extensions """
     filters = await api_call('filters')
-    logger.debug('filters --> {}'.format(filters))
+    logger.debug('allowed files: {}'.format(filters))
     supported_extensions, expected_config_files = set(filters['extensions']), set(filters['configFiles'])
     return lambda n: os.path.splitext(n)[-1] in supported_extensions or n in expected_config_files
 

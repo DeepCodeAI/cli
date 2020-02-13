@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "deepcode"
-version = "0.1.0"
+version = "1.0.0"
 description = "A client for DeepCode API (code analysis made by AI)"
 authors = ["Arvid Paeglit <arvid@deepcode.ai>"]
 license = "MIT"
@@ -38,4 +38,3 @@ deepcode = 'deepcode.cli:main'
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-

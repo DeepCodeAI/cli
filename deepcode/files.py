@@ -1,21 +1,11 @@
 import os
 import fnmatch
-from funcy import lcat, project
 from itertools import chain
 import hashlib
 
 from .utils import logger
 
-IGNORES_DEFAULT = {
-    '**/.git',
-}
-
-IGNORE_FILES_NAMES = {
-    '.gitignore',
-    '.dcignore'
-}
-
-MAX_BUCKET_SIZE = 1024 * 1024 * 4
+from .constants import (IGNORES_DEFAULT, IGNORE_FILES_NAMES, MAX_BUCKET_SIZE)
 
 def get_file_content(file_path):
     with open(file_path, mode='r') as f:
@@ -60,10 +50,10 @@ def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
                 and not is_ignored(entry.path, file_ignores) \
                 and file_filter(entry.name):
                     
-                    local_files.append(entry)
+                    local_files.append(entry.path)
             
             if local_ignore_file:
-                local_files = [f for f in local_files if not is_ignored(f.path, file_ignores)]
+                local_files = [p for p in local_files if not is_ignored(p, file_ignores)]
             
             yield from local_files
 
@@ -84,10 +74,10 @@ def get_file_meta(file_path):
 
 def prepare_bundle_hashes(bundle_files, bucket_size=MAX_BUCKET_SIZE):
     items = []
-    for entry in bundle_files:
-        file_size, file_hash = get_file_meta(entry.path)
+    for file_path in bundle_files:
+        file_size, file_hash = get_file_meta(file_path)
         if file_size < bucket_size:
-            items.append((entry.path, file_hash))
+            items.append((file_path, file_hash))
     
     return items
 
