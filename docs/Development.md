@@ -21,9 +21,11 @@ poetry shell
 
 (OPTIONAL) If you prefer to have all dependencies in the same place together with your code, create a virtualenv manually:
 ```bash
-virtualenv ./venv
+virtualenv ./venv --python python3
 source ./venv/bin/activate
 ```
+
+Troubleshooting: Make sure that your user has full rights to user folder with all subfolders
 
 ### Install dependencies
 ```bash
