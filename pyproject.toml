@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "deepcode"
+version = "1.0.0"
+description = "A client for DeepCode API (code analysis made by AI)"
+authors = ["Arvid Paeglit <arvid@deepcode.ai>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://www.deepcode.ai"
+repository = "https://github.com/DeepCodeAI/cli"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Quality Assurance",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/DeepCodeAI/cli/issues"
+
+[tool.poetry.dependencies]
+python = "^3.6 | ^3.7 | ^3.8"
+funcy = "^1.14"
+aiohttp = "^3.6.2"
+cchardet = "^2.1.5"
+asyncio = "^3.4.3"
+click = "^7.0"
+click-option-group = "^0.2.3"
+tqdm = "^4.42.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+pylint = "^2.4.4"
+pytest-asyncio = "^0.10.0"
+
+[tool.poetry.scripts]
+deepcode = 'deepcode.cli:main'
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

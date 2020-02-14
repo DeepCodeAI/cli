@@ -1,7 +1,7 @@
-__pycache__/
-venv/
+__pycache__
+venv/**
 *.pyc
-/.vscode
 /*.egg-info
-/dist
-/build
+dist
+.vscode
+.pytest_cache

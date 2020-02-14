@@ -1,28 +1,52 @@
-"""
-DeepCode module for analyzing code.
-Avaliable methods:
-  analyze([parent_path: string], [child_path:string], [is_repo: boolean]): -> return json
-"""
-from deepcode.src.module import deepcode_module
+import asyncio
+import os
+from tqdm import tqdm
 
-name = "deepcode"
-description = "This package is avaliable as imported module and as cli tool. To use it as imported module, please import it and call avaliable methods with args. To use it in terminal, just call deepcode in terminal and pass args"
-
-# avaliable methods for module
+from .files import collect_bundle_files, prepare_bundle_hashes
+from .bundle import get_filters, generate_bundle, create_git_bundle
+from .analysis import get_analysis
+from .utils import logger, profile_speed
 
 
-def analyze(parent_path=None, child_path=None, is_repo=False):
-    '''
-    analyze([parent_path: string], [child_path:string], [is_repo: boolean]): -> return json\n
-      Paths can be absolute path to bundle dir or path to remote repo of current registered user e.g.[user_name]/[repo_name]/[commit(optional)]\n
-      :param [parent_path] - if [parent_path] is not specified, current path will be taken to analyze\n
-      :param [child_path] - optional. Used for diff analysis. If specifed, diff analysis of two bundles will start\n
-      :param [is_repo] - optional. specifies that git remote repo should be ananlyzed.\n
-      :return - json with results e.g. {'files':{}, 'suggestions':{}} or json with error e.g. {"error": "[text of error]"}.\n
-      example:\n
-        deepcode.analyze('<owner/repo_name/commit>', is_repo=True) #analysis for remote bundle\n
-        deepcode.analyze('<path to files dir>') # analysis for files\n
-        deepcode.analyze() #analysis of current folder of file\n
-    '''
-    return deepcode_module.analyze(
-        parent_path, child_path, is_repo)
+@profile_speed
+async def analize_folders(paths, linters_enabled=False):
+    """ Entire flow of analyzing local folders. """
+    
+    with tqdm(total=5, desc='Analizing folders', unit='step', leave=False) as pbar:
+
+        pbar.set_description('Fetching supported extensions')
+        file_filter = await get_filters()
+        pbar.update(1)
+
+        pbar.set_description('Scanning for files')
+        bundle_files = collect_bundle_files(paths, file_filter)
+        bundle_files = tuple(
+            tqdm(bundle_files, desc='Found files', unit='f', leave=False) # progress bar
+        )
+        pbar.update(1)
+
+        pbar.set_description('Computing file hashes')
+        file_hashes = prepare_bundle_hashes(
+            tqdm(bundle_files, desc='Calculated hashes', unit='files', leave=False) # progress bar
+            )
+        pbar.update(1)
+
+        pbar.set_description('Sending data')
+        
+        bundle_id  = await generate_bundle(file_hashes)
+        pbar.update(1)
+
+        pbar.set_description('Requesting audit results')
+        res = await get_analysis(bundle_id, linters_enabled=linters_enabled)
+        pbar.update(1)
+        pbar.set_description('Finished analysis')
+
+        return res
+
+
+async def analize_git(platform, owner, repo, oid=None, linters_enabled=False):
+    """ Entire flow of analyzing remote git repositories. """
+    bundle_id = await create_git_bundle(platform, owner, repo, oid)
+    
+    return await get_analysis(bundle_id, linters_enabled=linters_enabled)
+
