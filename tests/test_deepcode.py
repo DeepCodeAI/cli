@@ -6,7 +6,7 @@ from deepcode.files import get_file_meta, collect_bundle_files, prepare_bundle_h
 from deepcode.bundle import get_filters, generate_bundle, create_git_bundle
 from deepcode.analysis import get_analysis
 from deepcode.constants import API_KEY_ENV, DEFAULT_SERVICE_URL
-from deepcode import analize_folders, analize_git
+from deepcode import analyze_folders, analyze_git
 
 MOCKED_FILTERS = {
     'extensions': ['.java', '.html', '.js', '.jsx', '.ts', '.tsx', '.vue', '.py'],
@@ -112,9 +112,9 @@ async def test_analysis():
 
 
 @pytest.mark.asyncio
-async def test_analize_folders():
+async def test_analyze_folders():
     path = os.path.join(os.path.dirname(__file__), 'mocked_for_tests')
-    results = await analize_folders([path], linters_enabled=True)
+    results = await analyze_folders([path], linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
     assert len(results['results']['files'].keys()) == 1
     assert len(results['results']['suggestions'].keys()) == 20
@@ -122,7 +122,7 @@ async def test_analize_folders():
 
 @pytest.mark.asyncio
 async def test_remote_analysis():
-    results = await analize_git('github.com', 'DeepcodeAI', 'cli', '320d98a6896f5376efe6cefefb6e70b46b97d566')
+    results = await analyze_git('github.com', 'DeepcodeAI', 'cli', '320d98a6896f5376efe6cefefb6e70b46b97d566')
     assert list(results.keys()) == ['id', 'url', 'results']
     assert list(results['results']['files'].keys()) == ['/tests/mocked_for_tests/sample_repository/main.js']
     assert len(results['results']['suggestions'].keys()) == 11

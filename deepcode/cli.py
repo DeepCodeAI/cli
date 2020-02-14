@@ -10,7 +10,7 @@ import os.path
 import logging
 from click_option_group import optgroup, RequiredMutuallyExclusiveOptionGroup
 
-from . import analize_folders, analize_git
+from . import analyze_folders, analyze_git
 from .utils import logger, coro
 from .auth import login as login_task
 from .git_utils import parse_git_uri
@@ -115,7 +115,7 @@ def config(ctx):
 @coro
 async def login(ctx):
     """
-    Initiate a new login protocal.
+    Initiate a new login protocol.
     User will be forwarded to Deepcode website to complete the process.
     """
 
@@ -174,10 +174,10 @@ async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_t
     try:
         if paths: # Local folders are going to be analysed
             paths = [os.path.abspath(p) for p in paths]
-            results = await analize_folders(paths=paths, linters_enabled=linters_enabled)
+            results = await analyze_folders(paths=paths, linters_enabled=linters_enabled)
         else:
-            # Deepcode server will fetch git repository and analize it
-            results = await analize_git(linters_enabled=linters_enabled, **remote_params)
+            # Deepcode server will fetch git repository and analyze it
+            results = await analyze_git(linters_enabled=linters_enabled, **remote_params)
 
         # Present results in json or textual way
         print( format_txt(results) if result_txt else json.dumps(results, sort_keys=True, indent=2) )

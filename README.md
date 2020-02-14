@@ -20,7 +20,7 @@ For detailed information see [deepcode project on PYPI](https://pypi.org/project
 
 ### Installation of package locally and development mode
 
-For detailed information see [development docs](development.md)
+For detailed information see [development docs](docs/development.md)
 
 
 ## CLI
@@ -43,7 +43,7 @@ Options:
 Commands:
   analyze  Analyzes your code using Deepcode AI engine.
   config   Store configuration values in a file.
-  login    Initiate a new login protocal.
+  login    Initiate a new login protocol.
 ```
 
 
@@ -90,34 +90,36 @@ AnalysisResults in json format as described [here](https://www.deepcode.ai/docs/
 
 ## Python native usage
 
-DeepCode CLI can be also used as module and can be imported into another python code with python import system
+DeepCode CLI can be also used as a module and can be imported into another python code with python import system.
 
 To use both functions, make sure, you set an environment variable 'DEEPCODE_API_KEY' with your API KEY, that [can be obtained here](https://www.deepcode.ai/app/~platform/account)
 
-To user self-managed instance of Deepcode, set an environment variable 'DEEPCODE_SERVICE_URL' with its user (e.g. https://example.org)
+To use self-managed instance of Deepcode, set an environment variable 'DEEPCODE_SERVICE_URL' with its user (e.g. https://example.org)
 
 Available methods:
 
-- analize_folders(paths, linters_enabled=False):
+- analyze_folders(paths, linters_enabled=False):
 
   ````
   :param [paths] - Paths should be a list of absolute paths to bundle dir
-  :param [linters_enabled] - optional. requestes also linter analysis
+  :param [linters_enabled] - optional. requests also linter analysis
   :return - dictionary with results e.g. as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles) plus: 'id' for bundle id and 'url' for online view of analysis results
 
   example:
-  deepcode.analize_folders('<path to files dir>')
+  import deepcode
+  deepcode.analyze_folders('<path to files dir>')
   ````
 
-- analize_git(platform, owner, repo, oid=None, linters_enabled=False):
+- analyze_git(platform, owner, repo, oid=None, linters_enabled=False):
 
   ````
   :param [platform] - github.com, bitbucket.org, gitlab.com.
   :param [owner] - repository account. (e.g. facebook)
   :param [repo] - repository. (e.g. react)
-  :param [linters_enabled] - optional. requestes also linter analysis
+  :param [linters_enabled] - optional. requests also linter analysis
   :return - dictionary with results e.g. as described [here](https://www.deepcode.ai/docs/REST%20APIs%2FBundles) plus: 'id' for bundle id and 'url' for online view of analysis results
 
   example:
-  deepcode.analize_git('github.com', 'facebook', 'react')
+  import deepcode
+  deepcode.analyze_git('github.com', 'facebook', 'react')
   ````

@@ -9,7 +9,7 @@ from .utils import logger, profile_speed
 
 
 @profile_speed
-async def analize_folders(paths, linters_enabled=False):
+async def analyze_folders(paths, linters_enabled=False):
     """ Entire flow of analyzing local folders. """
     
     with tqdm(total=5, desc='Analizing folders', unit='step', leave=False) as pbar:
@@ -44,7 +44,8 @@ async def analize_folders(paths, linters_enabled=False):
         return res
 
 
-async def analize_git(platform, owner, repo, oid=None, linters_enabled=False):
+@profile_speed
+async def analyze_git(platform, owner, repo, oid=None, linters_enabled=False):
     """ Entire flow of analyzing remote git repositories. """
     bundle_id = await create_git_bundle(platform, owner, repo, oid)
     

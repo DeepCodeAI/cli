@@ -13,7 +13,7 @@ from .constants import AUTH_POLLING_INTERVAL
 
 async def login(service_url):
     """
-    Initiate a new login protocal.
+    Initiate a new login protocol.
     User will be forwarded to Deepcode website to complete the process.
     """
     res = await api_call('login', method="POST", data={'source': SOURCE})
