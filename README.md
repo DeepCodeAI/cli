@@ -20,7 +20,7 @@ For detailed information see [deepcode project on PYPI](https://pypi.org/project
 
 ### Installation of package locally and development mode
 
-For detailed information see [development docs](docs/Development.md)
+For detailed information see [development docs](https://github.com/DeepCodeAI/cli/blob/master/docs/Development.md)
 
 
 ## CLI
