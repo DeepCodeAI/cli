@@ -1,4 +1,4 @@
-## [1.0.0] - 2019-02-13
+## [1.0.0] - 2019-02-14
 - Rewritten from scratch
 - Much faster and reliable execution
 - Backwards incompatible changes

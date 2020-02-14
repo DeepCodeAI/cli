@@ -12,6 +12,11 @@ Install poetry, dependencies and activate virtual environment:
 curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 ```
 
+Add a following line to your shell specific config file (~/.bashrc, ~/.zshrc):
+```bash
+export PATH="$HOME/.poetry/bin:$PATH"
+```
+
 For more details refer to [Poetry documentation](https://python-poetry.org/docs/)
 
 ### Create virtual environment
