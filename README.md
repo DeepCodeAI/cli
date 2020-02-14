@@ -2,7 +2,7 @@
 
 ## Installation
 
-Minimal supported python version is: 3.7
+Minimal supported python version is: 3.6.5
 
 ### Installation of published package from PyPI
 
