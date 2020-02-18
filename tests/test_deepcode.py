@@ -18,12 +18,6 @@ mock_file_filter = lambda n: os.path.splitext(n)[-1] in MOCKED_FILTERS['extensio
 
 API_KEY = '3f0c8e2f05b1465de310e4d7b3d80db7ee87bcf73225b6b3db97848b1d17784c'
 
-FILE_HASHES = [
-    ('/mocked_for_tests/sample_repository/utf8.js', 'cc2b67993e547813db67f57c6b20bff83bf4ade64ea2c3fb468d927425502804'), 
-    ('/mocked_for_tests/sample_repository/main.js', 'a7f2b4086183e471a0024b96a2de53b4a46eef78f4cf33b8dab61eae5e27eb83'), 
-    ('/mocked_for_tests/sample_repository/sub_folder/test2.js', 'c8bc645260a7d1a0d1349a72150cb65fa005188142dca30d09c3cc67c7974923')
-    ]
-
 
 @pytest.mark.asyncio
 async def test_filters():
@@ -75,39 +69,44 @@ def test_bundle_hashes():
            and 'main.js' in file_hashes[1][0] 
     assert file_hashes[2][1] == 'c8bc645260a7d1a0d1349a72150cb65fa005188142dca30d09c3cc67c7974923' \
            and 'sub_folder/test2.js' in file_hashes[2][0] 
+    
+    return file_hashes
 
 
 
 @pytest.mark.asyncio
 async def test_generate_bundle():
     """ Test generating bundles """
+    file_hashes = test_bundle_hashes()
+
     # Try to call without api key
     with pytest.raises(aiohttp.client_exceptions.ClientResponseError):
-        await generate_bundle(FILE_HASHES)
+        await generate_bundle(file_hashes)
     
-    # Set API KEY env variable
-    os.environ[API_KEY_ENV] = API_KEY
-
-    bundle_id = await generate_bundle(FILE_HASHES)
+    bundle_id = await generate_bundle(file_hashes, API_KEY)
     assert bool(bundle_id)
+
+    return bundle_id
 
 @pytest.mark.asyncio
 async def test_analysis():
     
-    # Try to call without api key
+    # Try to call with wrong bundle id and without api key
     with pytest.raises(aiohttp.client_exceptions.ClientResponseError):
         await get_analysis('sdfs', linters_enabled=True)
     
+    bundle_id = await test_generate_bundle()
+
     # Set API KEY env variable
     os.environ[API_KEY_ENV] = API_KEY
 
-    bundle_id = await generate_bundle(FILE_HASHES)
     results = await get_analysis(bundle_id, linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
     assert results['id'] == bundle_id
-    assert results['url'] == '{}/app/gh/testdcuser/DEEPCODE_PRIVATE_BUNDLE/76c77afeeb6c80d800e0f5d35d5caa5fbddffd04030075b3882c2da1d8464de5/_/%2F/code/'.format(DEFAULT_SERVICE_URL)
+    assert results['url'] == '{}/app/{}/_/%2F/code/'.format(DEFAULT_SERVICE_URL, bundle_id)
     assert list(results['results'].keys()) == ['files', 'suggestions']
-    assert list(results['results']['files'].keys()) == ['/mocked_for_tests/sample_repository/main.js']
+    assert len(results['results']['files'].keys()) == 1
+    assert '/mocked_for_tests/sample_repository/main.js' in list(results['results']['files'].keys())[0]
     assert len(results['results']['suggestions'].keys()) == 20
 
 

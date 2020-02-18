@@ -10,6 +10,18 @@ from .utils import logger
 
 from .constants import (IGNORES_DEFAULT, IGNORE_FILES_NAMES, MAX_BUCKET_SIZE)
 
+def prefix_win_path(filepath):
+    if os.name == 'posix':
+        return filepath
+    else:
+        return '/{}'.format(filepath)
+
+def deprefix_win_path(filepath):
+    if os.name != 'posix' and filepath.startswith('/'):
+        return filepath[1:]
+    else:
+        return filepath
+
 def get_file_content(file_path):
     with open(file_path, encoding='utf-8', mode='r') as f:
         return f.read()
@@ -89,7 +101,7 @@ def prepare_bundle_hashes(bundle_files, bucket_size=MAX_BUCKET_SIZE):
     return items
 
 
-def compose_file_buckets(file_paths, bucket_size=MAX_BUCKET_SIZE):
+def compose_file_buckets(missing_files, bucket_size=MAX_BUCKET_SIZE):
     """
     Splits files into buckets with limiting max size
     Returns list of items: (path, hash)
@@ -99,31 +111,34 @@ def compose_file_buckets(file_paths, bucket_size=MAX_BUCKET_SIZE):
         'files': []
     }]
 
-    def route_file_to_bucket(file_path):
+    def route_file_to_bucket(raw_file_path):
+
+        file_path = deprefix_win_path(raw_file_path)
+
         # Get file details
         file_size, file_hash = get_file_meta(file_path)
 
         # Check that file does not exceed max bucket size
         if file_size > bucket_size:
-            logger.debug('ecxluded big file --> {} ({} bytes)'.format(file_path, file_size))
+            logger.debug('excluded big file --> {} ({} bytes)'.format(file_path, file_size))
             return
 
         # Try to find existing bucket
         for bucket in buckets:
             if bucket['size'] >= file_size:
-                bucket['files'].append( (file_path, file_hash) )
+                bucket['files'].append( (raw_file_path, file_hash) )
                 bucket['size'] -= file_size
                 return bucket
         
         bucket = {
             'size': bucket_size - file_size,
-            'files': [ (file_path, file_hash) ]
+            'files': [ (raw_file_path, file_hash) ]
         }
         buckets.append(bucket)
         return bucket
     
-    for file_path in file_paths:
-        bucket = route_file_to_bucket(file_path)
+    for raw_file_path in missing_files:
+        bucket = route_file_to_bucket(raw_file_path)
         if not bucket:
             continue
 

@@ -1,3 +1,6 @@
+## [1.0.4] - 2019-02-18
+- Fixed file processing in Windows
+
 ## [1.0.0] - 2019-02-14
 - Rewritten from scratch
 - Much faster and reliable execution
