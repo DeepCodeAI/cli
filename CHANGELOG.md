@@ -1,3 +1,6 @@
+## [1.0.5] - 2019-02-24
+- Optimized file paths to send only relative paths
+
 ## [1.0.4] - 2019-02-18
 - Fixed file processing in Windows
 

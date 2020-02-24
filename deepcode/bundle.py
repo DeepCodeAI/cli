@@ -11,7 +11,7 @@ from tqdm import tqdm
 from functools import partial
 
 from .connection import api_call
-from .files import get_file_content, compose_file_buckets, prefix_win_path
+from .files import get_file_content, compose_file_buckets, prepare_file_path
 from .utils import logger
 from .constants import MAX_BUCKET_SIZE
 
@@ -26,7 +26,7 @@ async def get_filters(api_key=''):
 
 async def _request_file_bundle(path, method, file_hashes, api_key):
 
-    files = {prefix_win_path(p): h for p, h in file_hashes}
+    files = {prepare_file_path(p): h for p, h in file_hashes}
 
     res = await api_call(
         path='bundle', method='POST', 

@@ -10,17 +10,23 @@ from .utils import logger
 
 from .constants import (IGNORES_DEFAULT, IGNORE_FILES_NAMES, MAX_BUCKET_SIZE)
 
-def prefix_win_path(filepath):
-    if os.name == 'posix':
-        return filepath
-    else:
-        return '/{}'.format(filepath)
+def prepare_file_path(filepath):
+    """
+    1. Get relative path
+    2. Modify Windows path
+    3. Prefix with /
+    """
+    relpath = os.path.relpath(filepath).replace('\\', '/')
+    return '/{}'.format(relpath)
 
-def deprefix_win_path(filepath):
-    if os.name != 'posix' and filepath.startswith('/'):
-        return filepath[1:]
-    else:
-        return filepath
+def resolve_file_path(bundle_filepath):
+    """ Reversive function to prepare_file_path """
+    path = bundle_filepath[1:]
+
+    if os.name != 'posix':
+        path = path.replace('/', '\\')
+    
+    return os.path.abspath(path)
 
 def get_file_content(file_path):
     with open(file_path, encoding='utf-8', mode='r') as f:
@@ -113,8 +119,8 @@ def compose_file_buckets(missing_files, bucket_size=MAX_BUCKET_SIZE):
 
     def route_file_to_bucket(raw_file_path):
 
-        file_path = deprefix_win_path(raw_file_path)
-
+        file_path = resolve_file_path(raw_file_path)
+        
         # Get file details
         file_size, file_hash = get_file_meta(file_path)
 
@@ -126,13 +132,13 @@ def compose_file_buckets(missing_files, bucket_size=MAX_BUCKET_SIZE):
         # Try to find existing bucket
         for bucket in buckets:
             if bucket['size'] >= file_size:
-                bucket['files'].append( (raw_file_path, file_hash) )
+                bucket['files'].append( (file_path, file_hash) )
                 bucket['size'] -= file_size
                 return bucket
         
         bucket = {
             'size': bucket_size - file_size,
-            'files': [ (raw_file_path, file_hash) ]
+            'files': [ (file_path, file_hash) ]
         }
         buckets.append(bucket)
         return bucket
