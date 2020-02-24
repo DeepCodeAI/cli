@@ -2,6 +2,7 @@
 Command line interface for Deepcode
 """
 
+import sys
 import click
 import json
 import asyncio
@@ -168,8 +169,16 @@ class GitURI(click.ParamType):
 async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_txt):
     """
     Analyzes your code using Deepcode AI engine.
+
+    Exit codes:
+    0 - not issues found; 
+    1 - some issues found; 
+    2 - Execution was interrupted by the user;
+    3 - Some error happened while executing
     """
     _config_logging(log_file)
+
+    exit_code = 0
 
     try:
         if paths: # Local folders are going to be analysed
@@ -182,8 +191,14 @@ async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_t
         # Present results in json or textual way
         print( format_txt(results) if result_txt else json.dumps(results, sort_keys=True, indent=2) )
 
+        if results['results']['suggestions']:
+            exit_code = 1
+
     except aiohttp.client_exceptions.ClientResponseError as exc:
         if exc.status == 401:
             logger.error('Auth token seems to be missing or incorrect. Run \"deepcode login\"')
         else:
             logger.error(exc)
+        exit_code = 3
+    finally:
+        sys.exit(exit_code)

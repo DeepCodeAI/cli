@@ -93,7 +93,7 @@ async def check_bundle(bundle_id, api_key=''):
     return data['missingFiles']
 
 
-async def upload_bundle_files(bundle_id, entries, api_key):
+def upload_bundle_files(bundle_id, entries, api_key):
     """
     Each entry should contain of: (path, hash)
     """
@@ -106,7 +106,7 @@ async def upload_bundle_files(bundle_id, entries, api_key):
             'fileContent': file_content 
         })
     
-    await api_call(
+    return api_call(
         'file/{}'.format(bundle_id), 
         method='POST', 
         data=data, 

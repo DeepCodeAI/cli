@@ -1,3 +1,6 @@
+## [1.0.6] - 2019-02-24
+- Proper exit codes to use the CLI in pipelines
+
 ## [1.0.5] - 2019-02-24
 - Optimized file paths to send only relative paths
 

@@ -63,6 +63,12 @@ Usage: deepcode analyze [OPTIONS]
 
   Analyzes your code using Deepcode AI engine.
 
+  Exit codes: 
+  0 - not issues found
+  1 - some issues found  
+  2 - Execution was interrupted by the user
+  3 - Some error happened while executing
+
 Options:
   Source location: [mutually_exclusive, required]
                                   The configuration of repository location

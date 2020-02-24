@@ -35,7 +35,7 @@ IGNORE_FILES_NAMES = {
     '.dcignore'
 }
 
-MAX_BUCKET_SIZE = 1024 * 1024 * 4
+MAX_BUCKET_SIZE = 1024 * 1024 * 3.5
 
 # ================ CLI =================
 
