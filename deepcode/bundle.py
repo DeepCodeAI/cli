@@ -27,7 +27,7 @@ async def get_filters(api_key=''):
 async def _request_file_bundle(path, method, file_hashes, api_key):
 
     files = {prepare_file_path(p): h for p, h in file_hashes}
-
+    
     res = await api_call(
         path='bundle', method='POST', 
         data={'files': files, 'removedFiles': []}, 
@@ -37,11 +37,6 @@ async def _request_file_bundle(path, method, file_hashes, api_key):
     bundle_id, missing_files = res['bundleId'], res['missingFiles']
     logger.debug('bundle id: {} | missing_files: {}'.format(bundle_id, len(missing_files)))
     return bundle_id, missing_files
-
-
-def extend_file_bundle(bundle_id):
-    """ Extend bundle via API  """
-    return 
 
 
 async def generate_bundle(file_hashes, api_key=''):
@@ -59,12 +54,11 @@ async def generate_bundle(file_hashes, api_key=''):
     
     with tqdm(total=len(file_hashes), desc='Generated bundles', unit='bundle', leave=False) as pbar:
 
-        for chunked_files in chunks(int(MAX_BUCKET_SIZE // 200), file_hashes):
-
+        for chunked_files in chunks(int(MAX_BUCKET_SIZE // 300), file_hashes):
             if not bundle_id:
-                bundle_func = partial(_request_file_bundle, path='bundle', method='POST', file_hashes=file_hashes)
+                bundle_func = partial(_request_file_bundle, path='bundle', method='POST', file_hashes=chunked_files)
             else:
-                bundle_func = partial(_request_file_bundle, path='bundle/{}'.format(bundle_id), method='PUT', file_hashes=file_hashes)
+                bundle_func = partial(_request_file_bundle, path='bundle/{}'.format(bundle_id), method='PUT', file_hashes=chunked_files)
 
             bundle_id = await _complete_bundle( bundle_func, api_key)
             pbar.update(len(chunked_files))

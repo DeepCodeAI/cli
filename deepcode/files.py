@@ -2,6 +2,7 @@
 A module dedicated to working with local folders/files.
 """
 import os
+from copy import copy
 import fnmatch
 from itertools import chain
 import hashlib
@@ -37,14 +38,21 @@ def parse_file_ignores(file_path):
     with open(file_path, encoding='utf-8', mode='r') as f:
         for l in f.readlines():
             rule = l.strip()
-            if not rule.startswith('#'):
+            if rule and not rule.startswith('#'):
                 yield os.path.join(dirname, rule)
 
+
 def is_ignored(path, file_ignores):
-    return any(i for i in file_ignores if fnmatch.fnmatch(path, i))
-    
+    for i in file_ignores:
+        if fnmatch.fnmatch(path, i):
+            logger.debug('pattern: {} | ignored: {}'.format(i, path))
+            return True
+
+    return False
+
 
 def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
+    local_file_ignores = copy(file_ignores)
     for path in paths:
         with os.scandir(path) as it:
             local_files = []
@@ -62,27 +70,27 @@ def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
 
                 if entry.name in IGNORE_FILES_NAMES:
                     for ignore_rule in parse_file_ignores(entry.path):
-                        file_ignores.add(ignore_rule)
+                        local_file_ignores.add(ignore_rule)
                     local_ignore_file = True
                     logger.debug('recognized ignore rules in file --> {}'.format(entry.path))
                     continue 
                 
                 if entry.is_file() \
-                and not is_ignored(entry.path, file_ignores) \
-                and file_filter(entry.name):
+                and file_filter(entry.name) \
+                and not is_ignored(entry.path, local_file_ignores):
                     
                     local_files.append(entry.path)
             
             if local_ignore_file:
-                local_files = [p for p in local_files if not is_ignored(p, file_ignores)]
+                local_files = [p for p in local_files if not is_ignored(p, local_file_ignores)]
             
             yield from local_files
 
             sub_dirs = [
                 subdir for subdir in sub_dirs
-                if not is_ignored(subdir, file_ignores)
+                if not is_ignored(subdir, local_file_ignores)
                 ]
-            yield from collect_bundle_files(sub_dirs, file_filter, file_ignores)
+            yield from collect_bundle_files(sub_dirs, file_filter, local_file_ignores)
 
 
 def get_file_meta(file_path):
