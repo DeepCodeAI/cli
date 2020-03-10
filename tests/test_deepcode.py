@@ -107,7 +107,7 @@ async def test_analysis():
     assert list(results['results'].keys()) == ['files', 'suggestions']
     assert len(results['results']['files'].keys()) == 1
     assert '/mocked_for_tests/sample_repository/main.js' in list(results['results']['files'].keys())[0]
-    assert len(results['results']['suggestions'].keys()) == 20
+    assert len(results['results']['suggestions'].keys()) == 18
 
 
 @pytest.mark.asyncio
@@ -116,7 +116,7 @@ async def test_analyze_folders():
     results = await analyze_folders([path], linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
     assert len(results['results']['files'].keys()) == 1
-    assert len(results['results']['suggestions'].keys()) == 20
+    assert len(results['results']['suggestions'].keys()) == 18
 
 
 @pytest.mark.asyncio
@@ -124,4 +124,4 @@ async def test_remote_analysis():
     results = await analyze_git('github.com', 'DeepcodeAI', 'cli', '320d98a6896f5376efe6cefefb6e70b46b97d566')
     assert list(results.keys()) == ['id', 'url', 'results']
     assert list(results['results']['files'].keys()) == ['/tests/mocked_for_tests/sample_repository/main.js']
-    assert len(results['results']['suggestions'].keys()) == 11
+    assert len(results['results']['suggestions'].keys()) == 9
