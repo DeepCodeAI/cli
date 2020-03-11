@@ -1,3 +1,6 @@
+## [1.0.7] - 2019-03-10
+- Improved processing of very large folders
+
 ## [1.0.6] - 2019-02-24
 - Proper exit codes to use the CLI in pipelines
 
