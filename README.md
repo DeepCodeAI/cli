@@ -6,12 +6,12 @@ Minimal supported python version is: 3.6.5
 
 ### Installation of published package from PyPI
 
-Pip: 
+Pip:
 ```bash
 pip install deepcode
 ```
 
-Poetry: 
+Poetry:
 ```bash
 poetry add deepcode
 ```
@@ -63,9 +63,9 @@ Usage: deepcode analyze [OPTIONS]
 
   Analyzes your code using Deepcode AI engine.
 
-  Exit codes: 
+  Exit codes:
   0 - not issues found
-  1 - some issues found  
+  1 - some issues found
   2 - Execution was interrupted by the user
   3 - Some error happened while executing
 
@@ -80,15 +80,17 @@ Options:
   -l, --with-linters              Enable linters
   -log, --log-file FILE           Forward all debugging messages to a file
   -txt, --result-text             Present results in txt format
+  -sev, --severity [info|warning|critical]
+                                  Minimum severity level (default: info)
   --help                          Show this message and exit.
 ```
 
 Examples:
 
 ```bash
-deepcode analyze --path (<folder path one>) --path (<folder path two>) --with-linters --log-file=~/.deepcode.log -txt
+deepcode analyze --path (<folder path one>) --path (<folder path two>) --with-linters --log-file=~/.deepcode.log -txt --severity warning
 
-deepcode analyze --path (<folder path one>) 
+deepcode analyze --path (<folder path one>)
 deepcode analyze --git-uri git@github.com:DefinitelyTyped/DefinitelyTyped.git --with-linters
 ```
 

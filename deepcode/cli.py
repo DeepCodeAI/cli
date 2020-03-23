@@ -17,7 +17,7 @@ from .auth import login as login_task
 from .git_utils import parse_git_uri
 from .constants import (DEFAULT_SERVICE_URL, CONFIG_FILE_PATH, SERVICE_URL_ENV, API_KEY_ENV)
 from .formatter import format_txt, text_decorations, text_with_colors
-
+from .severity import filter_severity
 
 def _save_config(service_url, api_key, config_file):
     data = {
@@ -164,15 +164,19 @@ class GitURI(click.ParamType):
     type=click.Path(file_okay=True, dir_okay=False),
     help="Forward all debugging messages to a file")
 @click.option('--result-text', '-txt', 'result_txt', is_flag=True, help="Present results in txt format")
+@click.option('--severity', '-sev', 'severity',
+              type=click.Choice(['info', 'warning', 'critical'], case_sensitive=False),
+              default='info',
+              help="Minimum severity level (default: info)")
 @click.pass_context
 @coro
-async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_txt):
+async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_txt, severity):
     """
     Analyzes your code using Deepcode AI engine.
 
     Exit codes:
-    0 - not issues found; 
-    1 - some issues found; 
+    0 - not issues found;
+    1 - some issues found;
     2 - Execution was interrupted by the user;
     3 - Some error happened while executing
     """
@@ -188,6 +192,7 @@ async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_t
             # Deepcode server will fetch git repository and analyze it
             results = await analyze_git(linters_enabled=linters_enabled, **remote_params)
 
+        filter_severity(results, severity)
         # Present results in json or textual way
         print( format_txt(results) if result_txt else json.dumps(results, sort_keys=True, indent=2) )
 

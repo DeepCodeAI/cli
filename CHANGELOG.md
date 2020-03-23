@@ -1,3 +1,6 @@
+## [1.0.10] - 2019-03-23
+- Added new argument "severity" to CLI
+
 ## [1.0.9] - 2019-03-23
 - Changed status from Beta to Stable
 
