@@ -61,7 +61,7 @@ def _config_logging(log_file):
 @click.pass_context
 def main(ctx, service_url, api_key, config_file):
     """
-    A tool, that detects bugs and quality issues in JavaScript, TypeScript, Python and Java..
+    A tool, that detects bugs and quality issues in JavaScript, TypeScript, Python, Java and C/C++.
     It uses a mighty engine based on AI from Deepcode.
     """
 

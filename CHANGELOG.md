@@ -1,3 +1,6 @@
+## [1.0.8] - 2019-03-23
+- Added C/C++ into supported languages
+
 ## [1.0.7] - 2019-03-10
 - Improved processing of very large folders
 
