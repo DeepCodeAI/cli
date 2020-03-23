@@ -31,7 +31,7 @@ deepcode --help
 Usage: deepcode [OPTIONS] COMMAND [ARGS]...
 
   A tool, that detects bugs and quality issues in JavaScript, TypeScript,
-  Python and Java.. It uses a mighty engine based on AI from Deepcode.
+  Python, Java and C/C++. It uses a mighty engine based on AI from Deepcode.
 
 Options:
   -s, --service-url TEXT  Custom DeepCode service URL (default:
