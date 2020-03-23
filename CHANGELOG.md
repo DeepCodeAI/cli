@@ -1,3 +1,6 @@
+## [1.0.9] - 2019-03-23
+- Changed status from Beta to Stable
+
 ## [1.0.8] - 2019-03-23
 - Added C/C++ into supported languages
 
