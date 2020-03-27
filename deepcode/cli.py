@@ -17,7 +17,6 @@ from .auth import login as login_task
 from .git_utils import parse_git_uri
 from .constants import (DEFAULT_SERVICE_URL, CONFIG_FILE_PATH, SERVICE_URL_ENV, API_KEY_ENV)
 from .formatter import format_txt, text_decorations, text_with_colors
-from .severity import filter_severity
 
 def _save_config(service_url, api_key, config_file):
     data = {
@@ -184,15 +183,20 @@ async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_t
 
     exit_code = 0
 
+    severity = {
+        'info': 1,
+        'warning': 2,
+        'critical': 3
+        }.get(severity) or 1
+
     try:
         if paths: # Local folders are going to be analysed
             paths = [os.path.abspath(p) for p in paths]
-            results = await analyze_folders(paths=paths, linters_enabled=linters_enabled)
+            results = await analyze_folders(paths=paths, linters_enabled=linters_enabled, severity=severity)
         else:
             # Deepcode server will fetch git repository and analyze it
-            results = await analyze_git(linters_enabled=linters_enabled, **remote_params)
+            results = await analyze_git(linters_enabled=linters_enabled, severity=severity, **remote_params)
 
-        filter_severity(results, severity)
         # Present results in json or textual way
         print( format_txt(results) if result_txt else json.dumps(results, sort_keys=True, indent=2) )
 

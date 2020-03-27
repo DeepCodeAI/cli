@@ -1,3 +1,8 @@
+## [1.0.11] - 2019-03-27
+- Fixed bug with analysis of huge repostories
+- Fixed relative path, when analysis only one path
+- Improved file/folder ignoring patterns
+
 ## [1.0.10] - 2019-03-23
 - Added new argument "severity" to CLI
 

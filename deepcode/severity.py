@@ -1,27 +1,21 @@
-def filter_severity(analysis_data, severity):
+def filter_severity(analysis_results, severity):
     """
     Exclude all suggestions with severity lower, then specified.
     Makes this exclusion in-place, no value returned or copied.
     This is done in purpose, as we plan to implement this logic inside Bundle server later; and then remove this function.
     """
 
-    severity = {
-        'info': 1,
-        'warning': 2,
-        'critical': 3
-        }.get(severity) or 1
-
     if severity == 1:
-        return
+        return analysis_results
 
     suggestions = {
         k:v
-        for k, v in analysis_data['results']['suggestions'].items()
+        for k, v in analysis_results['suggestions'].items()
         if v['severity'] >= severity
     }
 
     files = {}
-    for f_path, f_suggestions in analysis_data['results']['files'].items():
+    for f_path, f_suggestions in analysis_results['files'].items():
         filtered_suggestions = {
             f_id: f_data
             for f_id, f_data in f_suggestions.items()
@@ -31,7 +25,7 @@ def filter_severity(analysis_data, severity):
             files[f_path] = filtered_suggestions
 
 
-    analysis_data['results'].update({
+    return {
         'suggestions': suggestions,
         'files': files
-    })
+    }

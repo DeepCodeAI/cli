@@ -9,9 +9,9 @@ from .utils import logger, profile_speed
 
 
 @profile_speed
-async def analyze_folders(paths, linters_enabled=False):
+async def analyze_folders(paths, linters_enabled=False, severity=1):
     """ Entire flow of analyzing local folders. """
-    
+
     with tqdm(total=5, desc='Analizing folders', unit='step', leave=False) as pbar:
 
         pbar.set_description('Fetching supported extensions')
@@ -25,6 +25,10 @@ async def analyze_folders(paths, linters_enabled=False):
         )
         pbar.update(1)
 
+        # change dir to destination folder, if paths list contains only one item
+        if len(paths) == 1:
+            os.chdir(paths[0])
+
         pbar.set_description('Computing file hashes')
         file_hashes = prepare_bundle_hashes(
             tqdm(bundle_files, desc='Calculated hashes', unit='files', leave=False) # progress bar
@@ -32,12 +36,12 @@ async def analyze_folders(paths, linters_enabled=False):
         pbar.update(1)
 
         pbar.set_description('Sending data')
-        
+
         bundle_id  = await generate_bundle(file_hashes)
         pbar.update(1)
 
         pbar.set_description('Requesting audit results')
-        res = await get_analysis(bundle_id, linters_enabled=linters_enabled)
+        res = await get_analysis(bundle_id, linters_enabled=linters_enabled, severity=severity)
         pbar.update(1)
         pbar.set_description('Finished analysis')
 
@@ -45,9 +49,9 @@ async def analyze_folders(paths, linters_enabled=False):
 
 
 @profile_speed
-async def analyze_git(platform, owner, repo, oid=None, linters_enabled=False):
+async def analyze_git(platform, owner, repo, oid=None, linters_enabled=False, severity=1):
     """ Entire flow of analyzing remote git repositories. """
     bundle_id = await create_git_bundle(platform, owner, repo, oid)
-    
-    return await get_analysis(bundle_id, linters_enabled=linters_enabled)
+
+    return await get_analysis(bundle_id, linters_enabled=linters_enabled, severity=severity)
 

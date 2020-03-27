@@ -26,7 +26,7 @@ def resolve_file_path(bundle_filepath):
 
     if os.name != 'posix':
         path = path.replace('/', '\\')
-    
+
     return os.path.abspath(path)
 
 def get_file_content(file_path):
@@ -40,6 +40,8 @@ def parse_file_ignores(file_path):
             rule = l.strip()
             if rule and not rule.startswith('#'):
                 yield os.path.join(dirname, rule)
+                if not rule.startswith('/'):
+                    yield os.path.join(dirname, '**', rule)
 
 
 def is_ignored(path, file_ignores):
@@ -53,6 +55,7 @@ def is_ignored(path, file_ignores):
 
 def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
     local_file_ignores = copy(file_ignores)
+
     for path in paths:
         with os.scandir(path) as it:
             local_files = []
@@ -63,7 +66,7 @@ def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
                 if entry.is_symlink():
                     # To prevent possible infinite loops, we ignore symlinks for now
                     continue
-                
+
                 if entry.is_dir():
                     sub_dirs.append(entry.path)
                     continue
@@ -73,17 +76,17 @@ def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
                         local_file_ignores.add(ignore_rule)
                     local_ignore_file = True
                     logger.debug('recognized ignore rules in file --> {}'.format(entry.path))
-                    continue 
-                
+                    continue
+
                 if entry.is_file() \
                 and file_filter(entry.name) \
                 and not is_ignored(entry.path, local_file_ignores):
-                    
+
                     local_files.append(entry.path)
-            
+
             if local_ignore_file:
                 local_files = [p for p in local_files if not is_ignored(p, local_file_ignores)]
-            
+
             yield from local_files
 
             sub_dirs = [
@@ -111,7 +114,7 @@ def prepare_bundle_hashes(bundle_files, bucket_size=MAX_BUCKET_SIZE):
         else:
             if file_size < bucket_size:
                 items.append((file_path, file_hash))
-    
+
     return items
 
 
@@ -128,7 +131,7 @@ def compose_file_buckets(missing_files, bucket_size=MAX_BUCKET_SIZE):
     def route_file_to_bucket(raw_file_path):
 
         file_path = resolve_file_path(raw_file_path)
-        
+
         # Get file details
         file_size, file_hash = get_file_meta(file_path)
 
@@ -143,14 +146,14 @@ def compose_file_buckets(missing_files, bucket_size=MAX_BUCKET_SIZE):
                 bucket['files'].append( (file_path, file_hash) )
                 bucket['size'] -= file_size
                 return bucket
-        
+
         bucket = {
             'size': bucket_size - file_size,
             'files': [ (file_path, file_hash) ]
         }
         buckets.append(bucket)
         return bucket
-    
+
     for raw_file_path in missing_files:
         bucket = route_file_to_bucket(raw_file_path)
         if not bucket:
@@ -159,7 +162,7 @@ def compose_file_buckets(missing_files, bucket_size=MAX_BUCKET_SIZE):
         if bucket['size'] < bucket_size * 0.01:
             yield bucket['files'] # Give bucket to requester
             buckets.remove(bucket) # Remove it as fullfilled
-    
+
     # Send all left-over buckets
     for bucket in buckets:
         if bucket['files']:

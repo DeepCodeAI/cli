@@ -21,22 +21,22 @@ API_KEY = '3f0c8e2f05b1465de310e4d7b3d80db7ee87bcf73225b6b3db97848b1d17784c'
 
 @pytest.mark.asyncio
 async def test_filters():
-    
+
     # Try to call without api key
     with pytest.raises(aiohttp.client_exceptions.ClientResponseError):
         await get_filters()
-    
+
     filter_func = await get_filters(api_key=API_KEY)
 
     assert filter_func('sample_repository/utf8.js') == True
-    
+
 
 def test_file_meta():
     path = os.path.join(os.path.dirname(__file__),
                         'mocked_for_tests', 'test.java')
-    
+
     assert get_file_meta(path) == (140375, '09f4ca64118f029e5a894305dfc329c930ebd2a258052de9e81f895b055ec929')
-    
+
 
 def test_meta_utf8_file():
     path = os.path.join(os.path.dirname(__file__),
@@ -64,12 +64,12 @@ def test_bundle_hashes():
 
     assert len(file_hashes) == 3
     assert file_hashes[0][1] == 'cc2b67993e547813db67f57c6b20bff83bf4ade64ea2c3fb468d927425502804' \
-           and 'utf8.js' in file_hashes[0][0] 
+           and 'utf8.js' in file_hashes[0][0]
     assert file_hashes[1][1] == 'a7f2b4086183e471a0024b96a2de53b4a46eef78f4cf33b8dab61eae5e27eb83' \
-           and 'main.js' in file_hashes[1][0] 
+           and 'main.js' in file_hashes[1][0]
     assert file_hashes[2][1] == 'c8bc645260a7d1a0d1349a72150cb65fa005188142dca30d09c3cc67c7974923' \
-           and 'sub_folder/test2.js' in file_hashes[2][0] 
-    
+           and 'sub_folder/test2.js' in file_hashes[2][0]
+
     return file_hashes
 
 
@@ -82,7 +82,7 @@ async def test_generate_bundle():
     # Try to call without api key
     with pytest.raises(aiohttp.client_exceptions.ClientResponseError):
         await generate_bundle(file_hashes)
-    
+
     bundle_id = await generate_bundle(file_hashes, API_KEY)
     assert bool(bundle_id)
 
@@ -90,11 +90,11 @@ async def test_generate_bundle():
 
 @pytest.mark.asyncio
 async def test_analysis():
-    
+
     # Try to call with wrong bundle id and without api key
     with pytest.raises(aiohttp.client_exceptions.ClientResponseError):
         await get_analysis('sdfs', linters_enabled=True)
-    
+
     bundle_id = await test_generate_bundle()
 
     # Set API KEY env variable
@@ -107,7 +107,7 @@ async def test_analysis():
     assert list(results['results'].keys()) == ['files', 'suggestions']
     assert len(results['results']['files'].keys()) == 1
     assert '/mocked_for_tests/sample_repository/main.js' in list(results['results']['files'].keys())[0]
-    assert len(results['results']['suggestions'].keys()) == 18
+    assert len(results['results']['suggestions'].keys()) == 9
 
 
 @pytest.mark.asyncio
@@ -116,7 +116,16 @@ async def test_analyze_folders():
     results = await analyze_folders([path], linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
     assert len(results['results']['files'].keys()) == 1
-    assert len(results['results']['suggestions'].keys()) == 18
+    assert len(results['results']['suggestions'].keys()) == 9
+
+
+@pytest.mark.asyncio
+async def test_analyze_folders_severity():
+    path = os.path.join(os.path.dirname(__file__), 'mocked_for_tests')
+    results = await analyze_folders([path], linters_enabled=True, severity=2)
+    assert list(results.keys()) == ['id', 'url', 'results']
+    assert len(results['results']['files'].keys()) == 0
+    assert len(results['results']['suggestions'].keys()) == 0
 
 
 @pytest.mark.asyncio
@@ -125,3 +134,11 @@ async def test_remote_analysis():
     assert list(results.keys()) == ['id', 'url', 'results']
     assert list(results['results']['files'].keys()) == ['/tests/mocked_for_tests/sample_repository/main.js']
     assert len(results['results']['suggestions'].keys()) == 9
+
+
+@pytest.mark.asyncio
+async def test_remote_analysis_severity():
+    results = await analyze_git('github.com', 'DeepcodeAI', 'cli', '320d98a6896f5376efe6cefefb6e70b46b97d566', severity=2)
+    assert list(results.keys()) == ['id', 'url', 'results']
+    assert len(results['results']['files'].keys()) == 0
+    assert len(results['results']['suggestions'].keys()) == 0
