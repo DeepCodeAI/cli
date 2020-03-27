@@ -27,10 +27,10 @@ async def get_filters(api_key=''):
 async def _request_file_bundle(path, method, file_hashes, api_key):
 
     files = {prepare_file_path(p): h for p, h in file_hashes}
-    
+
     res = await api_call(
-        path='bundle', method='POST', 
-        data={'files': files, 'removedFiles': []}, 
+        path=path, method=method, 
+        data={'files': files, 'removedFiles': []},
         compression_level=9,
         api_key=api_key)
 
@@ -47,11 +47,11 @@ async def generate_bundle(file_hashes, api_key=''):
         while(missing_files):
             await fulfill_bundle(bundle_id, missing_files, api_key) # Send all missing files
             missing_files = await check_bundle(bundle_id, api_key) # Check that all files are uploaded
-        
+
         return bundle_id
 
     bundle_id = None
-    
+
     with tqdm(total=len(file_hashes), desc='Generated bundles', unit='bundle', leave=False) as pbar:
 
         for chunked_files in chunks(int(MAX_BUCKET_SIZE // 300), file_hashes):
@@ -62,21 +62,21 @@ async def generate_bundle(file_hashes, api_key=''):
 
             bundle_id = await _complete_bundle( bundle_func, api_key)
             pbar.update(len(chunked_files))
-            
+
         return bundle_id
-        
+
 
 async def create_git_bundle(platform, owner, repo, oid):
     """ Create a git bundle via API  """
     data = {
-        'platform': platform, 
-        'owner': owner, 
+        'platform': platform,
+        'owner': owner,
         'repo': repo
     }
 
     if oid:
         data['oid'] = oid
-    
+
     res = await api_call('bundle', method='POST', data=data, compression_level=9)
     return res['bundleId']
 
@@ -91,19 +91,19 @@ def upload_bundle_files(bundle_id, entries, api_key):
     """
     Each entry should contain of: (path, hash)
     """
-    
+
     data = []
     for file_path, file_hash in entries:
         file_content = get_file_content(file_path)
         data.append({
-            'fileHash': file_hash, 
-            'fileContent': file_content 
+            'fileHash': file_hash,
+            'fileContent': file_content
         })
-    
+
     return api_call(
-        'file/{}'.format(bundle_id), 
-        method='POST', 
-        data=data, 
+        'file/{}'.format(bundle_id),
+        method='POST',
+        data=data,
         callback=lambda resp: resp.text(),
         api_key=api_key
         )
