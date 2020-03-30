@@ -9,7 +9,6 @@ from tqdm import tqdm
 from .connection import api_call
 from .utils import logger
 from .constants import (ANALYSIS_PROGRESS_INTERVAL, ANALYSIS_RETRY_DELAY, ANALYSIS_RETRIES)
-from .severity import filter_severity
 
 STATUS_MAPPING = {
     'DC_DONE': 'Linters running',
@@ -48,7 +47,7 @@ async def get_analysis(bundle_id, linters_enabled=False, severity=1):
                 return {
                     'id': bundle_id,
                     'url': data['analysisURL'],
-                    'results': filter_severity(data['analysisResults'], severity)
+                    'results': data['analysisResults']
                 }
 
             elif data['status'] == 'FAILED':
