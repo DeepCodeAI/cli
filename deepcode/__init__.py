@@ -9,7 +9,7 @@ from .utils import logger, profile_speed
 
 
 @profile_speed
-async def analyze_folders(paths, linters_enabled=False, severity=1):
+async def analyze_folders(paths, linters_enabled=False, symlinks_enabled=False, severity=1):
     """ Entire flow of analyzing local folders. """
 
     with tqdm(total=5, desc='Analizing folders', unit='step', leave=False) as pbar:
@@ -19,15 +19,16 @@ async def analyze_folders(paths, linters_enabled=False, severity=1):
         pbar.update(1)
 
         pbar.set_description('Scanning for files')
-        bundle_files = collect_bundle_files(paths, file_filter)
+        bundle_files = collect_bundle_files(paths, file_filter, symlinks_enabled=symlinks_enabled)
         bundle_files = tuple(
             tqdm(bundle_files, desc='Found files', unit='f', leave=False) # progress bar
         )
         pbar.update(1)
 
         # change dir to destination folder, if paths list contains only one item
-        if len(paths) == 1:
-            os.chdir(paths[0])
+        # FIXME: path can be a file
+        # if len(paths) == 1:
+        #     os.chdir(paths[0])
 
         pbar.set_description('Computing file hashes')
         file_hashes = prepare_bundle_hashes(
@@ -54,4 +55,3 @@ async def analyze_git(platform, owner, repo, oid=None, linters_enabled=False, se
     bundle_id = await create_git_bundle(platform, owner, repo, oid)
 
     return await get_analysis(bundle_id, linters_enabled=linters_enabled, severity=severity)
-
