@@ -29,7 +29,7 @@ async def _request_file_bundle(path, method, file_hashes, api_key):
     files = {prepare_file_path(p): h for p, h in file_hashes}
 
     res = await api_call(
-        path=path, method=method, 
+        path=path, method=method,
         data={'files': files, 'removedFiles': []},
         compression_level=9,
         api_key=api_key)
@@ -62,6 +62,11 @@ async def generate_bundle(file_hashes, api_key=''):
 
             bundle_id = await _complete_bundle( bundle_func, api_key)
             pbar.update(len(chunked_files))
+
+        if not bundle_id:
+            bundle_func = partial(_request_file_bundle, path='bundle', method='POST', file_hashes=file_hashes)
+            bundle_id = await _complete_bundle( bundle_func, api_key)
+            pbar.update(1)
 
         return bundle_id
 
