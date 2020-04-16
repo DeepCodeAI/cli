@@ -50,6 +50,8 @@ To read more about module mode, see [readme docs](README.md)
 
 ## Package build
 
+Go to pyproject.toml and increment version.
+
 ```bash
 poetry build
 ```
