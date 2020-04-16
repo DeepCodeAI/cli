@@ -37,7 +37,7 @@ def parse_file_ignores(file_path):
     dirname = os.path.dirname(file_path)
     with open(file_path, encoding='utf-8', mode='r') as f:
         for l in f.readlines():
-            rule = l.strip()
+            rule = l.strip().rstrip('/') # Trim whitespaces and ending slash
             if rule and not rule.startswith('#'):
                 yield os.path.join(dirname, rule)
                 if not rule.startswith('/'):
@@ -56,10 +56,14 @@ def is_ignored(path, file_ignores):
 def collect_bundle_files(paths, file_filter, symlinks_enabled=False, file_ignores=IGNORES_DEFAULT):
     local_file_ignores = copy(file_ignores)
     for path in paths:
+        # Check if symlink and exclude if requested
+        if os.path.islink(path) and not symlinks_enabled:
+            continue
+
         if os.path.isfile(path):
             if file_filter(path) and not is_ignored(path, file_ignores):
                 yield path
-        if os.path.isdir(path):
+        elif os.path.isdir(path):
             with os.scandir(path) as it:
                 local_files = []
                 sub_dirs = []

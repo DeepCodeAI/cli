@@ -26,9 +26,10 @@ async def analyze_folders(paths, linters_enabled=False, symlinks_enabled=False, 
         pbar.update(1)
 
         # change dir to destination folder, if paths list contains only one item
-        # FIXME: path can be a file
-        # if len(paths) == 1:
-        #     os.chdir(paths[0])
+        # We do it to exclude repetitive root path in the results
+        if len(paths) == 1:
+            dirname = paths[0] if os.path.isdir(paths[0]) else os.path.dirname(paths[0])
+            os.chdir(dirname)
 
         pbar.set_description('Computing file hashes')
         file_hashes = prepare_bundle_hashes(
