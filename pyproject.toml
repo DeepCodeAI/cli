@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "deepcode"
-version = "1.0.11"
+version = "1.0.12"
 description = "A client for DeepCode API (code analysis made by AI)"
 authors = ["Arvid Paeglit <arvid@deepcode.ai>"]
 license = "MIT"

@@ -1,44 +1,48 @@
-## [1.0.11] - 2019-03-27
+## [1.0.12] - 2020-04-16
+- Added symlink support
+- Added direct file analysis
+
+## [1.0.11] - 2020-03-27
 - Fixed bug with analysis of huge repostories
 - Fixed relative path, when analysis only one path
 - Improved file/folder ignoring patterns
 
-## [1.0.10] - 2019-03-23
+## [1.0.10] - 2020-03-23
 - Added new argument "severity" to CLI
 
-## [1.0.9] - 2019-03-23
+## [1.0.9] - 2020-03-23
 - Changed status from Beta to Stable
 
-## [1.0.8] - 2019-03-23
+## [1.0.8] - 2020-03-23
 - Added C/C++ into supported languages
 
-## [1.0.7] - 2019-03-10
+## [1.0.7] - 2020-03-10
 - Improved processing of very large folders
 
-## [1.0.6] - 2019-02-24
+## [1.0.6] - 2020-02-24
 - Proper exit codes to use the CLI in pipelines
 
-## [1.0.5] - 2019-02-24
+## [1.0.5] - 2020-02-24
 - Optimized file paths to send only relative paths
 
-## [1.0.4] - 2019-02-18
+## [1.0.4] - 2020-02-18
 - Fixed file processing in Windows
 
-## [1.0.0] - 2019-02-14
+## [1.0.0] - 2020-02-14
 - Rewritten from scratch
 - Much faster and reliable execution
 - Backwards incompatible changes
 - Stringent python requirements: 3.6+
 
-## [0.0.8] - 2019-02-02
+## [0.0.8] - 2020-02-02
 - Removed confirmation step for uploading folders
 - Simplified logging
 
-## [0.0.7] - 2019-01-16
+## [0.0.7] - 2020-01-16
 - Added support of very large folders
 - Bugfixes
 
-## [0.0.5] - 2019-01-15
+## [0.0.5] - 2020-01-15
 - Hotfixes
 - Added "--version" command argument
 
