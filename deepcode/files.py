@@ -37,7 +37,7 @@ def parse_file_ignores(file_path):
     dirname = os.path.dirname(file_path)
     with open(file_path, encoding='utf-8', mode='r') as f:
         for l in f.readlines():
-            rule = l.strip()
+            rule = l.strip().rstrip('/') # Trim whitespaces and ending slash
             if rule and not rule.startswith('#'):
                 yield os.path.join(dirname, rule)
                 if not rule.startswith('/'):
@@ -53,47 +53,52 @@ def is_ignored(path, file_ignores):
     return False
 
 
-def collect_bundle_files(paths, file_filter, file_ignores=IGNORES_DEFAULT):
+def collect_bundle_files(paths, file_filter, symlinks_enabled=False, file_ignores=IGNORES_DEFAULT):
     local_file_ignores = copy(file_ignores)
-
     for path in paths:
-        with os.scandir(path) as it:
-            local_files = []
-            sub_dirs = []
-            local_ignore_file = False
-            for entry in it:
+        # Check if symlink and exclude if requested
+        if os.path.islink(path) and not symlinks_enabled:
+            continue
 
-                if entry.is_symlink():
-                    # To prevent possible infinite loops, we ignore symlinks for now
-                    continue
+        if os.path.isfile(path):
+            if file_filter(path) and not is_ignored(path, file_ignores):
+                yield path
+        elif os.path.isdir(path):
+            with os.scandir(path) as it:
+                local_files = []
+                sub_dirs = []
+                local_ignore_file = False
+                for entry in it:
 
-                if entry.is_dir():
-                    sub_dirs.append(entry.path)
-                    continue
+                    if entry.is_symlink() and not symlinks_enabled:
+                        continue
 
-                if entry.name in IGNORE_FILES_NAMES:
-                    for ignore_rule in parse_file_ignores(entry.path):
-                        local_file_ignores.add(ignore_rule)
-                    local_ignore_file = True
-                    logger.debug('recognized ignore rules in file --> {}'.format(entry.path))
-                    continue
+                    if entry.is_dir(follow_symlinks=symlinks_enabled):
+                        sub_dirs.append(entry.path)
+                        continue
 
-                if entry.is_file() \
-                and file_filter(entry.name) \
-                and not is_ignored(entry.path, local_file_ignores):
+                    if entry.name in IGNORE_FILES_NAMES:
+                        for ignore_rule in parse_file_ignores(entry.path):
+                            local_file_ignores.add(ignore_rule)
+                        local_ignore_file = True
+                        logger.debug('recognized ignore rules in file --> {}'.format(entry.path))
+                        continue
 
-                    local_files.append(entry.path)
+                    if entry.is_file(follow_symlinks=symlinks_enabled) \
+                    and file_filter(entry.name) \
+                    and not is_ignored(entry.path, local_file_ignores):
+                        local_files.append(entry.path)
 
-            if local_ignore_file:
-                local_files = [p for p in local_files if not is_ignored(p, local_file_ignores)]
+                if local_ignore_file:
+                    local_files = [p for p in local_files if not is_ignored(p, local_file_ignores)]
 
-            yield from local_files
+                yield from local_files
 
-            sub_dirs = [
-                subdir for subdir in sub_dirs
-                if not is_ignored(subdir, local_file_ignores)
-                ]
-            yield from collect_bundle_files(sub_dirs, file_filter, local_file_ignores)
+                sub_dirs = [
+                    subdir for subdir in sub_dirs
+                    if not is_ignored(subdir, local_file_ignores)
+                    ]
+                yield from collect_bundle_files(sub_dirs, file_filter, symlinks_enabled, local_file_ignores)
 
 
 def get_file_meta(file_path):

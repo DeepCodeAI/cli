@@ -120,6 +120,15 @@ async def test_analyze_folders():
 
 
 @pytest.mark.asyncio
+async def test_analyze_file():
+    path = os.path.join(os.path.dirname(__file__), 'mocked_for_tests/sample_repository/main.js')
+    results = await analyze_folders([path], linters_enabled=True)
+    assert list(results.keys()) == ['id', 'url', 'results']
+    assert len(results['results']['files'].keys()) == 1
+    assert len(results['results']['suggestions'].keys()) == 9
+
+
+@pytest.mark.asyncio
 async def test_analyze_folders_severity():
     path = os.path.join(os.path.dirname(__file__), 'mocked_for_tests')
     results = await analyze_folders([path], linters_enabled=True, severity=2)

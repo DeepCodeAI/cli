@@ -152,13 +152,14 @@ class GitURI(click.ParamType):
     help='The configuration of repository location')
 @optgroup.option("--path", "-p", "paths",
     multiple=True,
-    type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True, resolve_path=True),
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, readable=True, resolve_path=True),
     help="Path to folder to be processed. Multiple paths are allowed")
 @optgroup.option("--git-uri", "-r", "remote_params",
     type=GitURI(),
     help="Git URI (e.g. git@<platform>:<owner>/<repo>.git@<oid> or https://<platform>/<owner>/<repo>.git@<oid>)",
 )
 @click.option('--with-linters', '-l', 'linters_enabled', is_flag=True, help="Enable linters")
+@click.option('--follow-symlinks', '-s', 'symlinks_enabled', is_flag=True, help="Follow symbolic links")
 @click.option('--log-file', '-log', 'log_file',
     type=click.Path(file_okay=True, dir_okay=False),
     help="Forward all debugging messages to a file")
@@ -169,7 +170,7 @@ class GitURI(click.ParamType):
               help="Minimum severity level (default: info)")
 @click.pass_context
 @coro
-async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_txt, severity):
+async def analyze(ctx, linters_enabled, symlinks_enabled, paths, remote_params, log_file, result_txt, severity):
     """
     Analyzes your code using Deepcode AI engine.
 
@@ -192,7 +193,7 @@ async def analyze(ctx, linters_enabled, paths, remote_params, log_file, result_t
     try:
         if paths: # Local folders are going to be analysed
             paths = [os.path.abspath(p) for p in paths]
-            results = await analyze_folders(paths=paths, linters_enabled=linters_enabled, severity=severity)
+            results = await analyze_folders(paths=paths, linters_enabled=linters_enabled, symlinks_enabled=symlinks_enabled, severity=severity)
         else:
             # Deepcode server will fetch git repository and analyze it
             results = await analyze_git(linters_enabled=linters_enabled, severity=severity, **remote_params)
