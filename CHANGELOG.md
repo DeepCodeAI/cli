@@ -1,3 +1,6 @@
+## [1.0.13] - 2020-05-04
+- Added a way to specify custom 'source' argument
+
 ## [1.0.12] - 2020-04-16
 - Added symlink support
 - Added direct file analysis
