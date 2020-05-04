@@ -48,9 +48,6 @@ def _config_logging(log_file):
 @click.option('--service-url', '-s', 'service_url',
     default=lambda: os.environ.get(SERVICE_URL_ENV, ''),
     help="Custom DeepCode service URL (default: {})".format(DEFAULT_SERVICE_URL))
-@click.option('--source', '-S', 'source',
-    default=lambda: os.environ.get(SOURCE_ENV, ''),
-    help="DeepCode client authentication source(default: {})".format(DEFAULT_SOURCE))
 @click.option('--api-key', '-a', 'api_key',
     default=lambda: os.environ.get(API_KEY_ENV, ''),
     help="Deepcode API key")
@@ -60,6 +57,9 @@ def _config_logging(log_file):
     default=CONFIG_FILE_PATH,
     help="Config file (default: {})".format(CONFIG_FILE_PATH)
 )
+@click.option('--source', '-S', 'source',
+    default=lambda: os.environ.get(SOURCE_ENV, ''),
+    help="DeepCode client authentication source(default: {})".format(DEFAULT_SOURCE))
 @click.pass_context
 def main(ctx, service_url, api_key, config_file, source):
     """
