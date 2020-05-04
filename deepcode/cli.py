@@ -15,7 +15,7 @@ from . import analyze_folders, analyze_git
 from .utils import logger, coro
 from .auth import login as login_task
 from .git_utils import parse_git_uri
-from .constants import (DEFAULT_SERVICE_URL, CONFIG_FILE_PATH, SERVICE_URL_ENV, API_KEY_ENV)
+from .constants import (DEFAULT_SERVICE_URL, CONFIG_FILE_PATH, SERVICE_URL_ENV, SOURCE_ENV, API_KEY_ENV, DEFAULT_SOURCE)
 from .formatter import format_txt, text_decorations, text_with_colors
 
 def _save_config(service_url, api_key, config_file):
@@ -57,8 +57,11 @@ def _config_logging(log_file):
     default=CONFIG_FILE_PATH,
     help="Config file (default: {})".format(CONFIG_FILE_PATH)
 )
+@click.option('--source', '-S', 'source',
+    default=lambda: os.environ.get(SOURCE_ENV, ''),
+    help="DeepCode client authentication source(default: {})".format(DEFAULT_SOURCE))
 @click.pass_context
-def main(ctx, service_url, api_key, config_file):
+def main(ctx, service_url, api_key, config_file, source):
     """
     A tool, that detects bugs and quality issues in JavaScript, TypeScript, Python, Java and C/C++.
     It uses a mighty engine based on AI from Deepcode.
@@ -77,6 +80,7 @@ def main(ctx, service_url, api_key, config_file):
 
     ctx.obj = {
         'service_url': service_url or config_data.get('service_url', ''),
+        'source': source,
         'api_key': api_key or config_data.get('api_key', ''),
         'config_file': filename
     }
@@ -88,7 +92,6 @@ def main(ctx, service_url, api_key, config_file):
     api_key = ctx.obj.get('api_key', '')
     if api_key:
         os.environ[API_KEY_ENV] = api_key
-
 
 @main.command()
 @click.pass_context
@@ -120,8 +123,9 @@ async def login(ctx):
     """
 
     service_url = ctx.obj.get('service_url', '')
+    source = ctx.obj.get('source', '')
 
-    api_key = await login_task(service_url)
+    api_key = await login_task(service_url, source or DEFAULT_SOURCE)
 
     _save_config(service_url, api_key, ctx.obj['config_file'])
 
