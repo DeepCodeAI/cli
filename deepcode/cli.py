@@ -80,7 +80,7 @@ def main(ctx, service_url, api_key, config_file, source):
 
     ctx.obj = {
         'service_url': service_url or config_data.get('service_url', ''),
-        'source': source or config_data.get('source', ''),
+        'source': source,
         'api_key': api_key or config_data.get('api_key', ''),
         'config_file': filename
     }
