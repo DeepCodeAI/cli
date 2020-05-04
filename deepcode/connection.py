@@ -10,10 +10,10 @@ from json import dumps
 from functools import wraps
 
 from .utils import logger
-from .constants import (DEFAULT_SERVICE_URL, NETWORK_RETRY_DELAY, SOURCE, SERVICE_URL_ENV, API_KEY_ENV)
+from .constants import (DEFAULT_SERVICE_URL, NETWORK_RETRY_DELAY, SERVICE_URL_ENV, API_KEY_ENV)
 
 def reconnect(func):
-  
+
     @wraps(func)
     async def wrapper(*args, **kwargs):
         while(True):
@@ -32,7 +32,7 @@ def reconnect(func):
                     raise
 
     return wrapper
-    
+
 
 @reconnect
 async def api_call(path, method='GET', data=None, extra_headers={}, callback=lambda resp: resp.json(), compression_level=6, api_key=''):
@@ -40,11 +40,11 @@ async def api_call(path, method='GET', data=None, extra_headers={}, callback=lam
     API_KEY = api_key or os.environ.get(API_KEY_ENV, '')
 
     url = urljoin(urljoin(SERVICE_URL, '/publicapi/'), path)
-    
+
     default_headers = {
         'Session-Token': API_KEY,
         }
-    
+
     if data:
         # Expect json string here
         data = dumps(data).encode('utf-8')
@@ -54,7 +54,7 @@ async def api_call(path, method='GET', data=None, extra_headers={}, callback=lam
             'Content-Type': 'application/json',
             'Content-Encoding': 'deflate'
         })
-    
+
     # async def on_request_start(session, trace_config_ctx, params):
     #     logger.debug("Starting request")
 
@@ -62,15 +62,14 @@ async def api_call(path, method='GET', data=None, extra_headers={}, callback=lam
     #     logger.debug("Ending request")
 
     async with aiohttp.request(
-        url=url, method=method, 
-        data=data, 
+        url=url, method=method,
+        data=data,
         raise_for_status=True,
-        headers=dict(default_headers, **extra_headers), 
+        headers=dict(default_headers, **extra_headers),
         compress=None
         ) as resp:
-        
+
         # logger.debug('status --> {}'.format(resp.status))
         # content = await resp.text()
-        
+
         return await callback(resp)
-        
