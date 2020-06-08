@@ -1,3 +1,6 @@
+## [1.0.14] - 2020-06-08
+- Removed explicit dependency from asyncio, as it's included to python itself and conflicts with some virtual environments
+
 ## [1.0.13] - 2020-05-04
 - Added a way to specify custom 'source' argument
 
