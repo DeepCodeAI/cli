@@ -1,3 +1,6 @@
+## [1.0.15] - 2020-06-10
+- Tiny fix of calling webbrowser for log-in page
+
 ## [1.0.14] - 2020-06-08
 - Removed explicit dependency from asyncio, as it's included to python itself and conflicts with some virtual environments
 

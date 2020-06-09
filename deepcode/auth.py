@@ -20,7 +20,7 @@ async def login(service_url, source=DEFAULT_SOURCE):
     api_key, login_url = res['sessionToken'], res['loginURL']
 
     # Open browser to complete authentication and assign api_key and user
-    webbrowser.get().open_new(login_url)
+    webbrowser.open_new_tab(login_url)
 
     while(True):
         try:

@@ -103,7 +103,7 @@ async def test_analysis():
     results = await get_analysis(bundle_id, linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
     assert results['id'] == bundle_id
-    assert results['url'] == '{}/app/{}/_/%2F/code/'.format(DEFAULT_SERVICE_URL, bundle_id)
+    assert results['url'] == '{}/app/{}/_/%2F/code/?'.format(DEFAULT_SERVICE_URL, bundle_id)
     assert list(results['results'].keys()) == ['files', 'suggestions']
     assert len(results['results']['files'].keys()) == 1
     assert '/mocked_for_tests/sample_repository/main.js' in list(results['results']['files'].keys())[0]
