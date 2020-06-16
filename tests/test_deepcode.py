@@ -139,10 +139,10 @@ async def test_analyze_folders_severity():
 
 @pytest.mark.asyncio
 async def test_remote_analysis():
-    results = await analyze_git('github.com', 'DeepcodeAI', 'cli', '320d98a6896f5376efe6cefefb6e70b46b97d566')
+    results = await analyze_git('github.com', 'DeepcodeAI', 'TinyTests', '84b024559a6440e70faadf4d2b30609a7944f237')
     assert list(results.keys()) == ['id', 'url', 'results']
-    assert list(results['results']['files'].keys()) == ['/tests/mocked_for_tests/sample_repository/main.js']
-    assert len(results['results']['suggestions'].keys()) == 9
+    assert set(results['results']['files'].keys()) == set(['/New.js', '/Test1.java', '/Test2.java', '/Test3.java', '/Test4.java', '/Test7.java'])
+    assert len(results['results']['suggestions'].keys()) == 5
 
 
 @pytest.mark.asyncio

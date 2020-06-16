@@ -1,3 +1,6 @@
+## [1.0.16] - 2020-06-16
+- Analyzing remote git repository with specific commit hash
+
 ## [1.0.15] - 2020-06-10
 - Tiny fix of calling webbrowser for log-in page
 
