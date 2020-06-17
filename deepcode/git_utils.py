@@ -1,6 +1,6 @@
 import re
 
-GIT_URI_OBJ = re.compile('((git@|https://)(?P<platform>[\w\.@]+)(/|:))(?P<owner>[\w,\-,\_]+)/(?P<repo>[\w,\-,\_]+)(.git){0,1}((/){0,1})((@(?P<oid>[0-9a-z]+)){0,1})', re.IGNORECASE)
+GIT_URI_OBJ = re.compile('((git@|https://)(?P<platform>[\w\.@]+)(/|:))(?P<owner>[\w,\-,\_/]+)/(?P<repo>[\w\.,\-,\_]+)\.git((/){0,1})((@(?P<oid>[0-9a-z]+)){0,1})', re.IGNORECASE)
 
 def parse_git_uri(uri):
     """

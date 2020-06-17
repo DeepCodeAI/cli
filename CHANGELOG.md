@@ -1,3 +1,6 @@
+## [1.0.17] - 2020-06-17
+- Analyzing remote git repository with . (dot) in repository name
+
 ## [1.0.16] - 2020-06-16
 - Analyzing remote git repository with specific commit hash
 
