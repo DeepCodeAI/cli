@@ -32,7 +32,14 @@ IGNORES_DEFAULT = {
 
 IGNORE_FILES_NAMES = {
     '.gitignore',
+    '.hgignore',
+    '.p4ignore',
+    '.cvsignore',
     '.dcignore'
+}
+
+MULTI_SYNTAX_IGNORE_FILES_NAMES = {
+    '.hgignore'
 }
 
 MAX_BUCKET_SIZE = 1024 * 1024 * 4

@@ -9,7 +9,7 @@ import hashlib
 
 from .utils import logger
 
-from .constants import (IGNORES_DEFAULT, IGNORE_FILES_NAMES, MAX_BUCKET_SIZE)
+from .constants import (IGNORES_DEFAULT, IGNORE_FILES_NAMES, MULTI_SYNTAX_IGNORE_FILES_NAMES, MAX_BUCKET_SIZE)
 
 def prepare_file_path(filepath):
     """
@@ -33,15 +33,28 @@ def get_file_content(file_path):
     with open(file_path, encoding='utf-8', mode='r') as f:
         return f.read()
 
-def parse_file_ignores(file_path):
+def parse_file_ignores(file_path, syntaxed):
     dirname = os.path.dirname(file_path)
     with open(file_path, encoding='utf-8', mode='r') as f:
+        if syntaxed:
+            allowed = False
         for l in f.readlines():
             rule = l.strip().rstrip('/') # Trim whitespaces and ending slash
-            if rule and not rule.startswith('#'):
-                yield os.path.join(dirname, rule)
-                if not rule.startswith('/'):
-                    yield os.path.join(dirname, '**', rule)
+            if rule and rule != '!' and not rule.startswith('#'):
+                if syntaxed and ':' in rule:
+                    if rule == 'syntax:glob':
+                        allowed = True
+                    if rule == 'syntax:regex':
+                        allowed = False
+                    if rule.startswith('path:') or rule.startswith('glob:'):
+                        r = rule.split(':',1)[1]
+                        yield os.path.join(dirname, r)
+                        if not r.startswith('/'):
+                            yield os.path.join(dirname, '**', r)
+                elif not syntaxed or allowed:
+                    yield os.path.join(dirname, rule)
+                    if not rule.startswith('/'):
+                        yield os.path.join(dirname, '**', rule)
 
 
 def is_ignored(path, file_ignores):
@@ -78,7 +91,8 @@ def collect_bundle_files(paths, file_filter, symlinks_enabled=False, file_ignore
                         continue
 
                     if entry.name in IGNORE_FILES_NAMES:
-                        for ignore_rule in parse_file_ignores(entry.path):
+                        syntaxed = True if entry.name in MULTI_SYNTAX_IGNORE_FILES_NAMES else False
+                        for ignore_rule in parse_file_ignores(entry.path, syntaxed):
                             local_file_ignores.add(ignore_rule)
                         local_ignore_file = True
                         logger.debug('recognized ignore rules in file --> {}'.format(entry.path))
