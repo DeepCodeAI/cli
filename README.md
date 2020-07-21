@@ -1,5 +1,7 @@
 # DeepCode's command line interface.
 
+[![deepcode](https://www.deepcoded.com/api/gh/badge?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF0Zm9ybTEiOiJnaCIsIm93bmVyMSI6IkRlZXBDb2RlQUkiLCJyZXBvMSI6ImNsaSIsImluY2x1ZGVMaW50IjpmYWxzZSwiYXV0aG9ySWQiOjczLCJpYXQiOjE1OTUzMTc1NTd9.MXYODUUN6cGSWEHQ4RSMEK7toqu-X7FDo41o4CfaMu0)](https://www.deepcoded.com/app/gh/DeepCodeAI/cli/_/dashboard?utm_content=gh%2FDeepCodeAI%2Fcli)
+
 ## Installation
 
 Minimal supported python version is: 3.6.5
