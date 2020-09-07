@@ -9,69 +9,88 @@ from deepcode.constants import API_KEY_ENV, DEFAULT_SERVICE_URL
 from deepcode import analyze_folders, analyze_git
 
 MOCKED_FILTERS = {
-    'extensions': ['.java', '.html', '.js', '.jsx', '.ts', '.tsx', '.vue', '.py'],
-    'configFiles': ['.pmdrc.xml', '.ruleset.xml', 'ruleset.xml', '.eslintrc.js', '.eslintrc.json', '.eslintrc.yml', 'tslint.json', '.pylintrc', 'pylintrc']
-    }
+    'extensions': [
+        '.py',
+        '.c',
+        '.cc',
+        '.cpp',
+        '.cxx',
+        '.h',
+        '.hpp',
+        '.hxx',
+        '.es',
+        '.es6',
+        '.htm',
+        '.html',
+        '.js',
+        '.jsx',
+        '.ts',
+        '.tsx',
+        '.vue',
+        '.java',
+    ],
+    'configFiles': [
+        '.dcignore',
+        '.gitignore',
+        '.pylintrc',
+        'pylintrc',
+        '.pmdrc.xml',
+        '.ruleset.xml',
+        'ruleset.xml',
+        'tslint.json',
+        '.eslintrc.js',
+        '.eslintrc.json',
+        '.eslintrc.yml',
+    ]
+}
 
 mock_file_filter = lambda n: os.path.splitext(n)[-1] in MOCKED_FILTERS['extensions'] or n in MOCKED_FILTERS['configFiles']
 
 
-API_KEY = '3f0c8e2f05b1465de310e4d7b3d80db7ee87bcf73225b6b3db97848b1d17784c'
+API_KEY = os.environ.get(API_KEY_ENV) or ''
+# Clean environment variable
+os.environ[API_KEY_ENV] = ''
 
+def test_api_key_provided():
+    assert bool(API_KEY)
 
 @pytest.mark.asyncio
 async def test_filters():
 
-    # Try to call without api key
-    with pytest.raises(aiohttp.client_exceptions.ClientResponseError):
-        await get_filters()
-
+    # Call without api key and it should work
     filter_func = await get_filters(api_key=API_KEY)
 
-    assert filter_func('sample_repository/utf8.js') == True
-
-
-def test_file_meta():
-    path = os.path.join(os.path.dirname(__file__),
-                        'mocked_for_tests', 'test.java')
-
-    assert get_file_meta(path) == (140375, '09f4ca64118f029e5a894305dfc329c930ebd2a258052de9e81f895b055ec929')
+    assert filter_func('sample-repo/app.js') == True
 
 
 def test_meta_utf8_file():
-    path = os.path.join(os.path.dirname(__file__),
-                        'mocked_for_tests', 'sample_repository/utf8.js')
+    path = os.path.join(os.path.dirname(__file__), 'sample-repo', 'app.js')
 
-    assert get_file_meta(path) == (328, 'cc2b67993e547813db67f57c6b20bff83bf4ade64ea2c3fb468d927425502804')
+    assert get_file_meta(path) == (515, '577ccb10a08ec72a2a8b794b773e1d31b24b99b0e92fc0a3c2a01fef9bf820b8')
 
 
 def test_meta_iso8859_file():
-    path = os.path.join(os.path.dirname(__file__),
-                        'mocked_for_tests', 'sample_repository/main.js')
+    path = os.path.join(os.path.dirname(__file__), 'sample-repo', 'main.js')
 
     assert get_file_meta(path) == (22325, 'a7f2b4086183e471a0024b96a2de53b4a46eef78f4cf33b8dab61eae5e27eb83')
 
 
 
 def test_bundle_hashes():
-    path = os.path.join(os.path.dirname(__file__),
-                        'mocked_for_tests', 'sample_repository')
+    path = os.path.join(os.path.dirname(__file__), 'sample-repo')
     bundle_files = list(collect_bundle_files([path], file_filter=mock_file_filter))
 
-    assert len(bundle_files) == 3
+    assert len(bundle_files) == 9
 
     file_hashes = prepare_bundle_hashes(bundle_files)
 
-    assert len(file_hashes) == 3
-    assert file_hashes[0][1] == 'cc2b67993e547813db67f57c6b20bff83bf4ade64ea2c3fb468d927425502804' \
-           and 'utf8.js' in file_hashes[0][0]
-    assert file_hashes[1][1] == 'a7f2b4086183e471a0024b96a2de53b4a46eef78f4cf33b8dab61eae5e27eb83' \
-           and 'main.js' in file_hashes[1][0]
-    assert file_hashes[2][1] == 'c8bc645260a7d1a0d1349a72150cb65fa005188142dca30d09c3cc67c7974923' \
-           and 'sub_folder/test2.js' in file_hashes[2][0]
+    assert len(file_hashes) == 9
+    assert file_hashes[0][1] == '9bf5582f88c6f5a93207efc66b3df6dd36b16de3807f93894b58baa90735b91d' \
+           and 'AnnotatorTest.cpp' in file_hashes[0][0]
+    assert file_hashes[1][1] == '10807f69f91fe05aa906a51c93da63e645b39c3ef50303556600f5e323e4a8d8' \
+           and 'db.js' in file_hashes[1][0]
 
     return file_hashes
-
 
 
 @pytest.mark.asyncio
@@ -105,44 +124,44 @@ async def test_analysis():
     assert results['id'] == bundle_id
     assert results['url'] == '{}/app/{}/_/%2F/code/?'.format(DEFAULT_SERVICE_URL, bundle_id)
     assert list(results['results'].keys()) == ['files', 'suggestions']
-    assert len(results['results']['files'].keys()) == 1
-    assert '/mocked_for_tests/sample_repository/main.js' in list(results['results']['files'].keys())[0]
-    assert len(results['results']['suggestions'].keys()) == 9
+    assert len(results['results']['files'].keys()) == 5
+    assert '/sample-repo/AnnotatorTest.cpp' in list(results['results']['files'].keys())[0]
+    assert len(results['results']['suggestions'].keys()) == 8
 
 
 @pytest.mark.asyncio
 async def test_analyze_folders():
-    path = os.path.join(os.path.dirname(__file__), 'mocked_for_tests')
+    path = os.path.join(os.path.dirname(__file__), 'sample-repo')
     results = await analyze_folders([path], linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
-    assert len(results['results']['files'].keys()) == 1
-    assert len(results['results']['suggestions'].keys()) == 9
+    assert len(results['results']['files'].keys()) == 5
+    assert len(results['results']['suggestions'].keys()) == 8
 
 
 @pytest.mark.asyncio
 async def test_analyze_file():
-    path = os.path.join(os.path.dirname(__file__), 'mocked_for_tests/sample_repository/main.js')
+    path = os.path.join(os.path.dirname(__file__), 'sample-repo', 'app.js')
     results = await analyze_folders([path], linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
     assert len(results['results']['files'].keys()) == 1
-    assert len(results['results']['suggestions'].keys()) == 9
+    assert len(results['results']['suggestions'].keys()) == 1
 
 
 @pytest.mark.asyncio
 async def test_analyze_folders_severity():
-    path = os.path.join(os.path.dirname(__file__), 'mocked_for_tests')
+    path = os.path.join(os.path.dirname(__file__), 'sample-repo')
     results = await analyze_folders([path], linters_enabled=True, severity=2)
     assert list(results.keys()) == ['id', 'url', 'results']
-    assert len(results['results']['files'].keys()) == 0
-    assert len(results['results']['suggestions'].keys()) == 0
+    assert len(results['results']['files'].keys()) == 5
+    assert len(results['results']['suggestions'].keys()) == 6
 
 
 @pytest.mark.asyncio
 async def test_remote_analysis():
     results = await analyze_git('github.com', 'DeepcodeAI', 'TinyTests', '84b024559a6440e70faadf4d2b30609a7944f237')
     assert list(results.keys()) == ['id', 'url', 'results']
-    assert set(results['results']['files'].keys()) == set(['/New.js', '/Test1.java', '/Test2.java', '/Test3.java', '/Test4.java', '/Test7.java'])
-    assert len(results['results']['suggestions'].keys()) == 5
+    assert set(results['results']['files'].keys()) == set(['/New.js', '/Test.java', '/Test1.java', '/Test2.java', '/Test3.java', '/Test4.java', '/Test7.java'])
+    assert len(results['results']['suggestions'].keys()) == 6
 
 
 @pytest.mark.asyncio

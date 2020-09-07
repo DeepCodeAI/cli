@@ -66,8 +66,11 @@ poetry publish
 
 ### Tests
 
+Make sure you have an API KEY in your [account](https://www.deepcode.ai/app/gh/account)
+Copy your key.
+
 Run tests:
 
 ```bash
-poetry run pytest tests
+DEEPCODE_API_KEY=<your key> poetry run pytest tests
 ```
