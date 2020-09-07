@@ -1,3 +1,6 @@
+## [1.0.18] - 2020-09-07
+- Improved tests
+
 ## [1.0.17] - 2020-06-17
 - Analyzing remote git repository with . (dot) in repository name
 
