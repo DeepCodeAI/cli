@@ -5,5 +5,4 @@ venv
 dist
 .vscode
 .pytest_cache
-.
 .idea
