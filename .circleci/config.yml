@@ -1,19 +1,15 @@
 version: 2.1
 
 orbs:
-  poetry: frameio/poetry@0.15.0
+  python38: circleci/python@3.8
 
-workflows:
-  main:
-    jobs:
-      - build-and-test
 jobs:
-  build-and-test:
-    executor: poetry/default
+  build:
+    executor: python38
     steps:
       - checkout
-      - poetry/build
-      - poetry/shell:
-          args: poetry run pytest tests
-          requires:
-            - poetry/build
+      - run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+      - run: poetry install && poetry build
+      - run:
+        command: |
+          poetry run pytest tests
