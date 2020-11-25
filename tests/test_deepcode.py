@@ -133,7 +133,9 @@ async def test_analysis():
     assert len(results['results']['files'].keys()) == 5
     assert '/sample-repo/AnnotatorTest.cpp' in list(results['results']['files'].keys())[0]
     assert len(results['results']['suggestions'].keys()) == 8
-
+    assert list(results['results']['timing'].keys()) == ['fetchingCode', 'analysis', 'queue']
+    assert results['results']['timing']['fetchingCode'] <= results['results']['timing']['analysis']
+    assert results['results']['timing']['queue'] >= 0
 
 @pytest.mark.asyncio
 async def test_analyze_folders():
