@@ -14,3 +14,4 @@ jobs:
       - run: poetry install && poetry build
       #poetry env info --path
       - run: poetry run pytest --maxfail=1 tests
+      - store_test_results
