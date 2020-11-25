@@ -87,10 +87,14 @@ def test_bundle_hashes():
     file_hashes = prepare_bundle_hashes(bundle_files)
 
     assert len(file_hashes) == 9
-    assert file_hashes[0][1] == '9bf5582f88c6f5a93207efc66b3df6dd36b16de3807f93894b58baa90735b91d' \
-           and 'AnnotatorTest.cpp' in file_hashes[0][0]
-    assert file_hashes[1][1] == '6f8d7925b5c86bd6d31b0b23bdce1dcfc94e28a1d5ebdc0ba91fac7dc7e95657' \
-           and 'db.js' in file_hashes[1][0]
+
+    annotator_app_file = next((f for f in file_hashes if 'AnnotatorTest.cpp' in f[0]), None)
+    assert 'AnnotatorTest.cpp' in annotator_app_file[0]
+    assert annotator_app_file[1] == '9bf5582f88c6f5a93207efc66b3df6dd36b16de3807f93894b58baa90735b91d'
+
+    db_file = next((f for f in file_hashes if 'db.js' in f[0]), None)
+    assert 'db.js' in db_file[0]
+    assert db_file[1] == '6f8d7925b5c86bd6d31b0b23bdce1dcfc94e28a1d5ebdc0ba91fac7dc7e95657'
 
     return file_hashes
 
