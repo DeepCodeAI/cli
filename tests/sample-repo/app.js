@@ -1,10 +1,9 @@
-const express = require('express');
+const express = require('express')
 
 const app = express();
-const router = express.Router();
-const db = require('./db');
+const router = express.Router()
+let db = require('./db');
 const sharks = require('./routes/sharks');
-
 
 const path = __dirname + '/views/';
 const port = process.env.PORT || 8080;
