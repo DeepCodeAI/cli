@@ -18,6 +18,4 @@ jobs:
       - checkout
       - run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
       - run: poetry install && poetry build
-      - run:
-        command: |
-          poetry run pytest tests
+      - run: poetry run pytest tests
