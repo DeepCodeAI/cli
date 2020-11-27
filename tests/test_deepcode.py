@@ -5,7 +5,7 @@ import aiohttp
 from deepcode.files import get_file_meta, collect_bundle_files, prepare_bundle_hashes
 from deepcode.bundle import get_filters, generate_bundle, create_git_bundle
 from deepcode.analysis import get_analysis
-from deepcode.constants import API_KEY_ENV, DEFAULT_SERVICE_URL
+from deepcode.constants import DEFAULT_SERVICE_URL, API_KEY_ENV, SERVICE_URL_ENV
 from deepcode import analyze_folders, analyze_git
 
 MOCKED_FILTERS = {
@@ -48,6 +48,8 @@ mock_file_filter = lambda n: os.path.splitext(n)[-1] in MOCKED_FILTERS['extensio
 
 
 API_KEY = os.environ.get(API_KEY_ENV) or ''
+SERVICE_URL = os.environ.get(SERVICE_URL_ENV) or DEFAULT_SERVICE_URL
+
 # Clean environment variable
 os.environ[API_KEY_ENV] = ''
 
@@ -66,7 +68,7 @@ async def test_filters():
 def test_meta_utf8_file():
     path = os.path.join(os.path.dirname(__file__), 'sample-repo', 'app.js')
 
-    assert get_file_meta(path) == (515, '577ccb10a08ec72a2a8b794b773e1d31b24b99b0e92fc0a3c2a01fef9bf820b8')
+    assert get_file_meta(path) == (510, '40f937553fda7b9986c3a87d39802b96e77fb2ba306dd602f9b2d28949316c98')
 
 
 def test_meta_iso8859_file():
@@ -85,10 +87,14 @@ def test_bundle_hashes():
     file_hashes = prepare_bundle_hashes(bundle_files)
 
     assert len(file_hashes) == 9
-    assert file_hashes[0][1] == '9bf5582f88c6f5a93207efc66b3df6dd36b16de3807f93894b58baa90735b91d' \
-           and 'AnnotatorTest.cpp' in file_hashes[0][0]
-    assert file_hashes[1][1] == '10807f69f91fe05aa906a51c93da63e645b39c3ef50303556600f5e323e4a8d8' \
-           and 'db.js' in file_hashes[1][0]
+
+    annotator_app_file = next((f for f in file_hashes if 'AnnotatorTest.cpp' in f[0]), None)
+    assert 'AnnotatorTest.cpp' in annotator_app_file[0]
+    assert annotator_app_file[1] == '9bf5582f88c6f5a93207efc66b3df6dd36b16de3807f93894b58baa90735b91d'
+
+    db_file = next((f for f in file_hashes if 'db.js' in f[0]), None)
+    assert 'db.js' in db_file[0]
+    assert db_file[1] == '6f8d7925b5c86bd6d31b0b23bdce1dcfc94e28a1d5ebdc0ba91fac7dc7e95657'
 
     return file_hashes
 
@@ -122,12 +128,14 @@ async def test_analysis():
     results = await get_analysis(bundle_id, linters_enabled=True)
     assert list(results.keys()) == ['id', 'url', 'results']
     assert results['id'] == bundle_id
-    assert results['url'] == '{}/app/{}/_/%2F/code/?'.format(DEFAULT_SERVICE_URL, bundle_id)
-    assert list(results['results'].keys()) == ['files', 'suggestions']
+    assert results['url'] == '{}/app/{}/_/%2F/code/?'.format(SERVICE_URL, bundle_id)
+    assert list(results['results'].keys()) == ['files', 'suggestions', 'timing']
     assert len(results['results']['files'].keys()) == 5
     assert '/sample-repo/AnnotatorTest.cpp' in list(results['results']['files'].keys())[0]
     assert len(results['results']['suggestions'].keys()) == 8
-
+    assert list(results['results']['timing'].keys()) == ['fetchingCode', 'analysis', 'queue']
+    assert results['results']['timing']['fetchingCode'] <= results['results']['timing']['analysis']
+    assert results['results']['timing']['queue'] >= 0
 
 @pytest.mark.asyncio
 async def test_analyze_folders():
